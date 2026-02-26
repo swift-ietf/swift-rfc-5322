@@ -6,7 +6,6 @@
 //
 
 import Testing
-import Testing
 
 @testable import RFC_5322
 
