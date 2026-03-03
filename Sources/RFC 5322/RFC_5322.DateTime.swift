@@ -337,7 +337,7 @@ extension RFC_5322.DateTime {
         minute: Int = 0,
         second: Int = 0,
         timezoneOffsetSeconds: Int = 0
-    ) throws {
+    ) throws(Time.Error) {
         // Create Time with validation - Time.Error propagates naturally
         // This is correct: Time owns calendar validation, RFC 5322 delegates to it
         let time = try Time(
@@ -532,7 +532,7 @@ extension RFC_5322.DateTime {
         hour: Int? = nil,
         minute: Int? = nil,
         second: Int? = nil
-    ) throws -> Self {
+    ) throws(Time.Error) -> Self {
         let current = components
         return try Self(
             year: year ?? current.year,
