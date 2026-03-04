@@ -1,5 +1,5 @@
 //
-//  RFC_5322.Parse.MessageID.swift
+//  RFC_5322.Message.ID.Parse.swift
 //  swift-rfc-5322
 //
 //  RFC 5322 msg-id: "<" id-left "@" id-right ">"
@@ -7,20 +7,20 @@
 
 public import Parser_Primitives
 
-extension RFC_5322.Parse {
+extension RFC_5322.Message.ID {
     /// Parses an RFC 5322 message-id per Section 3.6.4.
     ///
     /// `msg-id = "<" id-left "@" id-right ">"`
     ///
     /// Returns the left and right parts of the message ID.
-    public struct MessageID<Input: Collection.Slice.`Protocol`>: Sendable
+    public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
         @inlinable
         public init() {}
     }
 }
 
-extension RFC_5322.Parse.MessageID {
+extension RFC_5322.Message.ID.Parse {
     public struct Output: Sendable {
         public let left: Input
         public let right: Input
@@ -39,9 +39,9 @@ extension RFC_5322.Parse.MessageID {
     }
 }
 
-extension RFC_5322.Parse.MessageID: Parser.`Protocol` {
+extension RFC_5322.Message.ID.Parse: Parser.`Protocol` {
     public typealias ParseOutput = Output
-    public typealias Failure = RFC_5322.Parse.MessageID<Input>.Error
+    public typealias Failure = RFC_5322.Message.ID.Parse<Input>.Error
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {

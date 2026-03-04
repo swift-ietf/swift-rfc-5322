@@ -1,5 +1,5 @@
 //
-//  RFC_5322.Parse.DateTime.swift
+//  RFC_5322.DateTime.Parse.swift
 //  swift-rfc-5322
 //
 //  RFC 5322 date-time: [day-of-week ","] date time
@@ -7,7 +7,7 @@
 
 public import Parser_Primitives
 
-extension RFC_5322.Parse {
+extension RFC_5322.DateTime {
     /// Parses an RFC 5322 date-time per Section 3.3.
     ///
     /// `date-time = [ day-of-week "," ] date time [CFWS]`
@@ -18,14 +18,14 @@ extension RFC_5322.Parse {
     ///
     /// Returns raw byte slices for each component. Interpretation of
     /// month names and timezone abbreviations is left to the caller.
-    public struct DateTime<Input: Collection.Slice.`Protocol`>: Sendable
+    public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
         @inlinable
         public init() {}
     }
 }
 
-extension RFC_5322.Parse.DateTime {
+extension RFC_5322.DateTime.Parse {
     public struct Output: Sendable {
         /// Day of week (3-letter abbreviation), if present
         public let dayOfWeek: Input?
@@ -69,9 +69,9 @@ extension RFC_5322.Parse.DateTime {
     }
 }
 
-extension RFC_5322.Parse.DateTime: Parser.`Protocol` {
+extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     public typealias ParseOutput = Output
-    public typealias Failure = RFC_5322.Parse.DateTime<Input>.Error
+    public typealias Failure = RFC_5322.DateTime.Parse<Input>.Error
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
