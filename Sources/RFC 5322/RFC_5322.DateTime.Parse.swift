@@ -70,7 +70,6 @@ extension RFC_5322.DateTime.Parse {
 }
 
 extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
-    public typealias ParseOutput = Output
     public typealias Failure = RFC_5322.DateTime.Parse<Input>.Error
 
     @inlinable

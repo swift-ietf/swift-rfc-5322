@@ -40,7 +40,6 @@ extension RFC_5322.Message.ID.Parse {
 }
 
 extension RFC_5322.Message.ID.Parse: Parser.`Protocol` {
-    public typealias ParseOutput = Output
     public typealias Failure = RFC_5322.Message.ID.Parse<Input>.Error
 
     @inlinable
