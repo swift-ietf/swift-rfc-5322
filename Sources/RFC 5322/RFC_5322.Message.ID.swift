@@ -5,7 +5,8 @@
 //  RFC 5322 Message-ID implementation
 //
 
-import ASCII
+import ASCII_Serializer_Primitives
+import INCITS_4_1986
 
 extension RFC_5322.Message {
     /// RFC 5322 compliant Message-ID

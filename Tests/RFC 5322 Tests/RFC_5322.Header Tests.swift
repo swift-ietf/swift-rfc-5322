@@ -5,7 +5,8 @@
 //  Tests for RFC_5322.Header including creation, validation, and array extensions
 //
 
-import ASCII
+import ASCII_Serializer_Primitives
+import INCITS_4_1986
 import Testing
 
 @testable import RFC_5322

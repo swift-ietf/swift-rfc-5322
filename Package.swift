@@ -14,8 +14,11 @@ extension Target.Dependency {
     static var standards: Self { .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions") }
     static var binary: Self { .product(name: "Binary Primitives", package: "swift-binary-primitives") }
     static var time: Self { .product(name: "Time Primitives", package: "swift-time-primitives") }
+    static var asciiSerializer: Self {
+        .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
+    }
     static var incits_4_1986: Self {
-        .product(name: "ASCII", package: "swift-ascii")
+        .product(name: "INCITS 4 1986", package: "swift-incits-4-1986")
     }
 }
 
@@ -37,7 +40,8 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-standard-library-extensions"),
         .package(path: "../../swift-primitives/swift-binary-primitives"),
         .package(path: "../../swift-primitives/swift-time-primitives"),
-        .package(path: "../../swift-foundations/swift-ascii"),
+        .package(path: "../../swift-primitives/swift-ascii-serializer-primitives"),
+        .package(path: "../../swift-incits/swift-incits-4-1986"),
         .package(path: "../../swift-primitives/swift-parser-primitives")
     ],
     targets: [
@@ -48,6 +52,7 @@ let package = Package(
                 .binary,
                 .time,
                 .rfc1123,
+                .asciiSerializer,
                 .incits_4_1986,
                 .product(name: "Parser Primitives", package: "swift-parser-primitives")
             ]

@@ -5,7 +5,8 @@
 //  Created by Coen ten Thije Boonkkamp on 24/11/2025.
 //
 
-import ASCII
+import ASCII_Serializer_Primitives
+import INCITS_4_1986
 
 // MARK: - Constants and Validation
 extension RFC_5322.EmailAddress {
