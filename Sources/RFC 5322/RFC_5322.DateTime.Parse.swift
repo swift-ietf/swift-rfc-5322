@@ -19,7 +19,7 @@ extension RFC_5322.DateTime {
     /// Returns raw byte slices for each component. Interpretation of
     /// month names and timezone abbreviations is left to the caller.
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
-    where Input: Sendable, Input.Element == UInt8 {
+    where Input: Sendable, Input.Element == Byte {
         @inlinable
         public init() {}
     }

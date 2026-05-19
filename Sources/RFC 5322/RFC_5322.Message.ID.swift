@@ -5,7 +5,7 @@
 //  RFC 5322 Message-ID implementation
 //
 
-import ASCII_Serializer_Primitives
+public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322.Message {
@@ -21,19 +21,19 @@ extension RFC_5322.Message {
     ///
     /// ## Storage
     ///
-    /// Stores the Message-ID as canonical `[UInt8]` (ASCII bytes without angle brackets).
+    /// Stores the Message-ID as canonical `[Byte]` (ASCII bytes without angle brackets).
     /// This follows the same pattern as `LocalPart` for academic correctness and zero-copy serialization.
     public struct ID: Hashable, Sendable {
         /// The unique identifier bytes (without angle brackets)
         /// Stored in format: "unique-string@domain" as ASCII bytes
-        package let value: [UInt8]
+        package let value: [Byte]
 
         /// Initialize with pre-formatted Message-ID bytes
         ///
         /// - Parameter value: The Message-ID bytes without angle brackets
         internal init(
             __unchecked: Void,
-            rawValue: [UInt8]
+            rawValue: [Byte]
         ) {
             self.value = rawValue
         }
@@ -44,13 +44,13 @@ extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
     static public func serialize<Buffer>(
         ascii messageId: RFC_5322.Message.ID,
         into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
+    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
         buffer.reserveCapacity(messageId.value.count + 2)  // +2 for angle brackets
 
         // Always include angle brackets per RFC 5322
-        buffer.append(.ascii.lt)
+        buffer.append(ASCII.Code.lt)
         buffer.append(contentsOf: messageId.value)
-        buffer.append(.ascii.gt)
+        buffer.append(ASCII.Code.gt)
     }
 
     /// Parses a Message-ID from canonical byte representation (CANONICAL PRIMITIVE)
@@ -61,12 +61,12 @@ extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Domain**: [Byte] (ASCII bytes)
     /// - **Codomain**: RFC_5322.Message.ID (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → Message.ID
+    /// String → [Byte] (UTF-8 bytes) → Message.ID
     /// ```
     ///
     /// ## Format
@@ -77,66 +77,59 @@ extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
     /// ## Example
     ///
     /// ```swift
-    /// let bytes = Array("<abc123@example.com>".utf8)
+    /// let bytes = Array<Byte>("<abc123@example.com>".utf8)
     /// let messageId = try RFC_5322.Message.ID(ascii: bytes)
     /// ```
     ///
     /// - Parameter bytes: The ASCII byte representation of the Message-ID
     /// - Throws: `RFC_5322.Message.ID.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
-        // Track first and last bytes via iteration
-        var firstByte: UInt8?
-        var lastByte: UInt8?
-        var hasAtSign = false
-        var count = 0
-
-        for byte in bytes {
-            if firstByte == nil { firstByte = byte }
-            lastByte = byte
-            count += 1
-            if byte == .ascii.at { hasAtSign = true }
-        }
-
-        // Determine if we need to strip angle brackets
-        let stripBrackets = firstByte == .ascii.lt && lastByte == .ascii.gt && count >= 2
+    where Bytes.Element == Byte {
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 5322 Message-IDs are strict ASCII).
+        let codes = Array<ASCII.Code>(bytes)
+        let count = codes.count
 
         // Validate format: must contain @ sign
+        var hasAtSign = false
+        for code in codes where code == ASCII.Code.at {
+            hasAtSign = true
+            break
+        }
         guard hasAtSign else {
             let string = String(decoding: bytes, as: UTF8.self)
             throw Error.missingAtSign(string)
         }
 
+        // Determine if we need to strip angle brackets
+        let stripBrackets = count >= 2
+            && codes.first == ASCII.Code.lt
+            && codes.last == ASCII.Code.gt
+
         // Build result while validating characters
-        var result = [UInt8]()
-        var isFirst = true
-        var byteCount = 0
+        var result = [Byte]()
 
-        for byte in bytes {
-            byteCount += 1
-
+        for (index, code) in codes.enumerated() {
             // Skip leading '<' if stripping brackets
-            if stripBrackets && isFirst && byte == .ascii.lt {
-                isFirst = false
+            if stripBrackets && index == 0 && code == ASCII.Code.lt {
                 continue
             }
             // Skip trailing '>' if stripping brackets
-            if stripBrackets && byteCount == count && byte == .ascii.gt {
+            if stripBrackets && index == count - 1 && code == ASCII.Code.gt {
                 continue
             }
-            isFirst = false
 
             // Validate: printable ASCII, no spaces
-            guard byte.ascii.isVisible && byte != .ascii.space else {
+            guard code.isVisible && code != ASCII.Code.space else {
                 let string = String(decoding: bytes, as: UTF8.self)
                 throw Error.invalidCharacter(
                     string,
-                    byte: byte,
+                    code: code,
                     reason: "Must be printable ASCII without spaces"
                 )
             }
 
-            result.append(byte)
+            result.append(code)
         }
 
         self.value = result
@@ -150,10 +143,10 @@ extension RFC_5322.Message.ID {
     ///   - uniqueId: A unique string (timestamp, UUID, etc.)
     ///   - domain: The domain to use (typically from sender's email)
     public init(uniqueId: String, domain: RFC_1123.Domain) {
-        var result = [UInt8]()
-        result.append(utf8: uniqueId)
-        result.append(.ascii.at)
-        result.append(utf8: domain.name)
+        var result = [Byte]()
+        result.append(contentsOf: uniqueId.utf8)
+        result.append(ASCII.Code.at)
+        result.append(contentsOf: domain.name.utf8)
         self.value = result
     }
 }

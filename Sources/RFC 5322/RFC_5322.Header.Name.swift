@@ -86,7 +86,7 @@ extension RFC_5322.Header.Name: Binary.ASCII.Serializable {
     public static func serialize<Buffer: RangeReplaceableCollection>(
         ascii name: Self,
         into buffer: inout Buffer
-    ) where Buffer.Element == UInt8 {
+    ) where Buffer.Element == Byte {
         buffer.append(contentsOf: name.rawValue.utf8)
     }
 
@@ -98,42 +98,45 @@ extension RFC_5322.Header.Name: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Domain**: [Byte] (ASCII bytes)
     /// - **Codomain**: RFC_5322.Header.Name (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → Header.Name
+    /// String → [Byte] (UTF-8 bytes) → Header.Name
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
-    /// let bytes = Array("Content-Type".utf8)
+    /// let bytes = Array<Byte>("Content-Type".utf8)
     /// let name = try RFC_5322.Header.Name(ascii: bytes)
     /// ```
     ///
     /// - Parameter bytes: The ASCII byte representation of the header name
     /// - Throws: `RFC_5322.Header.Name.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
+    where Bytes.Element == Byte {
         // Empty check
         guard !bytes.isEmpty else {
             throw Error.empty
         }
 
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 5322 header names are strict ASCII).
+        let codes = Array<ASCII.Code>(bytes)
+
         // Validate characters: printable ASCII except colon
         // ftext = %d33-57 / %d59-126
-        // Using INCITS_4_1986: .ascii.isVisible (0x21-0x7E) excludes colon (0x3A)
-        for byte in bytes {
+        for code in codes {
             // Must be visible ASCII (0x21-0x7E) but not colon (0x3A/58)
-            guard byte.ascii.isVisible && byte != .ascii.colon else {
+            guard code.isVisible && code != ASCII.Code.colon else {
                 let string = String(decoding: bytes, as: UTF8.self)
                 let reason =
-                    byte == .ascii.colon
+                    code == ASCII.Code.colon
                     ? "Field name cannot contain colon"
                     : "Must be printable ASCII except colon"
-                throw Error.invalidCharacter(string, byte: byte, reason: reason)
+                throw Error.invalidCharacter(string, code: code, reason: reason)
             }
         }
 
@@ -141,7 +144,7 @@ extension RFC_5322.Header.Name: Binary.ASCII.Serializable {
     }
 }
 
-extension [UInt8] {
+extension [Byte] {
     /// Creates ASCII byte representation of an RFC 5322 header name
     ///
     /// This is the canonical serialization of header names to bytes.
@@ -151,24 +154,24 @@ extension [UInt8] {
     ///
     /// This is the most universal serialization (natural transformation):
     /// - **Domain**: RFC_5322.Header.Name (structured data)
-    /// - **Codomain**: [UInt8] (ASCII bytes)
+    /// - **Codomain**: [Byte] (ASCII bytes)
     ///
     /// String representation is derived as composition:
     /// ```
-    /// Header.Name → [UInt8] (ASCII) → String (UTF-8 interpretation)
+    /// Header.Name → [Byte] (ASCII) → String (UTF-8 interpretation)
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
     /// let name = RFC_5322.Header.Name.contentType
-    /// let bytes = [UInt8](name)
+    /// let bytes = [Byte](name)
     /// // bytes == "Content-Type" as ASCII bytes
     /// ```
     ///
     /// - Parameter name: The header name to serialize
     public init(_ name: RFC_5322.Header.Name) {
-        self = Array(name.rawValue.utf8)
+        self = Array<Byte>(name.rawValue.utf8)
     }
 }
 

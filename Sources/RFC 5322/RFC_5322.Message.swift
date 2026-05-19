@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 12/11/2025.
 //
 
-import ASCII_Serializer_Primitives
+public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
@@ -60,7 +60,7 @@ extension RFC_5322 {
         public let messageId: Message.ID
 
         /// Message body as bytes (typically MIME content from RFC 2045/2046)
-        public let body: [UInt8]
+        public let body: [Byte]
 
         /// Additional custom headers
         public let additionalHeaders: [Header]
@@ -91,7 +91,7 @@ extension RFC_5322 {
             date: RFC_5322.DateTime,
             subject: String,
             messageId: Message.ID,
-            body: [UInt8],
+            body: [Byte],
             additionalHeaders: [Header] = [],
             mimeVersion: String = "1.0"
         ) {
@@ -112,7 +112,7 @@ extension RFC_5322 {
 
 extension RFC_5322.Message: Binary.ASCII.Serializable {
     static public func serialize<Buffer>(ascii message: RFC_5322.Message, into buffer: inout Buffer)
-    where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
+    where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
 
         // Pre-allocate capacity to avoid reallocations
         // Rough estimate: headers (~500 bytes) + body
@@ -121,67 +121,73 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
         // Required headers in recommended order (RFC 5322 Section 3.6)
 
         // From (required)
-        buffer.append(contentsOf: [UInt8].fromPrefix)
-        buffer.append(contentsOf: [UInt8](message.from))
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].fromPrefix)
+        RFC_5322.EmailAddress.serialize(ascii: message.from, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // To (required)
-        buffer.append(contentsOf: [UInt8].toPrefix)
+        buffer.append(contentsOf: [Byte].toPrefix)
         var first = true
         for address in message.to {
-            if !first { buffer.append(contentsOf: [.ascii.comma, .ascii.space]) }
+            if !first {
+                buffer.append(ASCII.Code.comma)
+                buffer.append(ASCII.Code.space)
+            }
             first = false
-            buffer.append(contentsOf: [UInt8](address))
+            RFC_5322.EmailAddress.serialize(ascii: address, into: &buffer)
         }
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Cc (optional)
         if let cc = message.cc, !cc.isEmpty {
-            buffer.append(contentsOf: [UInt8].ccPrefix)
+            buffer.append(contentsOf: [Byte].ccPrefix)
             first = true
             for address in cc {
-                if !first { buffer.append(contentsOf: [.ascii.comma, .ascii.space]) }
+                if !first {
+                    buffer.append(ASCII.Code.comma)
+                    buffer.append(ASCII.Code.space)
+                }
                 first = false
-                buffer.append(contentsOf: [UInt8](address))
+                RFC_5322.EmailAddress.serialize(ascii: address, into: &buffer)
             }
-            buffer.append(contentsOf: [UInt8].ascii.crlf)
+            buffer.append(contentsOf: [Byte].crlf)
         }
 
         // Subject (required in practice)
-        buffer.append(contentsOf: [UInt8].subjectPrefix)
-        buffer.append(utf8: message.subject)
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].subjectPrefix)
+        buffer.append(contentsOf: message.subject.utf8)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Date (required)
-        buffer.append(contentsOf: [UInt8].datePrefix)
-        buffer.append(contentsOf: [UInt8](message.date))
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].datePrefix)
+        RFC_5322.DateTime.serialize(ascii: message.date, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Message-ID (recommended)
-        buffer.append(contentsOf: [UInt8].messageIdPrefix)
-        buffer.append(contentsOf: [UInt8](message.messageId))
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].messageIdPrefix)
+        RFC_5322.Message.ID.serialize(ascii: message.messageId, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Reply-To (optional)
         if let replyTo = message.replyTo {
-            buffer.append(contentsOf: [UInt8].replyToPrefix)
-            buffer.append(contentsOf: [UInt8](replyTo))
-            buffer.append(contentsOf: [UInt8].ascii.crlf)
+            buffer.append(contentsOf: [Byte].replyToPrefix)
+            RFC_5322.EmailAddress.serialize(ascii: replyTo, into: &buffer)
+            buffer.append(contentsOf: [Byte].crlf)
         }
 
         // MIME-Version (required for MIME messages)
-        buffer.append(contentsOf: [UInt8].mimeVersionPrefix)
-        buffer.append(utf8: message.mimeVersion)
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].mimeVersionPrefix)
+        buffer.append(contentsOf: message.mimeVersion.utf8)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Additional custom headers (in order)
         for header in message.additionalHeaders {
-            buffer.append(contentsOf: [UInt8](header))
-            buffer.append(contentsOf: [UInt8].ascii.crlf)
+            RFC_5322.Header.serialize(ascii: header, into: &buffer)
+            buffer.append(contentsOf: [Byte].crlf)
         }
 
         // Empty line separates headers from body
-        buffer.append(contentsOf: [UInt8].ascii.crlf)
+        buffer.append(contentsOf: [Byte].crlf)
 
         // Body (as bytes)
         buffer.append(contentsOf: message.body)
@@ -206,12 +212,12 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (RFC 5322 formatted bytes)
+    /// - **Domain**: [Byte] (RFC 5322 formatted bytes)
     /// - **Codomain**: RFC_5322.Message (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → Message
+    /// String → [Byte] (UTF-8 bytes) → Message
     /// ```
     ///
     /// ## Implementation Strategy
@@ -234,7 +240,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
     /// - Parameter bytes: The ASCII byte representation of an RFC 5322 message
     /// - Throws: `RFC_5322.Message.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
+    where Bytes.Element == Byte {
         // TODO: Implement RFC 5322 message parsing
         // This is a complex parser that must handle:
         // - Header/body separation

@@ -4,7 +4,7 @@
 // RFC 5322 date-time representation and formatting
 // Format: "Mon, 01 Jan 2024 12:34:56 +0000"
 
-import ASCII_Serializer_Primitives
+public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 public import Time_Primitives
 import Standard_Library_Extensions
@@ -49,50 +49,50 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
     static public func serialize<Buffer>(
         ascii dateTime: RFC_5322.DateTime,
         into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
+    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
         let components = dateTime.components
 
         buffer.reserveCapacity(31)  // "Mon, 01 Jan 2024 12:34:56 +0000" = 31 bytes
 
         // Day name (e.g., "Mon")
         let dayName = RFC_5322.DateTime.dayNames[components.weekday]
-        buffer.append(utf8: dayName)
-        buffer.append(.ascii.comma)
-        buffer.append(.ascii.space)
+        buffer.append(contentsOf: dayName.utf8)
+        buffer.append(ASCII.Code.comma)
+        buffer.append(ASCII.Code.space)
 
         // Day (zero-padded 2 digits)
         let day = components.day.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: day)
-        buffer.append(.ascii.space)
+        buffer.append(contentsOf: day.utf8)
+        buffer.append(ASCII.Code.space)
 
         // Month name (e.g., "Jan")
         let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
-        buffer.append(utf8: monthName)
-        buffer.append(.ascii.space)
+        buffer.append(contentsOf: monthName.utf8)
+        buffer.append(ASCII.Code.space)
 
         // Year (4 digits)
         let year = components.year.formatted(.number.zeroPadded(width: 4))
-        buffer.append(utf8: year)
-        buffer.append(.ascii.space)
+        buffer.append(contentsOf: year.utf8)
+        buffer.append(ASCII.Code.space)
 
         // Hour (zero-padded 2 digits)
         let hour = components.hour.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: hour)
-        buffer.append(.ascii.colon)
+        buffer.append(contentsOf: hour.utf8)
+        buffer.append(ASCII.Code.colon)
 
         // Minute (zero-padded 2 digits)
         let minute = components.minute.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: minute)
-        buffer.append(.ascii.colon)
+        buffer.append(contentsOf: minute.utf8)
+        buffer.append(ASCII.Code.colon)
 
         // Second (zero-padded 2 digits)
         let second = components.second.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: second)
-        buffer.append(.ascii.space)
+        buffer.append(contentsOf: second.utf8)
+        buffer.append(ASCII.Code.space)
 
         // Timezone offset
-        let offsetSign = dateTime.timezoneOffsetSeconds >= 0 ? "+" : "-"
-        buffer.append(utf8: offsetSign)
+        let offsetSign: ASCII.Code = dateTime.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
+        buffer.append(offsetSign)
 
         let offsetHours =
             abs(dateTime.timezoneOffsetSeconds)
@@ -103,10 +103,10 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
             / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
 
         let offsetHoursStr = offsetHours.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: offsetHoursStr)
+        buffer.append(contentsOf: offsetHoursStr.utf8)
 
         let offsetMinutesStr = offsetMinutes.formatted(.number.zeroPadded(width: 2))
-        buffer.append(utf8: offsetMinutesStr)
+        buffer.append(contentsOf: offsetMinutesStr.utf8)
     }
 
     /// Parses RFC 5322 date-time from canonical byte representation (CANONICAL PRIMITIVE)
@@ -117,12 +117,12 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Domain**: [Byte] (ASCII bytes)
     /// - **Codomain**: RFC_5322.DateTime (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → DateTime
+    /// String → [Byte] (UTF-8 bytes) → DateTime
     /// ```
     ///
     /// ## Format
@@ -133,26 +133,30 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
     /// ## Example
     ///
     /// ```swift
-    /// let bytes = Array("Mon, 01 Jan 2024 12:00:00 +0000".utf8)
+    /// let bytes = Array<Byte>("Mon, 01 Jan 2024 12:00:00 +0000".utf8)
     /// let dateTime = try RFC_5322.DateTime(ascii: bytes)
     /// ```
     ///
     /// - Parameter bytes: The ASCII byte representation of the date-time
     /// - Throws: `RFC_5322.DateTime.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
-        // Split on spaces at byte level
-        var parts: [[UInt8]] = []
-        var currentPart: [UInt8] = []
+    where Bytes.Element == Byte {
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
+        let codes = Array<ASCII.Code>(bytes)
 
-        for byte in bytes {
-            if byte == .ascii.space {
+        // Split on spaces at code level
+        var parts: [[ASCII.Code]] = []
+        var currentPart: [ASCII.Code] = []
+
+        for code in codes {
+            if code == ASCII.Code.space {
                 if !currentPart.isEmpty {
                     parts.append(currentPart)
                     currentPart = []
                 }
             } else {
-                currentPart.append(byte)
+                currentPart.append(code)
             }
         }
         if !currentPart.isEmpty {
@@ -165,8 +169,8 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         }
 
         // Parse day name (remove trailing comma if present)
-        let dayNameBytes = parts[0].last == .ascii.comma ? parts[0].dropLast() : parts[0][...]
-        let dayName = String(decoding: dayNameBytes, as: UTF8.self)
+        let dayNameCodes = parts[0].last == ASCII.Code.comma ? parts[0].dropLast() : parts[0][...]
+        let dayName = String(decoding: dayNameCodes, as: UTF8.self)
 
         guard let expectedWeekday = RFC_5322.DateTime.dayNames.firstIndex(of: dayName) else {
             throw Error.invalidDayName(dayName)
@@ -191,19 +195,19 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
             throw Error.invalidYear(yearString)
         }
 
-        // Parse time (HH:MM:SS or HH:MM) at byte level
-        let timeBytes = parts[4]
-        var timeParts: [[UInt8]] = []
-        var currentTimePart: [UInt8] = []
+        // Parse time (HH:MM:SS or HH:MM) at code level
+        let timeCodes = parts[4]
+        var timeParts: [[ASCII.Code]] = []
+        var currentTimePart: [ASCII.Code] = []
 
-        for byte in timeBytes {
-            if byte == .ascii.colon {
+        for code in timeCodes {
+            if code == ASCII.Code.colon {
                 if !currentTimePart.isEmpty {
                     timeParts.append(currentTimePart)
                     currentTimePart = []
                 }
             } else {
-                currentTimePart.append(byte)
+                currentTimePart.append(code)
             }
         }
         if !currentTimePart.isEmpty {
@@ -211,7 +215,7 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         }
 
         guard timeParts.count >= 2, timeParts.count <= 3 else {
-            let timeString = String(decoding: timeBytes, as: UTF8.self)
+            let timeString = String(decoding: timeCodes, as: UTF8.self)
             throw Error.invalidTime(timeString)
         }
 
@@ -236,29 +240,29 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
             second = 0
         }
 
-        // Parse timezone offset at byte level (+0000 or -0500)
-        let timezoneBytes = parts[5]
-        guard timezoneBytes.count == 5 else {
-            let timezoneString = String(decoding: timezoneBytes, as: UTF8.self)
+        // Parse timezone offset at code level (+0000 or -0500)
+        let timezoneCodes = parts[5]
+        guard timezoneCodes.count == 5 else {
+            let timezoneString = String(decoding: timezoneCodes, as: UTF8.self)
             throw Error.invalidTimezone(timezoneString)
         }
 
-        let sign = timezoneBytes[0] == UInt8.ascii.plus ? 1 : -1
-        let offsetBytes = timezoneBytes.dropFirst()
+        let sign = timezoneCodes[0] == ASCII.Code.plus ? 1 : -1
+        let offsetCodes = timezoneCodes.dropFirst()
 
-        // Parse hours and minutes from bytes
-        let offsetHoursBytes = offsetBytes.prefix(2)
-        let offsetMinutesBytes = offsetBytes.suffix(2)
+        // Parse hours and minutes from codes
+        let offsetHoursCodes = offsetCodes.prefix(2)
+        let offsetMinutesCodes = offsetCodes.suffix(2)
 
-        let offsetHoursString = String(decoding: offsetHoursBytes, as: UTF8.self)
-        let offsetMinutesString = String(decoding: offsetMinutesBytes, as: UTF8.self)
+        let offsetHoursString = String(decoding: offsetHoursCodes, as: UTF8.self)
+        let offsetMinutesString = String(decoding: offsetMinutesCodes, as: UTF8.self)
 
         guard let offsetHours = Int(offsetHoursString),
             let offsetMinutes = Int(offsetMinutesString),
             offsetHours >= 0, offsetHours <= 23,
             offsetMinutes >= 0, offsetMinutes <= 59
         else {
-            let timezoneString = String(decoding: timezoneBytes, as: UTF8.self)
+            let timezoneString = String(decoding: timezoneCodes, as: UTF8.self)
             throw Error.invalidTimezone(timezoneString)
         }
 

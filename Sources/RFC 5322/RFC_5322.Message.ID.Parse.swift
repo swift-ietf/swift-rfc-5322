@@ -14,7 +14,7 @@ extension RFC_5322.Message.ID {
     ///
     /// Returns the left and right parts of the message ID.
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
-    where Input: Sendable, Input.Element == UInt8 {
+    where Input: Sendable, Input.Element == Byte {
         @inlinable
         public init() {}
     }

@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 24/11/2025.
 //
 
-import ASCII_Serializer_Primitives
+public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 
 // MARK: - Local Part
@@ -19,8 +19,8 @@ extension RFC_5322.EmailAddress {
 extension RFC_5322.EmailAddress.LocalPart {
     // swiftlint:disable:next nesting
     package enum Storage: Hashable {
-        case dotAtom([UInt8])  // Regular unquoted format (ASCII bytes)
-        case quoted([UInt8])  // Quoted string format (ASCII bytes)
+        case dotAtom([Byte])  // Regular unquoted format (ASCII bytes)
+        case quoted([Byte])  // Quoted string format (ASCII bytes)
     }
 }
 
@@ -28,7 +28,7 @@ extension RFC_5322.EmailAddress.LocalPart: Binary.ASCII.Serializable {
     public static func serialize<Buffer>(
         ascii localPart: RFC_5322.EmailAddress.LocalPart,
         into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
+    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
         switch localPart.storage {
         case .dotAtom(let bytes), .quoted(let bytes):
             buffer.append(contentsOf: bytes)
@@ -43,71 +43,57 @@ extension RFC_5322.EmailAddress.LocalPart: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Domain**: [Byte] (ASCII bytes)
     /// - **Codomain**: RFC_5322.EmailAddress.LocalPart (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → LocalPart
+    /// String → [Byte] (UTF-8 bytes) → LocalPart
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
-    /// let bytes = Array("user".utf8)
+    /// let bytes = Array<Byte>("user".utf8)
     /// let localPart = try RFC_5322.EmailAddress.LocalPart(ascii: bytes)
     /// ```
     ///
     /// - Parameter bytes: The ASCII byte representation of the local-part
     /// - Throws: `RFC_5322.EmailAddress.LocalPart.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
-        // Track first/last bytes and count via single iteration
-        var firstByte: UInt8?
-        var lastByte: UInt8?
-        var count = 0
-
-        for byte in bytes {
-            if firstByte == nil { firstByte = byte }
-            lastByte = byte
-            count += 1
-        }
+    where Bytes.Element == Byte {
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).
+        let codes = Array<ASCII.Code>(bytes)
+        let count = codes.count
 
         // Check overall length first
         guard count <= RFC_5322.EmailAddress.Limits.maxLength else {
             throw Error.tooLong(count)
         }
 
-        guard let first = firstByte, let last = lastByte else {
+        guard let first = codes.first, let last = codes.last else {
             throw Error.invalidDotAtom  // Empty local-part is invalid
         }
 
         // Handle quoted string format: starts and ends with quotation mark
-        if first == .ascii.quotationMark && last == .ascii.quotationMark && count >= 2 {
+        if first == ASCII.Code.quotationMark && last == ASCII.Code.quotationMark && count >= 2 {
             // Validate quoted-string content at byte level
             // quoted-string = [^"\\\r\n] or \\["\]
             var skipNext = false
-            var isFirst = true
-            var byteCount = 0
 
-            for byte in bytes {
-                byteCount += 1
-                // Skip first and last quotes
-                if isFirst {
-                    isFirst = false
-                    continue
-                }
-                if byteCount == count { continue }
+            for index in 1..<(count - 1) {
+                let code = codes[index]
 
                 if skipNext {
                     skipNext = false
                     continue
                 }
 
-                if byte == .ascii.backslash {
+                if code == ASCII.Code.backslash {
                     // Mark to skip next character (escape sequence)
                     skipNext = true
-                } else if byte == .ascii.quotationMark || byte == .ascii.cr || byte == .ascii.lf {
+                } else if code == ASCII.Code.quotationMark || code == ASCII.Code.cr || code == ASCII.Code.lf {
                     // Unescaped quote, CR, or LF not allowed
                     throw Error.invalidQuotedString
                 }
@@ -118,31 +104,31 @@ extension RFC_5322.EmailAddress.LocalPart: Binary.ASCII.Serializable {
                 throw Error.invalidQuotedString
             }
 
-            self.storage = .quoted(Array(bytes))
+            self.storage = .quoted(Array<Byte>(bytes))
         }
         // Handle dot-atom format
         else {
             // Check for leading/trailing dots
-            guard first != .ascii.period && last != .ascii.period else {
+            guard first != ASCII.Code.period && last != ASCII.Code.period else {
                 throw Error.leadingOrTrailingDot
             }
 
             // Validate dot-atom characters and check for consecutive dots
-            var previousByte: UInt8?
-            for byte in bytes {
+            var previousCode: ASCII.Code?
+            for code in codes {
                 // Check for consecutive dots
-                if byte == .ascii.period && previousByte == .ascii.period {
+                if code == ASCII.Code.period && previousCode == ASCII.Code.period {
                     throw Error.consecutiveDots
                 }
-                previousByte = byte
+                previousCode = code
 
                 // Validate character: atext or period
-                guard byte == .ascii.period || RFC_5322.isAtext(byte) else {
+                guard code == ASCII.Code.period || RFC_5322.isAtext(code) else {
                     throw Error.invalidDotAtom
                 }
             }
 
-            self.storage = .dotAtom(Array(bytes))
+            self.storage = .dotAtom(Array<Byte>(bytes))
         }
     }
 }

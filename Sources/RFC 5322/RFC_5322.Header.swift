@@ -1,4 +1,4 @@
-import ASCII_Serializer_Primitives
+public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322 {
@@ -55,11 +55,11 @@ extension RFC_5322 {
 
 extension RFC_5322.Header: Binary.ASCII.Serializable {
     public static func serialize<Buffer>(ascii header: RFC_5322.Header, into buffer: inout Buffer)
-    where Buffer: RangeReplaceableCollection, Buffer.Element == UInt8 {
-        buffer.append(contentsOf: [UInt8](header.name))
-        buffer.append(.ascii.colon)
-        buffer.append(.ascii.space)
-        buffer.append(contentsOf: [UInt8](header.value))
+    where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
+        RFC_5322.Header.Name.serialize(ascii: header.name, into: &buffer)
+        buffer.append(ASCII.Code.colon)
+        buffer.append(ASCII.Code.space)
+        RFC_5322.Header.Value.serialize(ascii: header.value, into: &buffer)
     }
 
     /// Parses a header from canonical byte representation (CANONICAL PRIMITIVE)
@@ -70,27 +70,28 @@ extension RFC_5322.Header: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes)
+    /// - **Domain**: [Byte] (ASCII bytes)
     /// - **Codomain**: RFC_5322.Header (structured data)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → Header
+    /// String → [Byte] (UTF-8 bytes) → Header
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
-    /// let bytes = Array("Content-Type: text/html".utf8)
+    /// let bytes = Array<Byte>("Content-Type: text/html".utf8)
     /// let header = try RFC_5322.Header(ascii: bytes)
     /// ```
     ///
     /// - Parameter bytes: The ASCII byte representation of the header
     /// - Throws: `RFC_5322.Header.Error` if the bytes are malformed
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
-        // Split on first colon to separate name from value
-        guard let colonIndex = bytes.firstIndex(of: .ascii.colon) else {
+    where Bytes.Element == Byte {
+        // Split on first colon to separate name from value.
+        // Project ASCII.Code.colon to the byte-domain element type.
+        guard let colonIndex = bytes.firstIndex(of: ASCII.Code.colon.byte) else {
             let string = String(decoding: bytes, as: UTF8.self)
             throw Error.invalidFormat(string, reason: "Missing colon separator")
         }
@@ -103,14 +104,14 @@ extension RFC_5322.Header: Binary.ASCII.Serializable {
         // Wrap their errors in Header.Error for typed throws
         let name: RFC_5322.Header.Name
         do {
-            name = try RFC_5322.Header.Name(ascii: Array(nameBytes))
+            name = try RFC_5322.Header.Name(ascii: Array<Byte>(nameBytes))
         } catch {
             throw Error.invalidName(error)
         }
 
         let value: RFC_5322.Header.Value
         do {
-            value = try RFC_5322.Header.Value(ascii: Array(valueBytes))
+            value = try RFC_5322.Header.Value(ascii: Array<Byte>(valueBytes))
         } catch {
             throw Error.invalidValue(error)
         }

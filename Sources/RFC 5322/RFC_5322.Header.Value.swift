@@ -37,7 +37,7 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
     public static func serialize<Buffer: RangeReplaceableCollection>(
         ascii value: Self,
         into buffer: inout Buffer
-    ) where Buffer.Element == UInt8 {
+    ) where Buffer.Element == Byte {
         buffer.append(contentsOf: value.rawValue.utf8)
     }
 
@@ -56,23 +56,23 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// This is the fundamental parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes with possible folding)
+    /// - **Domain**: [Byte] (ASCII bytes with possible folding)
     /// - **Codomain**: RFC_5322.Header.Value (unfolded, validated)
     ///
     /// String-based parsing is derived as composition:
     /// ```
-    /// String → [UInt8] (UTF-8 bytes) → Header.Value
+    /// String → [Byte] (UTF-8 bytes) → Header.Value
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
     /// // Simple value
-    /// let bytes = Array("text/html; charset=UTF-8".utf8)
+    /// let bytes = Array<Byte>("text/html; charset=UTF-8".utf8)
     /// let value = try RFC_5322.Header.Value(ascii: bytes)
     ///
     /// // Folded value (CRLF followed by space)
-    /// let folded = Array("text/html;\r\n charset=UTF-8".utf8)
+    /// let folded = Array<Byte>("text/html;\r\n charset=UTF-8".utf8)
     /// let unfolded = try RFC_5322.Header.Value(ascii: folded)
     /// // Result: "text/html; charset=UTF-8" (CRLF removed)
     /// ```
@@ -80,36 +80,40 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
     /// - Parameter bytes: The ASCII byte representation of the header value
     /// - Throws: `RFC_5322.Header.Value.Error` if the bytes contain invalid characters or improper folding
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
-    where Bytes.Element == UInt8 {
+    where Bytes.Element == Byte {
         // RFC 5322 Section 2.2.3: Unfolding
         // "Unfolding is accomplished by simply removing any CRLF
         // that is immediately followed by WSP"
+        //
+        // Type-up: lift to ASCII.Code at the entry boundary so the body works
+        // against ASCII.Code constants directly (RFC 5322 header values are strict ASCII).
+        let codes = Array<ASCII.Code>(bytes)
 
-        // Step 1: Unfold and validate folding patterns using Collection index traversal
-        var unfolded = [UInt8]()
-        var index = bytes.startIndex
+        // Step 1: Unfold and validate folding patterns
+        var unfolded = [ASCII.Code]()
+        var index = 0
 
-        while index != bytes.endIndex {
-            let byte = bytes[index]
+        while index < codes.count {
+            let code = codes[index]
 
             // Check for CR
-            if byte == .ascii.cr {
-                let nextIndex = bytes.index(after: index)
+            if code == ASCII.Code.cr {
+                let nextIndex = index + 1
                 // Must be followed by LF (CRLF sequence)
-                guard nextIndex != bytes.endIndex, bytes[nextIndex] == .ascii.lf else {
+                guard nextIndex < codes.count, codes[nextIndex] == ASCII.Code.lf else {
                     let string = String(decoding: bytes, as: UTF8.self)
                     throw Error.invalidCharacter(
                         string,
-                        byte: byte,
+                        code: code,
                         reason: "CR must be followed by LF"
                     )
                 }
 
-                let afterLFIndex = bytes.index(after: nextIndex)
+                let afterLFIndex = nextIndex + 1
                 // CRLF found - check if it's followed by WSP (folding)
                 let hasWSP =
-                    afterLFIndex != bytes.endIndex
-                    && (bytes[afterLFIndex] == .ascii.sp || bytes[afterLFIndex] == .ascii.htab)
+                    afterLFIndex < codes.count
+                    && (codes[afterLFIndex] == ASCII.Code.sp || codes[afterLFIndex] == ASCII.Code.htab)
                 if hasWSP {
                     // Valid folding: skip CRLF, keep the WSP
                     index = afterLFIndex  // Move to WSP, will be added in next iteration
@@ -118,46 +122,46 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
                     let string = String(decoding: bytes, as: UTF8.self)
                     throw Error.invalidFolding(
                         string,
-                        byte: byte,
+                        code: code,
                         reason: "CRLF must be followed by WSP (space or tab) for folding"
                     )
                 }
-            } else if byte == .ascii.lf {
+            } else if code == ASCII.Code.lf {
                 // LF without CR - invalid
                 let string = String(decoding: bytes, as: UTF8.self)
                 throw Error.invalidCharacter(
                     string,
-                    byte: byte,
+                    code: code,
                     reason: "LF must be preceded by CR"
                 )
             } else {
-                unfolded.append(byte)
-                index = bytes.index(after: index)
+                unfolded.append(code)
+                index += 1
             }
         }
 
         // Step 2: Strip leading OWS (optional whitespace)
         // RFC 5322 Section 3.2.2: The space after the colon is formatting, not semantic content
         // OWS = *(SP / HTAB)
-        let trimmed = Array(unfolded.drop(while: { $0 == .ascii.sp || $0 == .ascii.htab }))
+        let trimmed = Array(unfolded.drop(while: { $0 == ASCII.Code.sp || $0 == ASCII.Code.htab }))
 
         // Step 3: Validate characters in trimmed value
         // RFC 5322 Section 2.2: Field body "may be composed of printable
         // US-ASCII characters as well as the space (SP, ASCII value 32)
         // and horizontal tab (HTAB, ASCII value 9) characters"
-        for byte in trimmed {
+        for code in trimmed {
             // Valid: printable ASCII (0x20-0x7E) OR HTAB (0x09)
-            let valid = byte.ascii.isPrintable || byte == .ascii.htab
+            let valid = code.isPrintable || code == ASCII.Code.htab
 
             guard valid else {
                 let string = String(decoding: trimmed, as: UTF8.self)
                 let reason: String
-                if byte.ascii.isControl {
+                if code.isControl {
                     reason = "Control characters not allowed (except HTAB)"
                 } else {
                     reason = "Must be printable ASCII or HTAB"
                 }
-                throw Error.invalidCharacter(string, byte: byte, reason: reason)
+                throw Error.invalidCharacter(string, code: code, reason: reason)
             }
         }
 
@@ -168,7 +172,7 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
     }
 }
 
-extension [UInt8] {
+extension [Byte] {
     /// Creates ASCII byte representation of an RFC 5322 header value
     ///
     /// This is the canonical serialization of header values to bytes.
@@ -178,24 +182,24 @@ extension [UInt8] {
     ///
     /// This is the most universal serialization (natural transformation):
     /// - **Domain**: RFC_5322.Header.Value (structured data)
-    /// - **Codomain**: [UInt8] (ASCII bytes)
+    /// - **Codomain**: [Byte] (ASCII bytes)
     ///
     /// String representation is derived as composition:
     /// ```
-    /// Header.Value → [UInt8] (ASCII) → String (UTF-8 interpretation)
+    /// Header.Value → [Byte] (ASCII) → String (UTF-8 interpretation)
     /// ```
     ///
     /// ## Example
     ///
     /// ```swift
     /// let value = RFC_5322.Header.Value("text/html")
-    /// let bytes = [UInt8](value)
+    /// let bytes = [Byte](value)
     /// // bytes == "text/html" as ASCII bytes
     /// ```
     ///
     /// - Parameter value: The header value to serialize
     public init(_ value: RFC_5322.Header.Value) {
-        self = Array(value.rawValue.utf8)
+        self = Array<Byte>(value.rawValue.utf8)
     }
 }
 

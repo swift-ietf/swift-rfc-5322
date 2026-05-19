@@ -5,6 +5,8 @@
 //  Error types for RFC 5322 Message-ID parsing
 //
 
+public import ASCII_Serializer_Primitives
+
 extension RFC_5322.Message.ID {
     /// Error type for RFC 5322 Message-ID parsing
     public enum Error: Swift.Error, Sendable, Equatable {
@@ -12,6 +14,6 @@ extension RFC_5322.Message.ID {
         case missingAtSign(String)
 
         /// Invalid character in Message-ID (must be printable ASCII, no spaces)
-        case invalidCharacter(String, byte: UInt8, reason: String)
+        case invalidCharacter(String, code: ASCII.Code, reason: String)
     }
 }

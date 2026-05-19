@@ -1,5 +1,5 @@
 //
-//  [UInt8].swift
+//  [Byte].swift
 //  swift-rfc-5322
 //
 //  Type conversions for RFC 5322 Message
@@ -13,13 +13,15 @@ import Standard_Library_Extensions
 
 // MARK: - Constants
 
-extension [UInt8] {
-    package static let fromPrefix: [UInt8] = .init(utf8: "From: ")
-    package static let toPrefix: [UInt8] = .init(utf8: "To: ")
-    package static let ccPrefix: [UInt8] = .init(utf8: "Cc: ")
-    package static let subjectPrefix: [UInt8] = .init(utf8: "Subject: ")
-    package static let datePrefix: [UInt8] = .init(utf8: "Date: ")
-    package static let messageIdPrefix: [UInt8] = .init(utf8: "Message-ID: ")
-    package static let replyToPrefix: [UInt8] = .init(utf8: "Reply-To: ")
-    package static let mimeVersionPrefix: [UInt8] = .init(utf8: "MIME-Version: ")
+extension Array where Element == Byte {
+    package static let fromPrefix: [Byte] = .init("From: ".utf8)
+    package static let toPrefix: [Byte] = .init("To: ".utf8)
+    package static let ccPrefix: [Byte] = .init("Cc: ".utf8)
+    package static let subjectPrefix: [Byte] = .init("Subject: ".utf8)
+    package static let datePrefix: [Byte] = .init("Date: ".utf8)
+    package static let messageIdPrefix: [Byte] = .init("Message-ID: ".utf8)
+    package static let replyToPrefix: [Byte] = .init("Reply-To: ".utf8)
+    package static let mimeVersionPrefix: [Byte] = .init("MIME-Version: ".utf8)
+    /// CRLF line ending (0x0D 0x0A) as Byte sequence.
+    package static let crlf: [Byte] = [ASCII.Code.cr.byte, ASCII.Code.lf.byte]
 }

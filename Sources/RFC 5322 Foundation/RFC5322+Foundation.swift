@@ -6,6 +6,7 @@
 //
 
 #if canImport(Foundation)
+    public import ASCII_Serializer_Primitives
     public import Foundation
     public import RFC_5322
 
@@ -36,7 +37,7 @@
 
             /// Parse an RFC 5322 date-time string into a Foundation.Date
             public func parse(_ value: some StringProtocol) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
-                let dateTime = try RFC_5322.DateTime(ascii: Array(value.utf8), in: ())
+                let dateTime = try RFC_5322.DateTime(ascii: Array<Byte>(value.utf8), in: ())
                 return Foundation.Date(
                     timeIntervalSince1970: TimeInterval(dateTime.secondsSinceEpoch)
                 )
