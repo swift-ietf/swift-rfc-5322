@@ -48,7 +48,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Group Message",
             messageId: "<group@example.com>",
-            body: .init(utf8: "Hello")
+            body: .init("Hello".utf8)
         )
 
         #expect(message.to.count == 3)
@@ -66,7 +66,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test CC",
             messageId: "<cc-test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         #expect(message.cc?.count == 1)
@@ -82,7 +82,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test BCC",
             messageId: "<bcc-test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         #expect(message.bcc?.count == 1)
@@ -98,7 +98,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Reply-To",
             messageId: "<reply-test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         #expect(message.replyTo?.address == "replyto@example.com")
@@ -114,7 +114,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Headers",
             messageId: "<headers-test@example.com>",
-            body: .init(utf8: "Test"),
+            body: .init("Test".utf8),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1),
                 RFC_5322.Header(name: .inReplyTo, value: .init("<previous@example.com>")),
@@ -137,7 +137,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test MIME",
             messageId: "<mime-test@example.com>",
-            body: .init(utf8: "Test"),
+            body: .init("Test".utf8),
             mimeVersion: "2.0"
         )
 
@@ -152,7 +152,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         #expect(message.mimeVersion == "1.0")
@@ -193,7 +193,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         let rendered = String(message)
@@ -211,7 +211,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test BCC",
             messageId: "<bcc-test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         let rendered = String(message)
@@ -230,7 +230,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test CC",
             messageId: "<cc-test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         let rendered = String(message)
@@ -247,7 +247,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init(utf8: "Test")
+            body: .init("Test".utf8)
         )
 
         let rendered = String(message)
@@ -263,7 +263,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init(utf8: "Test"),
+            body: .init("Test".utf8),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1)
             ]
