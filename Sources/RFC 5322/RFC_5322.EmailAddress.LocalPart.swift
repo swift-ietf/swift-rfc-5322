@@ -64,7 +64,12 @@ extension RFC_5322.EmailAddress.LocalPart: Binary.ASCII.Serializable {
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).
-        let codes = Array<ASCII.Code>(bytes)
+        let codes: [ASCII.Code]
+        do {
+            codes = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.nonASCIICharacters
+        }
         let count = codes.count
 
         // Check overall length first

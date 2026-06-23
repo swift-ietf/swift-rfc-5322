@@ -23,5 +23,5 @@ extension Array where Element == Byte {
     package static let replyToPrefix: [Byte] = .init("Reply-To: ".utf8)
     package static let mimeVersionPrefix: [Byte] = .init("MIME-Version: ".utf8)
     /// CRLF line ending (0x0D 0x0A) as Byte sequence.
-    package static let crlf: [Byte] = [ASCII.Code.cr.byte, ASCII.Code.lf.byte]
+    package static let crlf: [Byte] = .init("\r\n".utf8)
 }

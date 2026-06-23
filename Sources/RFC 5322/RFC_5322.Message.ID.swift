@@ -87,7 +87,12 @@ extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 Message-IDs are strict ASCII).
-        let codes = Array<ASCII.Code>(bytes)
+        let codes: [ASCII.Code]
+        do {
+            codes = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
+        }
         let count = codes.count
 
         // Validate format: must contain @ sign

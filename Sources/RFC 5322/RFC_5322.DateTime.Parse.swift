@@ -6,6 +6,7 @@
 //
 
 public import Parser_Primitives
+import Byte_Primitives
 
 extension RFC_5322.DateTime {
     /// Parses an RFC 5322 date-time per Section 3.3.
@@ -178,7 +179,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
         while input.startIndex < input.endIndex {
             let byte = input[input.startIndex]
             guard byte >= 0x30 && byte <= 0x39 else { break }
-            value = value &* 10 &+ Int(byte &- 0x30)
+            value = value &* 10 &+ (Int(byte.underlying) - 0x30)
             input = input[input.index(after: input.startIndex)...]
             count += 1
         }

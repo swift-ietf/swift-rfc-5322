@@ -115,7 +115,12 @@ extension RFC_5322.EmailAddress: Binary.ASCII.Serializable {
     internal init(ascii bytes: [Byte], in context: Void) throws(Error) {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 email addresses are strict ASCII).
-        let codes = Array<ASCII.Code>(bytes)
+        let codes: [ASCII.Code]
+        do {
+            codes = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.localPart(.nonASCIICharacters)
+        }
 
         // Find angle bracket positions
         var ltOffset: Int?

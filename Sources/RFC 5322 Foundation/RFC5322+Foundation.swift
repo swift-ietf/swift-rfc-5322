@@ -9,6 +9,7 @@
     public import ASCII_Serializer_Primitives
     public import Foundation
     public import RFC_5322
+    import Binary_Serializable_Primitives
 
     // MARK: - RFC 5322 Format Style for Foundation.Date
 

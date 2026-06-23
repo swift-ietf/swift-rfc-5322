@@ -124,7 +124,12 @@ extension RFC_5322.Header.Name: Binary.ASCII.Serializable {
 
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 header names are strict ASCII).
-        let codes = Array<ASCII.Code>(bytes)
+        let codes: [ASCII.Code]
+        do {
+            codes = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
+        }
 
         // Validate characters: printable ASCII except colon
         // ftext = %d33-57 / %d59-126

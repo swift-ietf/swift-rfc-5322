@@ -15,5 +15,8 @@ extension RFC_5322.Header.Name {
 
         /// Field name contains invalid character
         case invalidCharacter(String, code: ASCII.Code, reason: String)
+
+        /// Field name contains a non-ASCII byte (RFC 5322 header names are ASCII-only)
+        case nonASCII(String)
     }
 }

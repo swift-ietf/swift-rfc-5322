@@ -17,5 +17,8 @@ extension RFC_5322.Header.Value {
 
         /// Invalid character in value
         case invalidCharacter(String, code: ASCII.Code, reason: String)
+
+        /// Value contains a non-ASCII byte (RFC 5322 header values are ASCII-only)
+        case nonASCII(String)
     }
 }

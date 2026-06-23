@@ -15,5 +15,8 @@ extension RFC_5322.Message.ID {
 
         /// Invalid character in Message-ID (must be printable ASCII, no spaces)
         case invalidCharacter(String, code: ASCII.Code, reason: String)
+
+        /// Message-ID contains a non-ASCII byte (RFC 5322 Message-IDs are ASCII-only)
+        case nonASCII(String)
     }
 }
