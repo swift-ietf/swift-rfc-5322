@@ -183,7 +183,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
             return try ASCII.Decimal.Parser<Input, Int>().parse(&input)
         } catch {
             switch error {
-            case .noDigits: throw .expectedDigit
+            case .noDigits, .insufficientDigits, .invalidSign: throw .expectedDigit
             case .overflow: throw .overflow
             }
         }
