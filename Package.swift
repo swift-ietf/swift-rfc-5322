@@ -19,6 +19,9 @@ extension Target.Dependency {
     static var asciiSerializer: Self {
         .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
     }
+    static var asciiDecimalParser: Self {
+        .product(name: "ASCII Decimal Parser Primitives", package: "swift-ascii-parser-primitives")
+    }
     static var incits_4_1986: Self {
         .product(name: "INCITS 4 1986", package: "swift-incits-4-1986")
     }
@@ -45,6 +48,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-time-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-parser-primitives.git", branch: "main")
     ],
@@ -59,6 +63,7 @@ let package = Package(
                 .time,
                 .rfc1123,
                 .asciiSerializer,
+                .asciiDecimalParser,
                 .incits_4_1986,
                 .product(name: "Parser Primitives", package: "swift-parser-primitives")
             ]

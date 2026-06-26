@@ -6,6 +6,7 @@
 //
 
 public import Parser_Primitives
+public import ASCII_Decimal_Parser_Primitives
 import Byte_Primitives
 
 extension RFC_5322.DateTime {
@@ -63,6 +64,8 @@ extension RFC_5322.DateTime.Parse {
 
     public enum Error: Swift.Error, Sendable, Equatable {
         case expectedDigit
+        /// The parsed number would overflow `Int` (a pathological digit run).
+        case overflow
         case expectedMonth
         case expectedColon
         case expectedTimezone
@@ -174,17 +177,16 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
 
     @inlinable
     static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
-        var value = 0
-        var count = 0
-        while input.startIndex < input.endIndex {
-            let byte = input[input.startIndex]
-            guard byte >= 0x30 && byte <= 0x39 else { break }
-            value = value &* 10 &+ (Int(byte.underlying) - 0x30)
-            input = input[input.index(after: input.startIndex)...]
-            count += 1
+        // Delegate to the L1 ASCII decimal parser (single source of truth; also adds the
+        // overflow check this site previously lacked — it used wrapping `&*`/`&+`).
+        do {
+            return try ASCII.Decimal.Parser<Input, Int>().parse(&input)
+        } catch {
+            switch error {
+            case .noDigits: throw .expectedDigit
+            case .overflow: throw .overflow
+            }
         }
-        guard count > 0 else { throw .expectedDigit }
-        return value
     }
 
     @inlinable
