@@ -6,7 +6,9 @@
 //
 
 public import ASCII_Serializer_Primitives
-public import INCITS_4_1986
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+import INCITS_4_1986
 
 extension RFC_5322.Header {
     public struct Value: Sendable, Hashable, Codable {
@@ -33,12 +35,44 @@ extension RFC_5322.Header.Value {
     }
 }
 
-extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
+extension RFC_5322.Header.Value: Swift.RawRepresentable, Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Creates a header value by validating `rawValue`, or `nil` if it is not valid.
+    ///
+    /// Re-provides the `Swift.RawRepresentable` requirement (previously inherited
+    /// from the retired combined ASCII serializable protocol).
+    public init?(rawValue: String) {
+        try? self.init(rawValue)
+    }
+
+    /// Serializes `value` as ASCII bytes into `buffer`.
+    ///
+    /// Explicit `Binary.Serializable` witness: disambiguates the two
+    /// constraint-incomparable `serialize(_:into:)` defaults (the RawRepresentable
+    /// default vs the W0 ASCII bridge) — a conformer-declared member out-ranks both.
+    /// The bytes derive from the free `[ASCII.Code]` serializer supplied by the
+    /// `String`-RawRepresentable default (`.serialized`).
     public static func serialize<Buffer: RangeReplaceableCollection>(
-        ascii value: Self,
+        _ value: Self,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
-        buffer.append(contentsOf: value.rawValue.utf8)
+        buffer.append(contentsOf: value.serialized)
+    }
+}
+
+extension RFC_5322.Header.Value: CustomStringConvertible {
+    /// The value's ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized, as: UTF8.self)
+    }
+}
+
+extension RFC_5322.Header.Value: ASCII.Parseable {
+    /// Creates a header value by validating `string`'s UTF-8 bytes as ASCII.
+    ///
+    /// Re-provides the string convenience initializer (previously inherited from
+    /// the retired combined ASCII serializable protocol, Void context).
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses a header value from canonical byte representation (CANONICAL PRIMITIVE)
@@ -79,7 +113,7 @@ extension RFC_5322.Header.Value: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the header value
     /// - Throws: `RFC_5322.Header.Value.Error` if the bytes contain invalid characters or improper folding
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // RFC 5322 Section 2.2.3: Unfolding
         // "Unfolding is accomplished by simply removing any CRLF
@@ -207,10 +241,6 @@ extension [Byte] {
         self = Array<Byte>(value.rawValue.utf8)
     }
 }
-
-extension RFC_5322.Header.Value: Binary.ASCII.RawRepresentable {}
-
-extension RFC_5322.Header.Value: CustomStringConvertible {}
 
 extension RFC_5322.Header.Value: ExpressibleByIntegerLiteral {
     /// Creates a header value from an integer literal

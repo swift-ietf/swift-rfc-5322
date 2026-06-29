@@ -62,14 +62,14 @@ extension RFC_5322.EmailAddress: Binary.ASCII.Serializable {
             buffer.append(ASCII.Code.commercialAt)
 
             // Serialize domain through bytes
-            RFC_1123.Domain.serialize(ascii: emailAddress.domain, into: &buffer)
+            RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
 
             buffer.append(ASCII.Code.greaterThanSign)
         } else {
             // Simple format without display name
             RFC_5322.EmailAddress.LocalPart.serialize(ascii: emailAddress.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
-            RFC_1123.Domain.serialize(ascii: emailAddress.domain, into: &buffer)
+            RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
         }
     }
 

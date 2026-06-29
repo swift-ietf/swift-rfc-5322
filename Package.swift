@@ -22,6 +22,9 @@ extension Target.Dependency {
     static var asciiDecimalParser: Self {
         .product(name: "ASCII Decimal Parser Primitives", package: "swift-ascii-parser-primitives")
     }
+    static var asciiParser: Self {
+        .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
+    }
     static var incits_4_1986: Self {
         .product(name: "INCITS 4 1986", package: "swift-incits-4-1986")
     }
@@ -64,6 +67,7 @@ let package = Package(
                 .rfc1123,
                 .asciiSerializer,
                 .asciiDecimalParser,
+                .asciiParser,
                 .incits_4_1986,
                 .product(name: "Parser Primitives", package: "swift-parser-primitives")
             ]

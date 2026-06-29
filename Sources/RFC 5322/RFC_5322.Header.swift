@@ -56,10 +56,10 @@ extension RFC_5322 {
 extension RFC_5322.Header: Binary.ASCII.Serializable {
     public static func serialize<Buffer>(ascii header: RFC_5322.Header, into buffer: inout Buffer)
     where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
-        RFC_5322.Header.Name.serialize(ascii: header.name, into: &buffer)
+        RFC_5322.Header.Name.serialize(header.name, into: &buffer)
         buffer.append(ASCII.Code.colon)
         buffer.append(ASCII.Code.space)
-        RFC_5322.Header.Value.serialize(ascii: header.value, into: &buffer)
+        RFC_5322.Header.Value.serialize(header.value, into: &buffer)
     }
 
     /// Parses a header from canonical byte representation (CANONICAL PRIMITIVE)
