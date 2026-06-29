@@ -8,7 +8,7 @@ public import ASCII_Serializer_Primitives
 import INCITS_4_1986
 public import Time_Primitives
 import Standard_Library_Extensions
-import Binary_Format_Primitives
+import Radix_Format_Primitives
 
 extension RFC_5322 {
     /// RFC 5322 date-time representation
@@ -62,7 +62,7 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         buffer.append(ASCII.Code.space)
 
         // Day (zero-padded 2 digits)
-        let day = components.day.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let day = components.day.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: day.utf8)
         buffer.append(ASCII.Code.space)
 
@@ -72,22 +72,22 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         buffer.append(ASCII.Code.space)
 
         // Year (4 digits)
-        let year = components.year.formatted(Binary.Format.decimal.zeroPadded(width: 4))
+        let year = components.year.formatted(Radix.Format.decimal.zeroPadded(width: 4))
         buffer.append(contentsOf: year.utf8)
         buffer.append(ASCII.Code.space)
 
         // Hour (zero-padded 2 digits)
-        let hour = components.hour.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let hour = components.hour.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: hour.utf8)
         buffer.append(ASCII.Code.colon)
 
         // Minute (zero-padded 2 digits)
-        let minute = components.minute.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let minute = components.minute.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: minute.utf8)
         buffer.append(ASCII.Code.colon)
 
         // Second (zero-padded 2 digits)
-        let second = components.second.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let second = components.second.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: second.utf8)
         buffer.append(ASCII.Code.space)
 
@@ -103,10 +103,10 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
                 % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
             / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
 
-        let offsetHoursStr = offsetHours.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let offsetHoursStr = offsetHours.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: offsetHoursStr.utf8)
 
-        let offsetMinutesStr = offsetMinutes.formatted(Binary.Format.decimal.zeroPadded(width: 2))
+        let offsetMinutesStr = offsetMinutes.formatted(Radix.Format.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: offsetMinutesStr.utf8)
     }
 
