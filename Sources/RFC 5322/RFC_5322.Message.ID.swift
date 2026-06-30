@@ -8,7 +8,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322.Message {
@@ -43,20 +42,22 @@ extension RFC_5322.Message {
     }
 }
 
-extension RFC_5322.Message.ID: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer: angle-bracketed Message-ID (stored bytes are
-    /// already-validated ASCII, projected losslessly into the `ASCII.Code` substrate).
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { messageId, buffer in
-            buffer.reserveCapacity(messageId.value.count + 2)  // +2 for angle brackets
-            buffer.append(ASCII.Code.lt)
-            buffer.append(contentsOf: messageId.value.map { ASCII.Code(unchecked: $0) })
-            buffer.append(ASCII.Code.gt)
-        }
+extension RFC_5322.Message.ID: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — angle-bracketed Message-ID; the
+    /// stored (already-validated ASCII) bytes projected losslessly into the
+    /// `ASCII.Code` substrate, framed by the `<` / `>` literals.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        buffer.reserveCapacity(value.value.count + 2)  // +2 for angle brackets
+        buffer.append(ASCII.Code.lt)
+        buffer.append(contentsOf: value.value.map { ASCII.Code(unchecked: $0) })
+        buffer.append(ASCII.Code.gt)
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults; bytes derive from `.serialized`.
+    /// Explicit `Binary.Serializable` witness; bytes derive from the own
+    /// `ASCII.Serializable` verb via `.serialized`.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer

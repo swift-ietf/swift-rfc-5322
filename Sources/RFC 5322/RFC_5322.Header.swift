@@ -1,7 +1,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322 {
@@ -56,25 +55,30 @@ extension RFC_5322 {
 
 // MARK: - Header Parsing
 
-extension RFC_5322.Header: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer: `Name: Value` (delegates to the already-migrated
-    /// Name/Value serializers, writing into the shared `[ASCII.Code]` buffer).
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { header, buffer in
-            RFC_5322.Header.Name.serialize(header.name, into: &buffer)
-            buffer.append(ASCII.Code.colon)
-            buffer.append(ASCII.Code.space)
-            RFC_5322.Header.Value.serialize(header.value, into: &buffer)
-        }
+extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — `Name: Value`, composing the
+    /// already-re-cut `Header.Name` / `Header.Value` ASCII verbs directly into the
+    /// `ASCII.Code` buffer. Pure concatenation (no escape).
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        RFC_5322.Header.Name.serialize(value.name, into: &buffer)
+        buffer.append(ASCII.Code.colon)
+        buffer.append(ASCII.Code.space)
+        RFC_5322.Header.Value.serialize(value.value, into: &buffer)
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults; bytes derive from `.serialized`.
+    /// Explicit `Binary.Serializable` witness composing the same sub-part verbs
+    /// on the byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
-        buffer.append(contentsOf: value.serialized)
+        RFC_5322.Header.Name.serialize(value.name, into: &buffer)
+        buffer.append(ASCII.Code.colon)
+        buffer.append(ASCII.Code.space)
+        RFC_5322.Header.Value.serialize(value.value, into: &buffer)
     }
 }
 

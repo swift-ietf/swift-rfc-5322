@@ -8,7 +8,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
@@ -113,18 +112,100 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.Message: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for a complete RFC 5322 message (headers + body).
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { message, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(message, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — a complete RFC 5322 §3.6
+    /// message (headers + body), composing the already-re-cut `EmailAddress` /
+    /// `DateTime` / `Message.ID` / `Header` ASCII verbs directly into the
+    /// `ASCII.Code` buffer. Header-field prefixes / line endings and the own
+    /// `subject` / `mimeVersion` / `body` fields are leaf-emitted on the
+    /// ASCII-code substrate. Pure concatenation (no escape). Output is
+    /// byte-identical to the `Binary.Serializable` witness (`serializeBytes`).
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+
+        // Pre-allocate capacity to avoid reallocations
+        // Rough estimate: headers (~500 bytes) + body
+        buffer.reserveCapacity(500 + value.body.count)
+
+        // Required headers in recommended order (RFC 5322 Section 3.6)
+
+        // From (required)
+        buffer.append(contentsOf: [Byte].fromPrefix.map { ASCII.Code(unchecked: $0) })
+        RFC_5322.EmailAddress.serialize(value.from, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // To (required)
+        buffer.append(contentsOf: [Byte].toPrefix.map { ASCII.Code(unchecked: $0) })
+        var first = true
+        for address in value.to {
+            if !first {
+                buffer.append(ASCII.Code.comma)
+                buffer.append(ASCII.Code.space)
+            }
+            first = false
+            RFC_5322.EmailAddress.serialize(address, into: &buffer)
         }
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Cc (optional)
+        if let cc = value.cc, !cc.isEmpty {
+            buffer.append(contentsOf: [Byte].ccPrefix.map { ASCII.Code(unchecked: $0) })
+            first = true
+            for address in cc {
+                if !first {
+                    buffer.append(ASCII.Code.comma)
+                    buffer.append(ASCII.Code.space)
+                }
+                first = false
+                RFC_5322.EmailAddress.serialize(address, into: &buffer)
+            }
+            buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+        }
+
+        // Subject (required in practice)
+        buffer.append(contentsOf: [Byte].subjectPrefix.map { ASCII.Code(unchecked: $0) })
+        buffer.append(contentsOf: value.subject.utf8.map { ASCII.Code($0) })
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Date (required)
+        buffer.append(contentsOf: [Byte].datePrefix.map { ASCII.Code(unchecked: $0) })
+        RFC_5322.DateTime.serialize(value.date, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Message-ID (recommended)
+        buffer.append(contentsOf: [Byte].messageIdPrefix.map { ASCII.Code(unchecked: $0) })
+        RFC_5322.Message.ID.serialize(value.messageId, into: &buffer)
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Reply-To (optional)
+        if let replyTo = value.replyTo {
+            buffer.append(contentsOf: [Byte].replyToPrefix.map { ASCII.Code(unchecked: $0) })
+            RFC_5322.EmailAddress.serialize(replyTo, into: &buffer)
+            buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+        }
+
+        // MIME-Version (required for MIME messages)
+        buffer.append(contentsOf: [Byte].mimeVersionPrefix.map { ASCII.Code(unchecked: $0) })
+        buffer.append(contentsOf: value.mimeVersion.utf8.map { ASCII.Code($0) })
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Additional custom headers (in order)
+        for header in value.additionalHeaders {
+            RFC_5322.Header.serialize(header, into: &buffer)
+            buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+        }
+
+        // Empty line separates headers from body
+        buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
+
+        // Body (own raw bytes, projected losslessly to the ASCII-code substrate)
+        buffer.append(contentsOf: value.body.map { ASCII.Code(unchecked: $0) })
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults.
+    /// Explicit `Binary.Serializable` witness (RFC 5322 §3.6 message) on the byte
+    /// substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer

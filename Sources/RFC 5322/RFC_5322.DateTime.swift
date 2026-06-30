@@ -7,7 +7,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 public import Time_Primitives
 import Standard_Library_Extensions
@@ -49,19 +48,79 @@ extension RFC_5322 {
     public typealias Date = RFC_5322.DateTime
 }
 
-extension RFC_5322.DateTime: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for the RFC 5322 date-time form
-    /// ("Mon, 01 Jan 2024 12:34:56 +0000").
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { dateTime, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(dateTime, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
-        }
+extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 5322 §3.3 date-time
+    /// form ("Mon, 01 Jan 2024 12:34:56 +0000"), formatted natively on the
+    /// `ASCII.Code` substrate: numeric components via the decimal radix formatter
+    /// (their `utf8` lifted to `ASCII.Code`), separators as named `ASCII.Code`
+    /// constants. The same algorithm is re-expressed on the byte substrate by the
+    /// `Binary.Serializable` witness (`serializeBytes`); the date-time
+    /// serialization equivalence test guards their parity.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        let components = value.components
+
+        buffer.reserveCapacity(31)  // "Mon, 01 Jan 2024 12:34:56 +0000" = 31 codes
+
+        // Day name (e.g., "Mon")
+        let dayName = RFC_5322.DateTime.dayNames[components.weekday]
+        buffer.append(contentsOf: dayName.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.comma)
+        buffer.append(ASCII.Code.space)
+
+        // Day (zero-padded 2 digits)
+        let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: day.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.space)
+
+        // Month name (e.g., "Jan")
+        let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
+        buffer.append(contentsOf: monthName.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.space)
+
+        // Year (4 digits)
+        let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
+        buffer.append(contentsOf: year.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.space)
+
+        // Hour (zero-padded 2 digits)
+        let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: hour.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.colon)
+
+        // Minute (zero-padded 2 digits)
+        let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: minute.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.colon)
+
+        // Second (zero-padded 2 digits)
+        let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: second.utf8.map { ASCII.Code($0) })
+        buffer.append(ASCII.Code.space)
+
+        // Timezone offset
+        let offsetSign: ASCII.Code = value.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
+        buffer.append(offsetSign)
+
+        let offsetHours =
+            abs(value.timezoneOffsetSeconds)
+            / Time.Calendar.Gregorian.TimeConstants.secondsPerHour
+        let offsetMinutes =
+            (abs(value.timezoneOffsetSeconds)
+                % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
+            / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
+
+        let offsetHoursStr = offsetHours.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: offsetHoursStr.utf8.map { ASCII.Code($0) })
+
+        let offsetMinutesStr = offsetMinutes.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
+        buffer.append(contentsOf: offsetMinutesStr.utf8.map { ASCII.Code($0) })
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults.
+    /// Explicit `Binary.Serializable` witness (RFC 5322 §3.3 date-time) on the
+    /// byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer

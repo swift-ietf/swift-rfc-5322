@@ -8,7 +8,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 
 // MARK: - Local Part
@@ -27,21 +26,22 @@ extension RFC_5322.EmailAddress.LocalPart {
     }
 }
 
-extension RFC_5322.EmailAddress.LocalPart: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer: appends the stored (already-validated ASCII)
-    /// bytes projected into the `ASCII.Code` substrate (lossless via `.byte`).
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { value, buffer in
-            switch value.storage {
-            case .dotAtom(let bytes), .quoted(let bytes):
-                buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
-            }
+extension RFC_5322.EmailAddress.LocalPart: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — appends the stored
+    /// (already-validated ASCII) bytes projected into the `ASCII.Code` substrate
+    /// (lossless via `init(unchecked:)`). Leaf emit of the conformer's own field.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        switch value.storage {
+        case .dotAtom(let bytes), .quoted(let bytes):
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
         }
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults; bytes derive from the canonical
-    /// `[ASCII.Code]` serializer above via `.serialized`.
+    /// Explicit `Binary.Serializable` witness; bytes derive from the own
+    /// `ASCII.Serializable` verb via `.serialized`.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer

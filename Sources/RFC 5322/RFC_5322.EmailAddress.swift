@@ -8,7 +8,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 import INCITS_4_1986
 public import RFC_1123
 
@@ -37,18 +36,51 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.EmailAddress: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for the RFC 5322 mailbox/address form.
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { emailAddress, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(emailAddress, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 5322 mailbox/address
+    /// form, composing the already-re-cut `LocalPart` / `RFC_1123.Domain` ASCII
+    /// verbs directly into the `ASCII.Code` buffer. The display-name leaf is
+    /// emitted on the ASCII-code substrate; the quoting algorithm is the SAME as
+    /// the `Binary.Serializable` witness (`serializeBytes`), re-expressed per
+    /// substrate. The serialization equivalence test guards their parity.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        if let displayName = value.displayName {
+            // Check if quoting is needed for display name
+            let needsQuoting = displayName.contains(where: {
+                !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
+                    || $0.asciiValue == nil
+            })
+
+            if needsQuoting {
+                buffer.append(ASCII.Code.quotationMark)
+                buffer.append(contentsOf: displayName.utf8.map { ASCII.Code($0) })
+                buffer.append(ASCII.Code.quotationMark)
+            } else {
+                buffer.append(contentsOf: displayName.utf8.map { ASCII.Code($0) })
+            }
+
+            buffer.append(ASCII.Code.space)
+            buffer.append(ASCII.Code.lessThanSign)
+
+            // local-part@domain — compose the re-cut sub-part verbs
+            RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
+            buffer.append(ASCII.Code.commercialAt)
+            RFC_1123.Domain.serialize(value.domain, into: &buffer)
+
+            buffer.append(ASCII.Code.greaterThanSign)
+        } else {
+            // Simple format without display name
+            RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
+            buffer.append(ASCII.Code.commercialAt)
+            RFC_1123.Domain.serialize(value.domain, into: &buffer)
         }
     }
 
-    /// Explicit `Binary.Serializable` witness disambiguating the two
-    /// constraint-incomparable defaults.
+    /// Explicit `Binary.Serializable` witness (RFC 5322 mailbox/address) on the
+    /// byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
