@@ -61,10 +61,10 @@ extension RFC_5322.Header: Serializable, ASCII.Serializable, Binary.Serializable
     /// Name/Value serializers, writing into the shared `[ASCII.Code]` buffer).
     public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
         Serializer_Primitives.Serializer.Pure { header, buffer in
-            RFC_5322.Header.Name.serializer.serialize(header.name, into: &buffer)
+            RFC_5322.Header.Name.serialize(header.name, into: &buffer)
             buffer.append(ASCII.Code.colon)
             buffer.append(ASCII.Code.space)
-            RFC_5322.Header.Value.serializer.serialize(header.value, into: &buffer)
+            RFC_5322.Header.Value.serialize(header.value, into: &buffer)
         }
     }
 
