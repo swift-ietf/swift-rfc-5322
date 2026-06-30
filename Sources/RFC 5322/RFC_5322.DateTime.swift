@@ -5,10 +5,13 @@
 // Format: "Mon, 01 Jan 2024 12:34:56 +0000"
 
 public import ASCII_Serializer_Primitives
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
 import INCITS_4_1986
 public import Time_Primitives
 import Standard_Library_Extensions
-import Radix_Format_Primitives
+import Radix_Formatter_Primitives
 
 extension RFC_5322 {
     /// RFC 5322 date-time representation
@@ -46,11 +49,31 @@ extension RFC_5322 {
     public typealias Date = RFC_5322.DateTime
 }
 
-extension RFC_5322.DateTime: Binary.ASCII.Serializable {
-    static public func serialize<Buffer>(
-        ascii dateTime: RFC_5322.DateTime,
+extension RFC_5322.DateTime: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer for the RFC 5322 date-time form
+    /// ("Mon, 01 Jan 2024 12:34:56 +0000").
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { dateTime, buffer in
+            var bytes: [Byte] = []
+            serializeBytes(dateTime, into: &bytes)
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
         into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
+    ) where Buffer.Element == Byte {
+        serializeBytes(value, into: &buffer)
+    }
+
+    /// Byte-domain serialization body (RFC 5322 §3.3 date-time).
+    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
+        _ dateTime: RFC_5322.DateTime,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
         let components = dateTime.components
 
         buffer.reserveCapacity(31)  // "Mon, 01 Jan 2024 12:34:56 +0000" = 31 bytes
@@ -62,7 +85,7 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         buffer.append(ASCII.Code.space)
 
         // Day (zero-padded 2 digits)
-        let day = components.day.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: day.utf8)
         buffer.append(ASCII.Code.space)
 
@@ -72,22 +95,22 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
         buffer.append(ASCII.Code.space)
 
         // Year (4 digits)
-        let year = components.year.formatted(Radix.Format.decimal.zeroPadded(width: 4))
+        let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
         buffer.append(contentsOf: year.utf8)
         buffer.append(ASCII.Code.space)
 
         // Hour (zero-padded 2 digits)
-        let hour = components.hour.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: hour.utf8)
         buffer.append(ASCII.Code.colon)
 
         // Minute (zero-padded 2 digits)
-        let minute = components.minute.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: minute.utf8)
         buffer.append(ASCII.Code.colon)
 
         // Second (zero-padded 2 digits)
-        let second = components.second.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: second.utf8)
         buffer.append(ASCII.Code.space)
 
@@ -103,11 +126,18 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
                 % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
             / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
 
-        let offsetHoursStr = offsetHours.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let offsetHoursStr = offsetHours.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: offsetHoursStr.utf8)
 
-        let offsetMinutesStr = offsetMinutes.formatted(Radix.Format.decimal.zeroPadded(width: 2))
+        let offsetMinutesStr = offsetMinutes.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: offsetMinutesStr.utf8)
+    }
+}
+
+extension RFC_5322.DateTime: ASCII.Parseable {
+    /// Creates a date-time by validating `string`'s UTF-8 bytes as ASCII.
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses RFC 5322 date-time from canonical byte representation (CANONICAL PRIMITIVE)
@@ -140,7 +170,7 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the date-time
     /// - Throws: `RFC_5322.DateTime.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
@@ -314,7 +344,12 @@ extension RFC_5322.DateTime: Binary.ASCII.Serializable {
     }
 }
 
-extension RFC_5322.DateTime: CustomStringConvertible {}
+extension RFC_5322.DateTime: CustomStringConvertible {
+    /// The date-time's RFC 5322 ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized, as: UTF8.self)
+    }
+}
 
 extension RFC_5322.DateTime {
     /// Create a date-time from seconds since epoch

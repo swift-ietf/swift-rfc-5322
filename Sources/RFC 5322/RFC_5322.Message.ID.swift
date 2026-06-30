@@ -6,6 +6,9 @@
 //
 
 public import ASCII_Serializer_Primitives
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322.Message {
@@ -40,17 +43,32 @@ extension RFC_5322.Message {
     }
 }
 
-extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
-    static public func serialize<Buffer>(
-        ascii messageId: RFC_5322.Message.ID,
-        into buffer: inout Buffer
-    ) where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
-        buffer.reserveCapacity(messageId.value.count + 2)  // +2 for angle brackets
+extension RFC_5322.Message.ID: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer: angle-bracketed Message-ID (stored bytes are
+    /// already-validated ASCII, projected losslessly into the `ASCII.Code` substrate).
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { messageId, buffer in
+            buffer.reserveCapacity(messageId.value.count + 2)  // +2 for angle brackets
+            buffer.append(ASCII.Code.lt)
+            buffer.append(contentsOf: messageId.value.map { ASCII.Code(unchecked: $0) })
+            buffer.append(ASCII.Code.gt)
+        }
+    }
 
-        // Always include angle brackets per RFC 5322
-        buffer.append(ASCII.Code.lt)
-        buffer.append(contentsOf: messageId.value)
-        buffer.append(ASCII.Code.gt)
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults; bytes derive from `.serialized`.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        buffer.append(contentsOf: value.serialized)
+    }
+}
+
+extension RFC_5322.Message.ID: ASCII.Parseable {
+    /// Creates a Message-ID by validating `string`'s UTF-8 bytes as ASCII.
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses a Message-ID from canonical byte representation (CANONICAL PRIMITIVE)
@@ -83,7 +101,7 @@ extension RFC_5322.Message.ID: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the Message-ID
     /// - Throws: `RFC_5322.Message.ID.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 Message-IDs are strict ASCII).
@@ -156,7 +174,12 @@ extension RFC_5322.Message.ID {
     }
 }
 
-extension RFC_5322.Message.ID: CustomStringConvertible {}
+extension RFC_5322.Message.ID: CustomStringConvertible {
+    /// The Message-ID's ASCII serialization (angle-bracketed) decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized, as: UTF8.self)
+    }
+}
 
 extension RFC_5322.Message.ID: Codable {
     public func encode(to encoder: any Encoder) throws {
@@ -174,6 +197,33 @@ extension RFC_5322.Message.ID: Codable {
     }
 }
 
-extension RFC_5322.Message.ID: ExpressibleByStringLiteral {}
-extension RFC_5322.Message.ID: ExpressibleByFloatLiteral {}
-extension RFC_5322.Message.ID: ExpressibleByIntegerLiteral {}
+extension RFC_5322.Message.ID: ExpressibleByStringLiteral {
+    /// Creates a Message-ID from a string literal (traps on invalid ASCII).
+    public init(stringLiteral value: String) {
+        do throws(Error) {
+            try self.init(value)
+        } catch {
+            preconditionFailure("Invalid ASCII Message-ID string literal: \(error)")
+        }
+    }
+}
+extension RFC_5322.Message.ID: ExpressibleByFloatLiteral {
+    /// Creates a Message-ID from a float literal (traps on invalid ASCII).
+    public init(floatLiteral value: Double) {
+        do throws(Error) {
+            try self.init(String(value))
+        } catch {
+            preconditionFailure("Invalid ASCII Message-ID float literal: \(error)")
+        }
+    }
+}
+extension RFC_5322.Message.ID: ExpressibleByIntegerLiteral {
+    /// Creates a Message-ID from an integer literal (traps on invalid ASCII).
+    public init(integerLiteral value: Int) {
+        do throws(Error) {
+            try self.init(String(value))
+        } catch {
+            preconditionFailure("Invalid ASCII Message-ID integer literal: \(error)")
+        }
+    }
+}

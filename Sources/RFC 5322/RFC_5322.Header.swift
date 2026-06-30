@@ -1,4 +1,7 @@
 public import ASCII_Serializer_Primitives
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
 import INCITS_4_1986
 
 extension RFC_5322 {
@@ -53,13 +56,32 @@ extension RFC_5322 {
 
 // MARK: - Header Parsing
 
-extension RFC_5322.Header: Binary.ASCII.Serializable {
-    public static func serialize<Buffer>(ascii header: RFC_5322.Header, into buffer: inout Buffer)
-    where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
-        RFC_5322.Header.Name.serialize(header.name, into: &buffer)
-        buffer.append(ASCII.Code.colon)
-        buffer.append(ASCII.Code.space)
-        RFC_5322.Header.Value.serialize(header.value, into: &buffer)
+extension RFC_5322.Header: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer: `Name: Value` (delegates to the already-migrated
+    /// Name/Value serializers, writing into the shared `[ASCII.Code]` buffer).
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { header, buffer in
+            RFC_5322.Header.Name.serializer.serialize(header.name, into: &buffer)
+            buffer.append(ASCII.Code.colon)
+            buffer.append(ASCII.Code.space)
+            RFC_5322.Header.Value.serializer.serialize(header.value, into: &buffer)
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults; bytes derive from `.serialized`.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        buffer.append(contentsOf: value.serialized)
+    }
+}
+
+extension RFC_5322.Header: ASCII.Parseable {
+    /// Creates a header by validating `string`'s UTF-8 bytes as ASCII.
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses a header from canonical byte representation (CANONICAL PRIMITIVE)
@@ -87,7 +109,7 @@ extension RFC_5322.Header: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the header
     /// - Throws: `RFC_5322.Header.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Split on first colon to separate name from value.
         // Project ASCII.Code.colon to the byte-domain element type.
@@ -123,7 +145,12 @@ extension RFC_5322.Header: Binary.ASCII.Serializable {
 
 // MARK: - Header Protocol Conformances
 
-extension RFC_5322.Header: CustomStringConvertible {}
+extension RFC_5322.Header: CustomStringConvertible {
+    /// The header's ASCII serialization (`Name: Value`) decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized, as: UTF8.self)
+    }
+}
 
 // MARK: - Array Convenience Extensions
 

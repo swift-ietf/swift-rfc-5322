@@ -38,7 +38,7 @@
 
             /// Parse an RFC 5322 date-time string into a Foundation.Date
             public func parse(_ value: some StringProtocol) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
-                let dateTime = try RFC_5322.DateTime(ascii: Array<Byte>(value.utf8), in: ())
+                let dateTime = try RFC_5322.DateTime(ascii: Array<Byte>(value.utf8))
                 return Foundation.Date(
                     timeIntervalSince1970: TimeInterval(dateTime.secondsSinceEpoch)
                 )

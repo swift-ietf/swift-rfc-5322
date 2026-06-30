@@ -6,6 +6,9 @@
 //
 
 public import ASCII_Serializer_Primitives
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
@@ -110,9 +113,30 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.Message: Binary.ASCII.Serializable {
-    static public func serialize<Buffer>(ascii message: RFC_5322.Message, into buffer: inout Buffer)
-    where Buffer: RangeReplaceableCollection, Buffer.Element == Byte {
+extension RFC_5322.Message: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer for a complete RFC 5322 message (headers + body).
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { message, buffer in
+            var bytes: [Byte] = []
+            serializeBytes(message, into: &bytes)
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        serializeBytes(value, into: &buffer)
+    }
+
+    /// Byte-domain serialization body (RFC 5322 §3.6 message).
+    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
+        _ message: RFC_5322.Message,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
 
         // Pre-allocate capacity to avoid reallocations
         // Rough estimate: headers (~500 bytes) + body
@@ -122,7 +146,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
 
         // From (required)
         buffer.append(contentsOf: [Byte].fromPrefix)
-        RFC_5322.EmailAddress.serialize(ascii: message.from, into: &buffer)
+        RFC_5322.EmailAddress.serialize(message.from, into: &buffer)
         buffer.append(contentsOf: [Byte].crlf)
 
         // To (required)
@@ -134,7 +158,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
                 buffer.append(ASCII.Code.space)
             }
             first = false
-            RFC_5322.EmailAddress.serialize(ascii: address, into: &buffer)
+            RFC_5322.EmailAddress.serialize(address, into: &buffer)
         }
         buffer.append(contentsOf: [Byte].crlf)
 
@@ -148,7 +172,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
                     buffer.append(ASCII.Code.space)
                 }
                 first = false
-                RFC_5322.EmailAddress.serialize(ascii: address, into: &buffer)
+                RFC_5322.EmailAddress.serialize(address, into: &buffer)
             }
             buffer.append(contentsOf: [Byte].crlf)
         }
@@ -160,18 +184,18 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
 
         // Date (required)
         buffer.append(contentsOf: [Byte].datePrefix)
-        RFC_5322.DateTime.serialize(ascii: message.date, into: &buffer)
+        RFC_5322.DateTime.serialize(message.date, into: &buffer)
         buffer.append(contentsOf: [Byte].crlf)
 
         // Message-ID (recommended)
         buffer.append(contentsOf: [Byte].messageIdPrefix)
-        RFC_5322.Message.ID.serialize(ascii: message.messageId, into: &buffer)
+        RFC_5322.Message.ID.serialize(message.messageId, into: &buffer)
         buffer.append(contentsOf: [Byte].crlf)
 
         // Reply-To (optional)
         if let replyTo = message.replyTo {
             buffer.append(contentsOf: [Byte].replyToPrefix)
-            RFC_5322.EmailAddress.serialize(ascii: replyTo, into: &buffer)
+            RFC_5322.EmailAddress.serialize(replyTo, into: &buffer)
             buffer.append(contentsOf: [Byte].crlf)
         }
 
@@ -182,7 +206,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
 
         // Additional custom headers (in order)
         for header in message.additionalHeaders {
-            RFC_5322.Header.serialize(ascii: header, into: &buffer)
+            RFC_5322.Header.serialize(header, into: &buffer)
             buffer.append(contentsOf: [Byte].crlf)
         }
 
@@ -192,7 +216,9 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
         // Body (as bytes)
         buffer.append(contentsOf: message.body)
     }
+}
 
+extension RFC_5322.Message: ASCII.Parseable {
     /// Parses an RFC 5322 message from canonical byte representation (CANONICAL PRIMITIVE)
     ///
     /// **FUTURE TASK**: This is the canonical primitive parser for RFC 5322 messages.
@@ -239,7 +265,7 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The ASCII byte representation of an RFC 5322 message
     /// - Throws: `RFC_5322.Message.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // TODO: Implement RFC 5322 message parsing
         // This is a complex parser that must handle:
@@ -255,4 +281,9 @@ extension RFC_5322.Message: Binary.ASCII.Serializable {
     }
 }
 
-extension RFC_5322.Message: CustomStringConvertible {}
+extension RFC_5322.Message: CustomStringConvertible {
+    /// The message's RFC 5322 ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized, as: UTF8.self)
+    }
+}
