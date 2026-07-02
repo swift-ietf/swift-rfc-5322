@@ -1,6 +1,6 @@
 # Swift RFC 5322
 
-[![CI](https://github.com/swift-standards/swift-rfc-5322/workflows/CI/badge.svg)](https://github.com/swift-standards/swift-rfc-5322/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-ietf/swift-rfc-5322/workflows/CI/badge.svg)](https://github.com/swift-ietf/swift-rfc-5322/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 Swift implementation of RFC 5322: Internet Message Format - email message structure and formatting standard.
@@ -29,7 +29,7 @@ Add swift-rfc-5322 to your package dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-standards/swift-rfc-5322.git", from: "0.1.0")
+    .package(url: "https://github.com/swift-ietf/swift-rfc-5322.git", from: "0.7.4")
 ]
 ```
 
@@ -247,12 +247,12 @@ public enum HeaderName {
 ## Related Packages
 
 ### Dependencies
-- [swift-rfc-1123](https://github.com/swift-standards/swift-rfc-1123) - Domain name validation
-- [swift-rfc-5321](https://github.com/swift-standards/swift-rfc-5321) - SMTP email address format
+- [swift-rfc-1123](https://github.com/swift-ietf/swift-rfc-1123) - Domain name validation
+- [swift-rfc-5321](https://github.com/swift-ietf/swift-rfc-5321) - SMTP email address format
 
 ### Related Standards
-- [swift-rfc-6068](https://github.com/swift-standards/swift-rfc-6068) - The 'mailto' URI Scheme (uses RFC 5322 EmailAddress)
-- [swift-rfc-2369](https://github.com/swift-standards/swift-rfc-2369) - URLs for Mailing List Management
+- [swift-rfc-6068](https://github.com/swift-ietf/swift-rfc-6068) - The 'mailto' URI Scheme (uses RFC 5322 EmailAddress)
+- [swift-rfc-2369](https://github.com/swift-ietf/swift-rfc-2369) - URLs for Mailing List Management
 
 ### Used By
 - Email clients and server implementations
