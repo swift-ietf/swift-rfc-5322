@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "testing",
     platforms: [
-        .macOS(.v26),
+        .macOS(.v26)
     ],
     dependencies: [
         .package(path: "../.."),
@@ -18,7 +18,7 @@ let package = Package(
                 .product(name: "RFC 5322", package: "swift-rfc-5322"),
                 .product(name: "Testing", package: "swift-testing"),
             ]
-        ),
+        )
     ],
     swiftLanguageModes: [.v6]
 )
