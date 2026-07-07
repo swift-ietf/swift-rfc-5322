@@ -7,8 +7,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 extension RFC_5322.Message {
     /// RFC 5322 compliant Message-ID
@@ -108,7 +108,7 @@ extension RFC_5322.Message.ID: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 Message-IDs are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
         }
@@ -126,7 +126,8 @@ extension RFC_5322.Message.ID: ASCII.Parseable {
         }
 
         // Determine if we need to strip angle brackets
-        let stripBrackets = count >= 2
+        let stripBrackets =
+            count >= 2
             && codes.first == ASCII.Code.lt
             && codes.last == ASCII.Code.gt
 

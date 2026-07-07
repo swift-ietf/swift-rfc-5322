@@ -5,9 +5,9 @@
 //  RFC 5322 date-time: [day-of-week ","] date time
 //
 
-public import Parser_Primitives
 public import ASCII_Decimal_Parser_Primitives
 import Byte_Primitives
+public import Parser_Primitives
 
 extension RFC_5322.DateTime {
     /// Parses an RFC 5322 date-time per Section 3.3.
@@ -43,13 +43,19 @@ extension RFC_5322.DateTime.Parse {
         public let minute: Int
         /// Second (0 if not present)
         public let second: Int
-        /// Timezone as raw bytes (e.g., "+0000", "EST")
+        /// Timezone as raw bytes, for example "+0000" or "EST"
         public let timezone: Input
 
         @inlinable
         public init(
-            dayOfWeek: Input?, day: Int, month: Input, year: Int,
-            hour: Int, minute: Int, second: Int, timezone: Input
+            dayOfWeek: Input?,
+            day: Int,
+            month: Input,
+            year: Int,
+            hour: Int,
+            minute: Int,
+            second: Int,
+            timezone: Input
         ) {
             self.dayOfWeek = dayOfWeek
             self.month = month
@@ -140,8 +146,14 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
         Self._skipCFWS(&input)
 
         return Output(
-            dayOfWeek: dayOfWeek, day: day, month: month, year: year,
-            hour: hour, minute: minute, second: second, timezone: timezone
+            dayOfWeek: dayOfWeek,
+            day: day,
+            month: month,
+            year: year,
+            hour: hour,
+            minute: minute,
+            second: second,
+            timezone: timezone
         )
     }
 

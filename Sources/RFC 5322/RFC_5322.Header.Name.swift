@@ -7,8 +7,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 extension RFC_5322.Header {
     /// Email header field name
@@ -172,7 +172,7 @@ extension RFC_5322.Header.Name: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 header names are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
         }
@@ -222,7 +222,7 @@ extension [Byte] {
     ///
     /// - Parameter name: The header name to serialize
     public init(_ name: RFC_5322.Header.Name) {
-        self = Array<Byte>(name.rawValue.utf8)
+        self = [Byte](name.rawValue.utf8)
     }
 }
 

@@ -37,8 +37,10 @@
             }
 
             /// Parse an RFC 5322 date-time string into a Foundation.Date
-            public func parse(_ value: some StringProtocol) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
-                let dateTime = try RFC_5322.DateTime(ascii: Array<Byte>(value.utf8))
+            public func parse(
+                _ value: some StringProtocol
+            ) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
+                let dateTime = try RFC_5322.DateTime(ascii: [Byte](value.utf8))
                 return Foundation.Date(
                     timeIntervalSince1970: TimeInterval(dateTime.secondsSinceEpoch)
                 )
@@ -82,7 +84,10 @@
         /// ```swift
         /// let date = try Date("Mon, 01 Jan 2024 12:34:56 +0000", strategy: .rfc5322)
         /// ```
-        public init(_ value: some StringProtocol, strategy: RFC_5322.Date.FormatStyle) throws(RFC_5322.DateTime.Error) {
+        public init(
+            _ value: some StringProtocol,
+            strategy: RFC_5322.Date.FormatStyle
+        ) throws(RFC_5322.DateTime.Error) {
             let foundationDate = try strategy.parse(value)
             self = foundationDate
         }

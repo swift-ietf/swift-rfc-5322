@@ -1,7 +1,7 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 extension RFC_5322 {
     /// Email header field (name-value pair)
@@ -130,14 +130,14 @@ extension RFC_5322.Header: ASCII.Parseable {
         // Wrap their errors in Header.Error for typed throws
         let name: RFC_5322.Header.Name
         do {
-            name = try RFC_5322.Header.Name(ascii: Array<Byte>(nameBytes))
+            name = try RFC_5322.Header.Name(ascii: [Byte](nameBytes))
         } catch {
             throw Error.invalidName(error)
         }
 
         let value: RFC_5322.Header.Value
         do {
-            value = try RFC_5322.Header.Value(ascii: Array<Byte>(valueBytes))
+            value = try RFC_5322.Header.Value(ascii: [Byte](valueBytes))
         } catch {
             throw Error.invalidValue(error)
         }

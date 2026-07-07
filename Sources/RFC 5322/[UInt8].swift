@@ -8,8 +8,8 @@
 import ASCII_Serializer_Primitives
 import INCITS_4_1986
 import RFC_1123
-import Time_Primitives
 import Standard_Library_Extensions
+import Time_Primitives
 
 // MARK: - Constants
 

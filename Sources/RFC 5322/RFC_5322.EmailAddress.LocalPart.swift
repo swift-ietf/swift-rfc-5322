@@ -7,8 +7,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 // MARK: - Local Part
 extension RFC_5322.EmailAddress {
@@ -87,7 +87,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCIICharacters
         }
@@ -119,7 +119,9 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
                 if code == ASCII.Code.backslash {
                     // Mark to skip next character (escape sequence)
                     skipNext = true
-                } else if code == ASCII.Code.quotationMark || code == ASCII.Code.cr || code == ASCII.Code.lf {
+                } else if code == ASCII.Code.quotationMark || code == ASCII.Code.cr
+                    || code == ASCII.Code.lf
+                {
                     // Unescaped quote, CR, or LF not allowed
                     throw Error.invalidQuotedString
                 }
@@ -130,7 +132,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
                 throw Error.invalidQuotedString
             }
 
-            self.storage = .quoted(Array<Byte>(bytes))
+            self.storage = .quoted([Byte](bytes))
         }
         // Handle dot-atom format
         else {
@@ -154,7 +156,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
                 }
             }
 
-            self.storage = .dotAtom(Array<Byte>(bytes))
+            self.storage = .dotAtom([Byte](bytes))
         }
     }
 }

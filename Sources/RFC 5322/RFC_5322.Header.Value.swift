@@ -7,8 +7,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 
 extension RFC_5322.Header {
     public struct Value: Sendable, Hashable, Codable {
@@ -135,7 +135,7 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 header values are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
         }
@@ -164,7 +164,8 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
                 // CRLF found - check if it's followed by WSP (folding)
                 let hasWSP =
                     afterLFIndex < codes.count
-                    && (codes[afterLFIndex] == ASCII.Code.sp || codes[afterLFIndex] == ASCII.Code.htab)
+                    && (codes[afterLFIndex] == ASCII.Code.sp
+                        || codes[afterLFIndex] == ASCII.Code.htab)
                 if hasWSP {
                     // Valid folding: skip CRLF, keep the WSP
                     index = afterLFIndex  // Move to WSP, will be added in next iteration
@@ -250,7 +251,7 @@ extension [Byte] {
     ///
     /// - Parameter value: The header value to serialize
     public init(_ value: RFC_5322.Header.Value) {
-        self = Array<Byte>(value.rawValue.utf8)
+        self = [Byte](value.rawValue.utf8)
     }
 }
 

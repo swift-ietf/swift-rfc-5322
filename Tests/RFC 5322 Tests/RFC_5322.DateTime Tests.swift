@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import Time_Primitives
 import Testing
+import Time_Primitives
 
 @testable import RFC_5322
 

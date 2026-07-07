@@ -6,11 +6,11 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
-public import Time_Primitives
-import Standard_Library_Extensions
+public import Parseable_ASCII_Primitives
 import Radix_Formatter_Primitives
+import Standard_Library_Extensions
+public import Time_Primitives
 
 extension RFC_5322 {
     /// RFC 5322 date-time representation
@@ -235,7 +235,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
         }

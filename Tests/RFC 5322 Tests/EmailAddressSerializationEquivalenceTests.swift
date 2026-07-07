@@ -17,7 +17,8 @@ import Testing
 struct `EmailAddress Serialization Equivalence` {
 
     @Test
-    func `ASCII verb output equals Binary witness output for the display-name quoting path`() throws {
+    func `ASCII verb output equals Binary witness output for the display-name quoting path`() throws
+    {
         // A display name containing a `,` is a non-letter/digit/whitespace special,
         // forcing the quoting wrapper — exactly the logic transcribed into the
         // ASCII verb.

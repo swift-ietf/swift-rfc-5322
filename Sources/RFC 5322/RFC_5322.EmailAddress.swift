@@ -7,8 +7,8 @@
 
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
-public import Parseable_ASCII_Primitives
 import INCITS_4_1986
+public import Parseable_ASCII_Primitives
 public import RFC_1123
 
 extension RFC_5322 {
@@ -169,7 +169,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
     where Bytes.Element == Byte {
         // Delegate to concrete [Byte] implementation to work around Swift compiler bug
         // (LinearLifetimeChecker crash with complex generic index types)
-        try self.init(ascii: Array<Byte>(bytes))
+        try self.init(ascii: [Byte](bytes))
     }
 
     /// Internal initializer for concrete byte array (avoids compiler crash)
@@ -178,7 +178,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
         // against ASCII.Code constants directly (RFC 5322 email addresses are strict ASCII).
         let codes: [ASCII.Code]
         do {
-            codes = try Array<ASCII.Code>(bytes)
+            codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.localPart(.nonASCIICharacters)
         }
@@ -245,8 +245,8 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 throw Error.missingAtSign
             }
 
-            let localBytes = Array<Byte>(emailCodes[..<atIdx])
-            let domainBytes = Array<Byte>(emailCodes[(atIdx + 1)...])
+            let localBytes = [Byte](emailCodes[..<atIdx])
+            let domainBytes = [Byte](emailCodes[(atIdx + 1)...])
 
             // Parse components
             let localPartValue = try Self.parseLocalPart(localBytes)
@@ -259,8 +259,8 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 throw Error.missingAtSign
             }
 
-            let localBytes = Array<Byte>(codes[..<atIdx])
-            let domainBytes = Array<Byte>(codes[(atIdx + 1)...])
+            let localBytes = [Byte](codes[..<atIdx])
+            let domainBytes = [Byte](codes[(atIdx + 1)...])
 
             // Parse components
             let localPartValue = try Self.parseLocalPart(localBytes)
