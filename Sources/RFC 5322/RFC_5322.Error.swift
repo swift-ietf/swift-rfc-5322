@@ -36,16 +36,20 @@ extension RFC_5322 {
 
         /// Invalid header field name per RFC 5322 Section 3.6.8
         case invalidFieldName(String, reason: String)
+    }
+}
 
-        /// Underlying error details as a string description
-        public var errorDescription: String {
-            switch self {
-            case .dateTime(let error): return String(describing: error)
-            case .emailAddress(let error): return String(describing: error)
-            case .invalidFormat(let message): return message
-            case .invalidFieldName(let name, let reason):
-                return "Invalid field name '\(name)': \(reason)"
-            }
+// MARK: - Error Description
+
+extension RFC_5322.Error {
+    /// Underlying error details as a string description
+    public var errorDescription: String {
+        switch self {
+        case .dateTime(let error): return String(describing: error)
+        case .emailAddress(let error): return String(describing: error)
+        case .invalidFormat(let message): return message
+        case .invalidFieldName(let name, let reason):
+            return "Invalid field name '\(name)': \(reason)"
         }
     }
 }

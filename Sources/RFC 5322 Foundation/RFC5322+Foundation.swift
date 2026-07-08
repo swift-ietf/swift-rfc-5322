@@ -26,25 +26,27 @@
             public init(timezoneOffsetSeconds: Int = 0) {
                 self.timezoneOffsetSeconds = timezoneOffsetSeconds
             }
+        }
+    }
 
-            /// Format a Foundation.Date as RFC 5322 date-time string
-            public func format(_ date: Foundation.Date) -> String {
-                let dateTime = RFC_5322.DateTime(
-                    secondsSinceEpoch: Int(date.timeIntervalSince1970),
-                    timezoneOffsetSeconds: timezoneOffsetSeconds
-                )
-                return String(dateTime)
-            }
+    extension RFC_5322.Date.FormatStyle {
+        /// Format a Foundation.Date as RFC 5322 date-time string
+        public func format(_ date: Foundation.Date) -> String {
+            let dateTime = RFC_5322.DateTime(
+                secondsSinceEpoch: Int(date.timeIntervalSince1970),
+                timezoneOffsetSeconds: timezoneOffsetSeconds
+            )
+            return String(dateTime)
+        }
 
-            /// Parse an RFC 5322 date-time string into a Foundation.Date
-            public func parse(
-                _ value: some StringProtocol
-            ) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
-                let dateTime = try RFC_5322.DateTime(ascii: [Byte](value.utf8))
-                return Foundation.Date(
-                    timeIntervalSince1970: TimeInterval(dateTime.secondsSinceEpoch)
-                )
-            }
+        /// Parse an RFC 5322 date-time string into a Foundation.Date
+        public func parse(
+            _ value: some StringProtocol
+        ) throws(RFC_5322.DateTime.Error) -> Foundation.Date {
+            let dateTime = try RFC_5322.DateTime(ascii: [Byte](value.utf8))
+            return Foundation.Date(
+                timeIntervalSince1970: TimeInterval(dateTime.secondsSinceEpoch)
+            )
         }
     }
 

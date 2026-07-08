@@ -158,7 +158,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    static func _skipCFWS(_ input: inout Input) {
+    package static func _skipCFWS(_ input: inout Input) {
         while input.startIndex < input.endIndex {
             let byte = input[input.startIndex]
             guard byte == 0x20 || byte == 0x09 || byte == 0x0D || byte == 0x0A else { break }
@@ -167,7 +167,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    static func _tryDayOfWeek(_ input: inout Input) -> Input? {
+    package static func _tryDayOfWeek(_ input: inout Input) -> Input? {
         var idx = input.startIndex
         var count = 0
         while idx < input.endIndex && count < 3 {
@@ -188,7 +188,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
+    package static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
         // Delegate to the L1 ASCII decimal parser (single source of truth; also adds the
         // overflow check this site previously lacked — it used wrapping `&*`/`&+`).
         do {
@@ -202,7 +202,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    static func _parseAlpha(_ input: inout Input, count: Int) throws(Failure) -> Input {
+    package static func _parseAlpha(_ input: inout Input, count: Int) throws(Failure) -> Input {
         let start = input.startIndex
         var idx = start
         var n = 0

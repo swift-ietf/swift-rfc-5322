@@ -10,9 +10,7 @@ import INCITS_4_1986
 
 // MARK: - Constants and Validation
 extension RFC_5322.EmailAddress {
-    package enum Limits {
-        static let maxLength = 64  // Max length for local-part
-    }
+    package enum Limits {}
 
     // Address format regex with optional display name
     nonisolated(unsafe) package static let addressRegex = /(?:((?:\".*?\"|[^<]+)\s+))?<(.*?)@(.*?)>/
@@ -25,6 +23,10 @@ extension RFC_5322.EmailAddress {
 
     // Quoted string regex: allows any printable character except unescaped quotes
     nonisolated(unsafe) package static let quotedRegex = /(?:[^"\\\r\n]|\\["\\])+/
+}
+
+extension RFC_5322.EmailAddress.Limits {
+    static let maxLength = 64  // Max length for local-part
 }
 
 // MARK: - atext Character Set
