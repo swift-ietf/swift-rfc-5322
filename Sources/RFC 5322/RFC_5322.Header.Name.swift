@@ -171,7 +171,7 @@ extension RFC_5322.Header.Name: ASCII.Parseable {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 header names are strict ASCII).
         let codes: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))

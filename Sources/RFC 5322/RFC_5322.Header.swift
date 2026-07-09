@@ -129,14 +129,14 @@ extension RFC_5322.Header: ASCII.Parseable {
         // Parse name and value through their byte-level initializers
         // Wrap their errors in Header.Error for typed throws
         let name: RFC_5322.Header.Name
-        do {
+        do throws(RFC_5322.Header.Name.Error) {
             name = try RFC_5322.Header.Name(ascii: [Byte](nameBytes))
         } catch {
             throw Error.invalidName(error)
         }
 
         let value: RFC_5322.Header.Value
-        do {
+        do throws(RFC_5322.Header.Value.Error) {
             value = try RFC_5322.Header.Value(ascii: [Byte](valueBytes))
         } catch {
             throw Error.invalidValue(error)

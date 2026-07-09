@@ -86,7 +86,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).
         let codes: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.nonASCIICharacters

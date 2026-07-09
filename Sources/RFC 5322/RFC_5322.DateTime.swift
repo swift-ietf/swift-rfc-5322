@@ -234,7 +234,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
         let codes: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
@@ -369,7 +369,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         // Create date-time in UTC with validated components
         // Time.init throws Time.Error, not our typed error, so we use do-catch
         let dateTime: RFC_5322.DateTime
-        do {
+        do throws(Time.Error) {
             dateTime = try RFC_5322.DateTime(
                 year: year,
                 month: month,

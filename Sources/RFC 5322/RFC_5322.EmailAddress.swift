@@ -177,7 +177,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 email addresses are strict ASCII).
         let codes: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
         } catch {
             throw Error.localPart(.nonASCIICharacters)
@@ -272,7 +272,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
 
     /// Helper to parse local part with error wrapping (avoids compiler bug)
     private static func parseLocalPart(_ bytes: [Byte]) throws(Error) -> LocalPart {
-        do {
+        do throws(RFC_5322.EmailAddress.LocalPart.Error) {
             return try LocalPart(ascii: bytes)
         } catch {
             throw Error.localPart(error)
@@ -281,7 +281,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
 
     /// Helper to parse domain with error wrapping (avoids compiler bug)
     private static func parseDomain(_ bytes: [Byte]) throws(Error) -> RFC_1123.Domain {
-        do {
+        do throws(RFC_1123.Domain.Error) {
             return try RFC_1123.Domain(ascii: bytes)
         } catch {
             throw Error.domain(error)

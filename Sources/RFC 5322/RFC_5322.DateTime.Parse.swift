@@ -191,7 +191,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     package static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
         // Delegate to the L1 ASCII decimal parser (single source of truth; also adds the
         // overflow check this site previously lacked — it used wrapping `&*`/`&+`).
-        do {
+        do throws(ASCII.Decimal.Error) {
             return try ASCII.Decimal.Parser<Input, Int>().parse(&input)
         } catch {
             switch error {
