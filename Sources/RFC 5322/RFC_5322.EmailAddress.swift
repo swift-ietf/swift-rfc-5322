@@ -24,12 +24,25 @@ extension RFC_5322 {
         public let domain: RFC_1123.Domain
 
         /// Initialize with components
+        ///
+        /// - Throws: `Error.invalidDisplayName` if `displayName` contains a
+        ///   bare CR, a bare LF, or a non-ASCII byte — this would otherwise
+        ///   let a caller inject a new header line into a rendered message
+        ///   (CRLF header injection) or corrupt it with non-ASCII content.
         public init(
             displayName: String? = nil,
             localPart: LocalPart,
             domain: RFC_1123.Domain
-        ) {
-            self.displayName = displayName.map { String($0.trimming(.ascii.whitespaces)) }
+        ) throws(Error) {
+            if let displayName {
+                let trimmed = String(displayName.trimming(.ascii.whitespaces))
+                if let reason = trimmed.rfc5322FieldBodyInjectionReason {
+                    throw Error.invalidDisplayName(trimmed, reason: reason)
+                }
+                self.displayName = trimmed
+            } else {
+                self.displayName = nil
+            }
             self.localPart = localPart
             self.domain = domain
         }
@@ -56,7 +69,7 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
 
             if needsQuoting {
                 buffer.append(ASCII.Code.quotationMark)
-                buffer.append(contentsOf: displayName.utf8.map { ASCII.Code($0) })
+                buffer.append(contentsOf: Self.escapedForQuotedString(displayName).utf8.map { ASCII.Code($0) })
                 buffer.append(ASCII.Code.quotationMark)
             } else {
                 buffer.append(contentsOf: displayName.utf8.map { ASCII.Code($0) })
@@ -102,7 +115,7 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
 
             if needsQuoting {
                 buffer.append(ASCII.Code.quotationMark)
-                buffer.append(contentsOf: displayName.utf8)
+                buffer.append(contentsOf: Self.escapedForQuotedString(displayName).utf8)
                 buffer.append(ASCII.Code.quotationMark)
             } else {
                 buffer.append(contentsOf: displayName.utf8)
@@ -125,6 +138,16 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
         }
+    }
+
+    /// Escapes RFC 5322 §3.2.4 quoted-string specials (`\` and `"`) so a
+    /// validated, injection-free display name round-trips safely once
+    /// wrapped in quotation marks. Order matters: escaping `\` first
+    /// prevents double-escaping the escape character itself.
+    private static func escapedForQuotedString(_ displayName: String) -> String {
+        displayName
+            .replacing("\\", with: "\\\\")
+            .replacing("\"", with: "\\\"")
     }
 }
 
@@ -252,7 +275,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
 
-            self.init(displayName: displayName, localPart: localPartValue, domain: domainValue)
+            try self.init(displayName: displayName, localPart: localPartValue, domain: domainValue)
         } else {
             // Simple format: local@domain
             guard let atIdx = codes.firstIndex(of: ASCII.Code.commercialAt) else {
@@ -266,7 +289,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
 
-            self.init(displayName: nil, localPart: localPartValue, domain: domainValue)
+            try self.init(displayName: nil, localPart: localPartValue, domain: domainValue)
         }
     }
 

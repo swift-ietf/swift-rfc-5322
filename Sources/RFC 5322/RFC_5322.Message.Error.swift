@@ -17,6 +17,12 @@ extension RFC_5322.Message {
     /// - MIME structure errors
     /// - Encoding errors
     public enum Error: Swift.Error, Sendable, Equatable {
+        // Construction validation errors (active today — guard against RFC
+        // 5322 header injection / non-ASCII leakage via the ergonomic
+        // String-typed `subject` and `mimeVersion` initializer parameters).
+        case invalidSubject(String, reason: String)
+        case invalidMimeVersion(String, reason: String)
+
         // FUTURE: Header parsing errors
         case missingRequiredHeader(String)  // e.g., "From", "Date"
         case invalidHeaderFormat(String)

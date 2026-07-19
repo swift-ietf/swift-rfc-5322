@@ -17,7 +17,7 @@ extension PerformanceTests {
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(380)))
         func `render basic message to string`() throws {
-            let message = RFC_5322.Message(
+            let message = try RFC_5322.Message(
                 from: try RFC_5322.EmailAddress("sender@example.com"),
                 to: [try RFC_5322.EmailAddress("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
@@ -30,7 +30,7 @@ extension PerformanceTests {
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(650)))
         func `render message with multiple recipients`() throws {
-            let message = RFC_5322.Message(
+            let message = try RFC_5322.Message(
                 from: try RFC_5322.EmailAddress("sender@example.com"),
                 to: [
                     try RFC_5322.EmailAddress("alice@example.com"),
@@ -67,7 +67,7 @@ extension PerformanceTests {
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(420)))
         func `render message with large body`() throws {
             let largeBody = String(repeating: "This is a test message. ", count: 100)
-            let message = RFC_5322.Message(
+            let message = try RFC_5322.Message(
                 from: try RFC_5322.EmailAddress("sender@example.com"),
                 to: [try RFC_5322.EmailAddress("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
@@ -82,7 +82,7 @@ extension PerformanceTests {
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(370)))
         func `convert basic message to bytes`() throws {
-            let message = RFC_5322.Message(
+            let message = try RFC_5322.Message(
                 from: try RFC_5322.EmailAddress("sender@example.com"),
                 to: [try RFC_5322.EmailAddress("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
@@ -96,7 +96,7 @@ extension PerformanceTests {
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(420)))
         func `convert message with large body to bytes`() throws {
             let largeBody = String(repeating: "Test data. ", count: 200)
-            let message = RFC_5322.Message(
+            let message = try RFC_5322.Message(
                 from: try RFC_5322.EmailAddress("sender@example.com"),
                 to: [try RFC_5322.EmailAddress("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),

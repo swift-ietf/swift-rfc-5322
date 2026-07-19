@@ -20,5 +20,9 @@ extension RFC_5322.EmailAddress {
 
         /// Domain validation failed (RFC 1123)
         case domain(RFC_1123.Domain.Error)
+
+        /// Display name contains a bare CR/LF byte (would allow RFC 5322
+        /// header injection into the serialized mailbox) or a non-ASCII byte.
+        case invalidDisplayName(String, reason: String)
     }
 }

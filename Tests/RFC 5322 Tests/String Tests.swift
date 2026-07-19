@@ -63,7 +63,7 @@ struct `String Tests` {
 
     @Test
     func `Convert message to string`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
@@ -82,7 +82,7 @@ struct `String Tests` {
 
     @Test
     func `String conversion matches byte conversion`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),

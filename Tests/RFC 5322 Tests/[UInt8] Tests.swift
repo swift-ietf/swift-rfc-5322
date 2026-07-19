@@ -127,7 +127,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Convert basic message to bytes`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -147,7 +147,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes use CRLF line endings`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -172,7 +172,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes include all required headers`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -195,7 +195,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes exclude BCC header`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             bcc: [try RFC_5322.EmailAddress("bcc@example.com")],
@@ -215,7 +215,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes include CC header when present`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             cc: [try RFC_5322.EmailAddress("cc@example.com")],
@@ -233,7 +233,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes include Reply-To when present`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             replyTo: try RFC_5322.EmailAddress("replyto@example.com"),
@@ -271,7 +271,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message bytes have empty line between headers and body`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -300,7 +300,7 @@ struct `[UInt8] Conversions Tests` {
     @Test
     func `Message bytes include body at end`() throws {
         let bodyContent = "This is the message body"
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -317,7 +317,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Multiple recipients separated by commas in bytes`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [
                 try RFC_5322.EmailAddress("alice@example.com"),
@@ -339,7 +339,7 @@ struct `[UInt8] Conversions Tests` {
 
     @Test
     func `Message byte conversion is reversible`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),

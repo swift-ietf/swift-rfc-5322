@@ -40,7 +40,7 @@ struct `README Verification Tests` {
 
     @Test
     func `README Line 75-89: Create a message`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress(
                 displayName: "John Doe",
                 localPart: .init("john"),
@@ -64,7 +64,7 @@ struct `README Verification Tests` {
 
     @Test
     func `README Line 91-92: Render message`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress(
                 displayName: "John Doe",
                 localPart: .init("john"),

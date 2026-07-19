@@ -20,8 +20,8 @@ extension RFC_5322 {
     /// ## Example
     ///
     /// ```swift
-    /// let message = RFC_5322.Message(
-    ///     from: RFC_5322.EmailAddress(
+    /// let message = try RFC_5322.Message(
+    ///     from: try RFC_5322.EmailAddress(
     ///         displayName: "John Doe",
     ///         localPart: .init("john"),
     ///         domain: RFC_1123.Domain("example.com")
@@ -83,6 +83,11 @@ extension RFC_5322 {
         ///   - body: Message body as bytes
         ///   - additionalHeaders: Additional custom headers
         ///   - mimeVersion: MIME-Version header (defaults to "1.0")
+        /// - Throws: `Error.invalidSubject` or `Error.invalidMimeVersion` if
+        ///   `subject` or `mimeVersion` contains a bare CR, a bare LF, or a
+        ///   non-ASCII byte — this would otherwise let a caller inject a new
+        ///   header line into the rendered message (CRLF header injection)
+        ///   or corrupt it with non-ASCII content.
         public init(
             from: EmailAddress,
             to: [EmailAddress],
@@ -95,7 +100,13 @@ extension RFC_5322 {
             body: [Byte],
             additionalHeaders: [Header] = [],
             mimeVersion: String = "1.0"
-        ) {
+        ) throws(Error) {
+            if let reason = subject.rfc5322FieldBodyInjectionReason {
+                throw Error.invalidSubject(subject, reason: reason)
+            }
+            if let reason = mimeVersion.rfc5322FieldBodyInjectionReason {
+                throw Error.invalidMimeVersion(mimeVersion, reason: reason)
+            }
             self.from = from
             self.to = to
             self.cc = cc

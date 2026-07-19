@@ -19,7 +19,7 @@ struct `RFC_5322.Message Tests` {
         let from = try RFC_5322.EmailAddress("sender@example.com")
         let to = [try RFC_5322.EmailAddress("recipient@example.com")]
 
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: from,
             to: to,
             date: .init(secondsSinceEpoch: 0),
@@ -38,7 +38,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Create message with multiple recipients`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [
                 try RFC_5322.EmailAddress("alice@example.com"),
@@ -59,7 +59,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Create message with CC recipients`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("primary@example.com")],
             cc: [try RFC_5322.EmailAddress("cc@example.com")],
@@ -75,7 +75,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Create message with BCC recipients`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("primary@example.com")],
             bcc: [try RFC_5322.EmailAddress("bcc@example.com")],
@@ -91,7 +91,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Create message with Reply-To`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             replyTo: try RFC_5322.EmailAddress("replyto@example.com"),
@@ -131,7 +131,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Create message with custom MIME version`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -146,7 +146,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Default MIME version is 1.0`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
@@ -162,7 +162,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message to string contains all required headers`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
@@ -183,7 +183,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message with display names`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress(
                 displayName: "John Doe",
                 localPart: .init("john"),
@@ -204,7 +204,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message does not include BCC header`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             bcc: [try RFC_5322.EmailAddress("bcc@example.com")],
@@ -223,7 +223,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message includes CC header`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             cc: [try RFC_5322.EmailAddress("cc@example.com")],
@@ -240,7 +240,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message includes Reply-To header`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             replyTo: try RFC_5322.EmailAddress("replyto@example.com"),
@@ -257,7 +257,7 @@ struct `RFC_5322.Message Tests` {
 
     @Test
     func `Render message includes additional headers`() throws {
-        let message = RFC_5322.Message(
+        let message = try RFC_5322.Message(
             from: try RFC_5322.EmailAddress("sender@example.com"),
             to: [try RFC_5322.EmailAddress("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),

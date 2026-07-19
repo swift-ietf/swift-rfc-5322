@@ -73,7 +73,7 @@ let addr = try RFC_5322.EmailAddress(
 
 ```swift
 // Create a message
-let message = RFC_5322.Message(
+let message = try RFC_5322.Message(
     from: try RFC_5322.EmailAddress(
         displayName: "John Doe",
         localPart: .init("john"),
@@ -105,7 +105,7 @@ print(emlContent)
 
 ```swift
 // Message with CC, BCC, and custom headers
-let message = RFC_5322.Message(
+let message = try RFC_5322.Message(
     from: try RFC_5322.EmailAddress("sender@example.com"),
     to: [try RFC_5322.EmailAddress("recipient@example.com")],
     cc: [try RFC_5322.EmailAddress("cc@example.com")],
