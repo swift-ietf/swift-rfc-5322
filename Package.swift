@@ -90,6 +90,7 @@ let package = Package(
             name: "RFC 5322 Tests",
             dependencies: [
                 "RFC 5322",
+                .asciiParser,
             ]
         ),
     ],
