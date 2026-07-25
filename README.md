@@ -1,7 +1,7 @@
 # Swift RFC 5322
 
-[![CI](https://github.com/swift-ietf/swift-rfc-5322/workflows/CI/badge.svg)](https://github.com/swift-ietf/swift-rfc-5322/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
+[![CI](https://github.com/swift-ietf/swift-rfc-5322/workflows/CI/badge.svg)](https://github.com/swift-ietf/swift-rfc-5322/actions/workflows/ci.yml)
 
 Swift implementation of RFC 5322: Internet Message Format - email message structure and formatting standard.
 
