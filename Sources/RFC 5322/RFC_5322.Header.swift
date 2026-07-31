@@ -179,13 +179,17 @@ extension Array where Element == RFC_5322.Header {
         }
         set {
             removeAll(where: { $0.name == name })
-            if let newValue = try? newValue.map({ try RFC_5322.Header.Value($0) }) {
-                append(
-                    RFC_5322.Header(
-                        name: name,
-                        value: newValue
+            if let newValue {
+                do throws(RFC_5322.Header.Value.Error) {
+                    let value = try RFC_5322.Header.Value(newValue)
+                    append(
+                        RFC_5322.Header(
+                            name: name,
+                            value: value
+                        )
                     )
-                )
+                } catch {
+                }
             }
         }
     }

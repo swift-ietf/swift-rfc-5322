@@ -184,6 +184,10 @@ extension RFC_5322.Message.ID: CustomStringConvertible {
 }
 
 extension RFC_5322.Message.ID: Codable {
+    // REASON: `Swift.Encodable.encode(to:)` is declared with untyped `throws` and an
+    // existential `Encoder` parameter upstream; a conforming implementation is
+    // signature-forced and cannot express `throws(E)` or a concrete encoder type.
+    // swiftlint:disable:next typed_throws_required no_any_protocol_existential
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         // Encode as string (without angle brackets)
@@ -191,6 +195,10 @@ extension RFC_5322.Message.ID: Codable {
         try container.encode(string)
     }
 
+    // REASON: `Swift.Decodable.init(from:)` is declared with untyped `throws` and an
+    // existential `Decoder` parameter upstream; a conforming implementation is
+    // signature-forced and cannot express `throws(E)` or a concrete decoder type.
+    // swiftlint:disable:next typed_throws_required no_any_protocol_existential
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let string = try container.decode(String.self)

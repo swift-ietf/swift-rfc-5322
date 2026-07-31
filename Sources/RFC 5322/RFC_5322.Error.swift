@@ -46,8 +46,11 @@ extension RFC_5322.Error {
     public var errorDescription: String {
         switch self {
         case .dateTime(let error): return String(describing: error)
+
         case .emailAddress(let error): return String(describing: error)
+
         case .invalidFormat(let message): return message
+
         case .invalidFieldName(let name, let reason):
             return "Invalid field name '\(name)': \(reason)"
         }
@@ -77,10 +80,13 @@ extension RFC_5322.Error: CustomStringConvertible {
         switch self {
         case .dateTime(let error):
             return "DateTime error: \(error)"
+
         case .emailAddress(let error):
             return "Email address error: \(error)"
+
         case .invalidFormat(let message):
             return "Invalid format: \(message)"
+
         case .invalidFieldName(let name, let reason):
             return "Invalid field name '\(name)': \(reason)"
         }

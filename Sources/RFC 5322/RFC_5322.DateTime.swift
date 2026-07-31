@@ -673,6 +673,10 @@ extension RFC_5322.DateTime: Codable {
         case timezoneOffsetSeconds
     }
 
+    // REASON: `Swift.Decodable.init(from:)` is declared with untyped `throws` and an
+    // existential `Decoder` parameter upstream; a conforming implementation is
+    // signature-forced and cannot express `throws(E)` or a concrete decoder type.
+    // swiftlint:disable:next typed_throws_required no_any_protocol_existential
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let seconds = try container.decode(Int.self, forKey: .secondsSinceEpoch)
@@ -680,6 +684,10 @@ extension RFC_5322.DateTime: Codable {
         self.init(secondsSinceEpoch: seconds, timezoneOffsetSeconds: offset)
     }
 
+    // REASON: `Swift.Encodable.encode(to:)` is declared with untyped `throws` and an
+    // existential `Encoder` parameter upstream; a conforming implementation is
+    // signature-forced and cannot express `throws(E)` or a concrete encoder type.
+    // swiftlint:disable:next typed_throws_required no_any_protocol_existential
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(secondsSinceEpoch, forKey: .secondsSinceEpoch)

@@ -70,7 +70,9 @@ extension RFC_5322.EmailAddress.`Edge Case` {
     }
 
     @Test
-    func `parsing a string with an embedded CRLF in the display name is rejected rather than silently accepted`() {
+    func
+        `parsing a string with an embedded CRLF in the display name is rejected rather than silently accepted`()
+    {
         // Simulates an attacker-controlled mailbox string reaching the
         // string-based / byte-based parser, not just the memberwise
         // initializer.
