@@ -113,7 +113,7 @@ extension RFC_5322.Header: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the header
     /// - Throws: `RFC_5322.Header.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Split on first colon to separate name from value.
         // Project ASCII.Code.colon to the byte-domain element type.

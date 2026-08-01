@@ -165,7 +165,7 @@ extension RFC_5322.Header.Name: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the header name
     /// - Throws: `RFC_5322.Header.Name.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Empty check
         guard !bytes.isEmpty else {

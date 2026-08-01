@@ -102,7 +102,7 @@ extension RFC_5322.Message.ID: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the Message-ID
     /// - Throws: `RFC_5322.Message.ID.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 Message-IDs are strict ASCII).

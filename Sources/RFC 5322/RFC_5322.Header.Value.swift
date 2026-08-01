@@ -129,7 +129,7 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the header value
     /// - Throws: `RFC_5322.Header.Value.Error` if the bytes contain invalid characters or improper folding
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // RFC 5322 Section 2.2.3: Unfolding
         // "Unfolding is accomplished by simply removing any CRLF

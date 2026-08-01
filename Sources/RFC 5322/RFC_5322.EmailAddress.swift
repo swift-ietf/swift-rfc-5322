@@ -190,7 +190,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the email address
     /// - Throws: `RFC_5322.EmailAddress.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Delegate to concrete [Byte] implementation to work around Swift compiler bug
         // (LinearLifetimeChecker crash with complex generic index types)

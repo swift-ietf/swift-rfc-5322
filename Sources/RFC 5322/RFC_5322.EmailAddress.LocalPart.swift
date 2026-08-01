@@ -81,7 +81,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the local-part
     /// - Throws: `RFC_5322.EmailAddress.LocalPart.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).

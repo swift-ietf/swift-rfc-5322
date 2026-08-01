@@ -229,7 +229,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
     ///
     /// - Parameter bytes: The ASCII byte representation of the date-time
     /// - Throws: `RFC_5322.DateTime.Error` if the bytes are malformed
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Type-up: lift to ASCII.Code at the entry boundary so the body works
         // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
