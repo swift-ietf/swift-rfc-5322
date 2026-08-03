@@ -11,10 +11,21 @@ extension Target.Dependency {
     static var rfc5322: Self { .target(name: .rfc5322) }
     static var rfc5322Foundation: Self { .target(name: .rfc5322Foundation) }
     static var rfc1123: Self { .product(name: "RFC 1123", package: "swift-rfc-1123") }
-    static var standards: Self { .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions") }
-    static var binary: Self { .product(name: "Binary Primitives", package: "swift-binary-primitives") }
-    static var radixFormat: Self { .product(name: "Radix Formatter Primitives", package: "swift-radix-formatter-primitives") }
-    static var binarySerializable: Self { .product(name: "Binary Serializable Primitives", package: "swift-binary-serializer-primitives") }
+    static var standards: Self {
+        .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
+    }
+    static var binary: Self {
+        .product(name: "Binary Primitives", package: "swift-binary-primitives")
+    }
+    static var radixFormat: Self {
+        .product(name: "Radix Formatter Primitives", package: "swift-radix-formatter-primitives")
+    }
+    static var binarySerializable: Self {
+        .product(
+            name: "Binary Serializable Primitives",
+            package: "swift-binary-serializer-primitives"
+        )
+    }
     static var time: Self { .product(name: "Time Primitives", package: "swift-time-primitives") }
     static var asciiSerializer: Self {
         .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
@@ -37,23 +48,47 @@ let package = Package(
         .iOS(.v26),
         .tvOS(.v26),
         .watchOS(.v26),
-        .visionOS(.v26)
+        .visionOS(.v26),
     ],
     products: [
         .library(name: "RFC 5322", targets: ["RFC 5322"]),
-        .library(name: "RFC 5322 Foundation", targets: ["RFC 5322 Foundation"])
+        .library(name: "RFC 5322 Foundation", targets: ["RFC 5322 Foundation"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swift-ietf/swift-rfc-1123.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-standard-library-extensions.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-binary-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-radix-formatter-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-time-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-binary-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-radix-formatter-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-time-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git",
+            branch: "main"
+        ),
         .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-parser-primitives.git", branch: "main")
+        .package(
+            url: "https://github.com/swift-primitives/swift-parser-primitives.git",
+            branch: "main"
+        ),
     ],
     targets: [
         .target(
@@ -69,14 +104,14 @@ let package = Package(
                 .asciiDecimalParser,
                 .asciiParser,
                 .incits_4_1986,
-                .product(name: "Parser Primitives", package: "swift-parser-primitives")
+                .product(name: "Parser Primitives", package: "swift-parser-primitives"),
             ]
         ),
         .target(
             name: "RFC 5322 Foundation",
             dependencies: [
                 .rfc5322,
-                .binarySerializable
+                .binarySerializable,
             ]
         ),
         .testTarget(
