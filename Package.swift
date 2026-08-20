@@ -36,9 +36,6 @@ extension Target.Dependency {
     static var asciiParser: Self {
         .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
     }
-    static var incits41986: Self {
-        .product(name: "INCITS 4 1986", package: "swift-incits-4-1986")
-    }
 }
 
 let package = Package(
@@ -103,7 +100,7 @@ let package = Package(
                 .asciiSerializer,
                 .asciiDecimalParser,
                 .asciiParser,
-                .incits41986,
+                .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
                 .product(name: "Parser Primitives", package: "swift-parser-primitives"),
             ]
         ),
