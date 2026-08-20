@@ -20,7 +20,7 @@ extension RFC_5322.Date {
     public struct FormatStyle: Sendable {
         /// Timezone offset in seconds from UTC (default: 0 for UTC)
         public let timezoneOffsetSeconds: Int
-
+        
         /// Create a format style with specific timezone offset
         /// - Parameter timezoneOffsetSeconds: Timezone offset in seconds (default: 0 for UTC)
         public init(timezoneOffsetSeconds: Int = 0) {
@@ -38,7 +38,7 @@ extension RFC_5322.Date.FormatStyle {
         )
         return String(dateTime)
     }
-
+    
     /// Parse an RFC 5322 date-time string into a Foundation.Date
     public func parse(
         _ value: some StringProtocol
@@ -72,7 +72,7 @@ extension Foundation.Date {
     public func formatted(_ style: RFC_5322.Date.FormatStyle) -> String {
         style.format(self)
     }
-
+    
     /// Parse an RFC 5322 date-time string into a Foundation.Date
     ///
     /// - Parameters:
@@ -102,7 +102,7 @@ extension RFC_5322.Date.FormatStyle {
     public static var rfc5322: RFC_5322.Date.FormatStyle {
         RFC_5322.Date.FormatStyle(timezoneOffsetSeconds: 0)
     }
-
+    
     /// RFC 5322 format style with custom timezone offset
     ///
     /// - Parameter timezoneOffsetSeconds: Timezone offset in seconds from UTC
@@ -139,7 +139,7 @@ extension RFC_5322.DateTime {
     public var foundationDate: Foundation.Date {
         Foundation.Date(timeIntervalSince1970: TimeInterval(secondsSinceEpoch))
     }
-
+    
     /// Create an RFC 5322 DateTime from a Foundation.Date
     ///
     /// - Parameters:
@@ -221,5 +221,5 @@ extension RFC_5322.DateTime {
     ) -> String {
         foundationDate.formatted(date: date, time: time)
     }
-
+}    
 #endif
