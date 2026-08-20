@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
@@ -36,7 +36,7 @@ extension Target.Dependency {
     static var asciiParser: Self {
         .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
     }
-    static var incits_4_1986: Self {
+    static var incits41986: Self {
         .product(name: "INCITS 4 1986", package: "swift-incits-4-1986")
     }
 }
@@ -44,11 +44,11 @@ extension Target.Dependency {
 let package = Package(
     name: "swift-rfc-5322",
     platforms: [
-        .macOS("27"),
-        .iOS("27"),
-        .tvOS("27"),
-        .watchOS("27"),
-        .visionOS("27"),
+        .macOS(.v27),
+        .iOS(.v27),
+        .tvOS(.v27),
+        .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(name: "RFC 5322", targets: ["RFC 5322"]),
@@ -103,7 +103,7 @@ let package = Package(
                 .asciiSerializer,
                 .asciiDecimalParser,
                 .asciiParser,
-                .incits_4_1986,
+                .incits41986,
                 .product(name: "Parser Primitives", package: "swift-parser-primitives"),
             ]
         ),
