@@ -1,10 +1,3 @@
-//
-//  RFC_5322.DateTime PerformanceTests.swift
-//  RFC 5322 Tests
-//
-//  Performance tests for RFC_5322.DateTime
-//
-
 import Testing
 
 @testable import RFC_5322
@@ -12,8 +5,6 @@ import Testing
 extension PerformanceTests {
     @Suite(.serialized)
     struct `DateTime` {
-
-        // MARK: - Construction Performance
 
         @Test(.timed(iterations: 10000, warmup: 1000, threshold: .microseconds(120)))
         func `create from epoch`() {
@@ -31,8 +22,6 @@ extension PerformanceTests {
                 second: 45
             )
         }
-
-        // MARK: - Components Extraction Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(100), metric: .median))
         func `extract components from UTC datetime`() {
@@ -59,8 +48,6 @@ extension PerformanceTests {
             _ = dateTime.components
         }
 
-        // MARK: - Formatting Performance
-
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(110)))
         func `format datetime to string`() throws {
             let dateTime = try RFC_5322.DateTime(
@@ -86,8 +73,6 @@ extension PerformanceTests {
             _ = String(dateTime)
         }
 
-        // MARK: - Parsing Performance
-
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(115)))
         func `parse datetime string`() throws {
             _ = try RFC_5322.DateTime("Fri, 01 Jan 2021 12:00:00 +0000")
@@ -97,8 +82,6 @@ extension PerformanceTests {
         func `parse datetime with timezone offset`() throws {
             _ = try RFC_5322.DateTime("Mon, 15 Jan 2024 14:30:00 +0500")
         }
-
-        // MARK: - Byte Conversion Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(105)))
         func `convert to bytes`() throws {
@@ -111,8 +94,6 @@ extension PerformanceTests {
             )
             _ = [UInt8](dateTime)
         }
-
-        // MARK: - Comparison Performance
 
         @Test(.timed(iterations: 10000, warmup: 1000, threshold: .microseconds(130)))
         func `compare datetimes`() {

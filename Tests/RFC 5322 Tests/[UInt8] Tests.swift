@@ -1,10 +1,3 @@
-//
-//  [UInt8] Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for [UInt8] extension initializers for byte-level conversions
-//
-
 import ASCII_Serializer_Primitives
 import INCITS_4_1986
 import Testing
@@ -13,8 +6,6 @@ import Testing
 
 @Suite
 struct `[UInt8] Conversions Tests` {
-
-    // MARK: - EmailAddress to [UInt8]
 
     @Test
     func `Convert simple email address to bytes`() throws {
@@ -56,10 +47,8 @@ struct `[UInt8] Conversions Tests` {
         let email = try RFC_5322.EmailAddress("user@example.com")
         let bytes = [UInt8](email)
 
-        #expect(bytes.contains(0x40))  // @ symbol
+        #expect(bytes.contains(0x40))
     }
-
-    // MARK: - Header to [UInt8]
 
     @Test
     func `Convert header to bytes`() throws {
@@ -84,15 +73,12 @@ struct `[UInt8] Conversions Tests` {
         let header = try RFC_5322.Header(name: .init("X-Test"), value: .init("value"))
         let bytes = [UInt8](header)
 
-        // Debug: print actual bytes
         print("DEBUG Header bytes: \(bytes)")
         print("DEBUG Header string: '\(String(decoding: bytes, as: UTF8.self))'")
 
-        #expect(bytes.contains(0x3A))  // : colon
-        #expect(bytes.contains(0x20))  // space
+        #expect(bytes.contains(0x3A))
+        #expect(bytes.contains(0x20))
     }
-
-    // MARK: - DateTime to [UInt8]
 
     @Test
     func `Convert datetime to bytes`() throws {
@@ -122,8 +108,6 @@ struct `[UInt8] Conversions Tests` {
 
         #expect(fromBytes == fromDescription)
     }
-
-    // MARK: - Message to [UInt8]
 
     @Test
     func `Convert basic message to bytes`() throws {
@@ -158,7 +142,6 @@ struct `[UInt8] Conversions Tests` {
 
         let bytes = [UInt8](message)
 
-        // Should contain CRLF sequences
         var hasCRLF = false
         for i in 0..<(bytes.count - 1) {
             if bytes[i] == UInt8.ascii.cr && bytes[i + 1] == UInt8.ascii.lf {
@@ -184,7 +167,6 @@ struct `[UInt8] Conversions Tests` {
         let bytes = [UInt8](message)
         let string = String(decoding: bytes, as: UTF8.self)
 
-        // Required headers
         #expect(string.contains("From:"))
         #expect(string.contains("To:"))
         #expect(string.contains("Subject:"))
@@ -208,7 +190,6 @@ struct `[UInt8] Conversions Tests` {
         let bytes = [UInt8](message)
         let string = String(decoding: bytes, as: UTF8.self)
 
-        // BCC should NOT be in the byte output
         #expect(!string.contains("Bcc:"))
         #expect(!string.contains("bcc@example.com"))
     }
@@ -282,7 +263,6 @@ struct `[UInt8] Conversions Tests` {
 
         let bytes = [UInt8](message)
 
-        // Should contain double CRLF (empty line separator)
         var hasDoubleCRLF = false
         for i in 0..<(bytes.count - 3) {
             let isDoubleCRLF =
@@ -335,8 +315,6 @@ struct `[UInt8] Conversions Tests` {
         #expect(string.contains("To: alice@example.com, bob@example.com"))
     }
 
-    // MARK: - Round-trip Tests
-
     @Test
     func `Message byte conversion is reversible`() throws {
         let message = try RFC_5322.Message(
@@ -351,7 +329,6 @@ struct `[UInt8] Conversions Tests` {
         let bytes1 = [UInt8](message)
         let string = String(decoding: bytes1, as: UTF8.self)
 
-        // Verify we can decode back to string
         #expect(!string.isEmpty)
         #expect(string.contains("sender@example.com"))
         #expect(string.contains("recipient@example.com"))

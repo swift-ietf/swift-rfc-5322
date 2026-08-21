@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  swift-rfc-5322
-//
-//  Created by Coen ten Thije Boonkkamp on 18/11/2025.
-//
-
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 import INCITS_4_1986
@@ -12,23 +5,15 @@ public import Parseable_ASCII_Primitives
 public import RFC_1123
 
 extension RFC_5322 {
-    /// RFC 5322 compliant email address (Internet Message Format)
+
     public struct EmailAddress: Hashable, Sendable {
-        /// The display name, if present
+
         public let displayName: String?
 
-        /// The local part (before @)
         public let localPart: LocalPart
 
-        /// The domain part (after @)
         public let domain: RFC_1123.Domain
 
-        /// Initialize with components
-        ///
-        /// - Throws: `Error.invalidDisplayName` if `displayName` contains a
-        ///   bare CR, a bare LF, or a non-ASCII byte — this would otherwise
-        ///   let a caller inject a new header line into a rendered message
-        ///   (CRLF header injection) or corrupt it with non-ASCII content.
         public init(
             displayName: String? = nil,
             localPart: LocalPart,
@@ -50,18 +35,13 @@ extension RFC_5322 {
 }
 
 extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
-    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 5322 mailbox/address
-    /// form, composing the already-re-cut `LocalPart` / `RFC_1123.Domain` ASCII
-    /// verbs directly into the `ASCII.Code` buffer. The display-name leaf is
-    /// emitted on the ASCII-code substrate; the quoting algorithm is the SAME as
-    /// the `Binary.Serializable` witness (`serializeBytes`), re-expressed per
-    /// substrate. The serialization equivalence test guards their parity.
+
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
     ) where Buffer.Element == ASCII.Code {
         if let displayName = value.displayName {
-            // Check if quoting is needed for display name
+
             let needsQuoting = displayName.contains(where: {
                 !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
                     || $0.asciiValue == nil
@@ -80,22 +60,19 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             buffer.append(ASCII.Code.space)
             buffer.append(ASCII.Code.lessThanSign)
 
-            // local-part@domain — compose the re-cut sub-part verbs
             RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(value.domain, into: &buffer)
 
             buffer.append(ASCII.Code.greaterThanSign)
         } else {
-            // Simple format without display name
+
             RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(value.domain, into: &buffer)
         }
     }
 
-    /// Explicit `Binary.Serializable` witness (RFC 5322 mailbox/address) on the
-    /// byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -103,13 +80,12 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
         serializeBytes(value, into: &buffer)
     }
 
-    /// Byte-domain serialization body (RFC 5322 mailbox/address).
     private static func serializeBytes<Buffer: RangeReplaceableCollection>(
         _ emailAddress: RFC_5322.EmailAddress,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
         if let displayName = emailAddress.displayName {
-            // Check if quoting is needed for display name
+
             let needsQuoting = displayName.contains(where: {
                 !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
                     || $0.asciiValue == nil
@@ -126,26 +102,20 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             buffer.append(ASCII.Code.space)
             buffer.append(ASCII.Code.lessThanSign)
 
-            // Serialize local-part through bytes
             RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
 
-            // Serialize domain through bytes
             RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
 
             buffer.append(ASCII.Code.greaterThanSign)
         } else {
-            // Simple format without display name
+
             RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
         }
     }
 
-    /// Escapes RFC 5322 §3.2.4 quoted-string specials (`\` and `"`) so a
-    /// validated, injection-free display name round-trips safely once
-    /// wrapped in quotation marks. Order matters: escaping `\` first
-    /// prevents double-escaping the escape character itself.
     private static func escapedForQuotedString(_ displayName: String) -> String {
         displayName
             .replacing("\\", with: "\\\\")
@@ -154,53 +124,19 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
 }
 
 extension RFC_5322.EmailAddress: ASCII.Parseable {
-    /// Creates an email address by validating `string`'s UTF-8 bytes as ASCII.
+
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
 
-    /// Parses email address from canonical byte representation (CANONICAL PRIMITIVE)
-    ///
-    /// This is the primitive parser that works at the byte level.
-    /// RFC 5322 email addresses are ASCII-only.
-    ///
-    /// ## Category Theory
-    ///
-    /// This is the fundamental parsing transformation:
-    /// - **Domain**: [Byte] (ASCII bytes)
-    /// - **Codomain**: RFC_5322.EmailAddress (structured data)
-    ///
-    /// String-based parsing is derived as composition:
-    /// ```
-    /// String → [Byte] (UTF-8 bytes) → EmailAddress
-    /// ```
-    ///
-    /// ## Formats
-    ///
-    /// - Simple: `user@example.com`
-    /// - With display name: `John Doe <user@example.com>`
-    /// - With quoted display name: `"John Doe" <user@example.com>`
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let bytes = Array<Byte>("user@example.com".utf8)
-    /// let email = try RFC_5322.EmailAddress(ascii: bytes)
-    /// ```
-    ///
-    /// - Parameter bytes: The ASCII byte representation of the email address
-    /// - Throws: `RFC_5322.EmailAddress.Error` if the bytes are malformed
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
-        // Delegate to concrete [Byte] implementation to work around Swift compiler bug
-        // (LinearLifetimeChecker crash with complex generic index types)
+
         try self.init(ascii: [Byte](bytes))
     }
 
-    /// Internal initializer for concrete byte array (avoids compiler crash)
     internal init(ascii bytes: [Byte]) throws(Error) {
-        // Type-up: lift to ASCII.Code at the entry boundary so the body works
-        // against ASCII.Code constants directly (RFC 5322 email addresses are strict ASCII).
+
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
@@ -208,7 +144,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             throw Error.localPart(.nonASCIICharacters)
         }
 
-        // Find angle bracket positions
         var ltOffset: Int?
         var gtOffset: Int?
 
@@ -221,13 +156,11 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             }
         }
 
-        // Look for angle brackets to determine format
         if let ltOff = ltOffset, let gtOff = gtOffset, ltOff < gtOff {
-            // Format: "Display Name <local@domain>"
+
             let displayNameCodes = codes[..<ltOff]
             let emailCodes = codes[(ltOff + 1)..<gtOff]
 
-            // Parse display name (trim whitespace)
             let displayName: String?
             if !displayNameCodes.isEmpty {
                 var trimmedCodes = [ASCII.Code]()
@@ -250,7 +183,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 if !trimmedCodes.isEmpty {
                     var nameString = String(decoding: trimmedCodes, as: UTF8.self)
 
-                    // Handle quoted display names: "Name" -> Name
                     if nameString.hasPrefix("\"") && nameString.hasSuffix("\"") {
                         nameString = String(nameString.dropFirst().dropLast())
                         nameString = nameString.replacing(#"\""#, with: "\"")
@@ -265,7 +197,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 displayName = nil
             }
 
-            // Parse email part (local@domain)
             guard let atIdx = emailCodes.firstIndex(of: ASCII.Code.commercialAt) else {
                 throw Error.missingAtSign
             }
@@ -273,13 +204,12 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             let localBytes = [Byte](emailCodes[..<atIdx])
             let domainBytes = [Byte](emailCodes[(atIdx + 1)...])
 
-            // Parse components
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
 
             try self.init(displayName: displayName, localPart: localPartValue, domain: domainValue)
         } else {
-            // Simple format: local@domain
+
             guard let atIdx = codes.firstIndex(of: ASCII.Code.commercialAt) else {
                 throw Error.missingAtSign
             }
@@ -287,7 +217,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
             let localBytes = [Byte](codes[..<atIdx])
             let domainBytes = [Byte](codes[(atIdx + 1)...])
 
-            // Parse components
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
 
@@ -295,7 +224,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
         }
     }
 
-    /// Helper to parse local part with error wrapping (avoids compiler bug)
     private static func parseLocalPart(_ bytes: [Byte]) throws(Error) -> LocalPart {
         do throws(RFC_5322.EmailAddress.LocalPart.Error) {
             return try LocalPart(ascii: bytes)
@@ -304,7 +232,6 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
         }
     }
 
-    /// Helper to parse domain with error wrapping (avoids compiler bug)
     private static func parseDomain(_ bytes: [Byte]) throws(Error) -> RFC_1123.Domain {
         do throws(RFC_1123.Domain.Error) {
             return try RFC_1123.Domain(ascii: bytes)
@@ -315,7 +242,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
 }
 
 extension RFC_5322.EmailAddress {
-    /// Just the email address part without display name
+
     public var address: String {
         "\(localPart)@\(domain.name)"
     }
@@ -335,15 +262,14 @@ extension RFC_5322.EmailAddress: Codable {
 }
 
 extension RFC_5322.EmailAddress: CustomStringConvertible {
-    /// The email address's ASCII serialization decoded as a `String`.
+
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
 extension RFC_5322.EmailAddress: Swift.RawRepresentable {
-    /// The email address's ASCII serialization as a `String` (computed; the
-    /// rawValue is derived from serialization, not stored).
+
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)
     }

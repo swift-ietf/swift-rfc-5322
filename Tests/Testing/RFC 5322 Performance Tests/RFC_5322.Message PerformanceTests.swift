@@ -1,10 +1,3 @@
-//
-//  RFC_5322.Message PerformanceTests.swift
-//  RFC 5322 Tests
-//
-//  Performance tests for RFC_5322.Message
-//
-
 import Testing
 
 @testable import RFC_5322
@@ -12,8 +5,6 @@ import Testing
 extension PerformanceTests {
     @Suite(.serialized)
     struct `RFC_5322.Message` {
-
-        // MARK: - Message Rendering Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(380)))
         func `render basic message to string`() throws {
@@ -78,8 +69,6 @@ extension PerformanceTests {
             _ = String(message)
         }
 
-        // MARK: - Byte Conversion Performance
-
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(370)))
         func `convert basic message to bytes`() throws {
             let message = try RFC_5322.Message(
@@ -107,11 +96,9 @@ extension PerformanceTests {
             _ = [UInt8](message)
         }
 
-        // MARK: - Message ID Generation Performance
-
         @Test(
             .timed(iterations: 10000, warmup: 1000, threshold: .microseconds(140)),
-            // swiftlint:disable:next force_try
+
             arguments: [try! RFC_5322.EmailAddress("sender@example.com")]
         )
         func `generate message ID`(from: RFC_5322.EmailAddress) throws {

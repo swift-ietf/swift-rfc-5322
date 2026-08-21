@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  swift-rfc-5322
-//
-//  Created by Coen ten Thije Boonkkamp on 21/11/2025.
-//
-
 @_exported public import ASCII_Serializer_Primitives
 @_exported public import Binary_Primitives
 @_exported public import Binary_Serializable_Primitives

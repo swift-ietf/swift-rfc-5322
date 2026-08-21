@@ -1,17 +1,3 @@
-//
-//  RFC_5322.Message+Edge Case.swift
-//  RFC 5322 Tests
-//
-//  Regression coverage for:
-//  - fable-448 F-001: `RFC_5322.Message` no longer conforms to
-//    `ASCII.Parseable` — the prior conformance's `init(ascii:)` was an
-//    unconditional `fatalError`, a runtime landmine for any code path that
-//    reached it (directly, or generically through an `ASCII.Parseable`
-//    constraint). The absence is now a compile-time fact.
-//  - fable-448 F-002: CRLF header injection and non-ASCII leakage via the
-//    previously-unvalidated `subject` and `mimeVersion` fields.
-//
-
 import Parseable_ASCII_Primitives
 import RFC_5322
 import Testing
@@ -22,19 +8,11 @@ extension RFC_5322.Message {
 
 extension RFC_5322.Message.`Edge Case` {
 
-    // MARK: - F-001: fatalError stub removed
-
     @Test
     func `Message no longer conforms to ASCII Parseable`() {
-        // Pre-fix, `RFC_5322.Message` conformed to `ASCII.Parseable` and its
-        // `init(ascii:)` unconditionally called `fatalError` — reaching it
-        // crashed the process rather than throwing. Post-fix, the
-        // conformance itself is gone, so this metatype cast fails to find
-        // any conformance and the assertion holds.
+
         #expect(!(RFC_5322.Message.self is any ASCII.Parseable.Type))
     }
-
-    // MARK: - F-002: subject / mimeVersion header injection guard
 
     @Test
     func `subject containing a bare CRLF is rejected`() throws {

@@ -1,17 +1,8 @@
-//
-//  [Byte].swift
-//  swift-rfc-5322
-//
-//  Type conversions for RFC 5322 Message
-//
-
 import ASCII_Serializer_Primitives
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
 import Time_Primitives
-
-// MARK: - Constants
 
 extension Array where Element == Byte {
     package static let fromPrefix: [Byte] = .init("From: ".utf8)
@@ -22,6 +13,6 @@ extension Array where Element == Byte {
     package static let messageIdPrefix: [Byte] = .init("Message-ID: ".utf8)
     package static let replyToPrefix: [Byte] = .init("Reply-To: ".utf8)
     package static let mimeVersionPrefix: [Byte] = .init("MIME-Version: ".utf8)
-    /// CRLF line ending (0x0D 0x0A) as Byte sequence.
+
     package static let crlf: [Byte] = .init("\r\n".utf8)
 }

@@ -1,10 +1,3 @@
-//
-//  RFC_5322.Header Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for RFC_5322.Header including creation, validation, and array extensions
-//
-
 import ASCII_Serializer_Primitives
 import INCITS_4_1986
 import Testing
@@ -13,8 +6,6 @@ import Testing
 
 @Suite
 struct `RFC_5322.Header Tests` {
-
-    // MARK: - Header Creation
 
     @Test
     func `Create header with standard name`() throws {
@@ -34,8 +25,6 @@ struct `RFC_5322.Header Tests` {
         #expect(header.name.rawValue == "X-Custom-Header")
         #expect(header.value == "custom value")
     }
-
-    // MARK: - Header Name Tests
 
     @Test
     func `Header names are case-insensitive for equality`() throws {
@@ -73,8 +62,6 @@ struct `RFC_5322.Header Tests` {
         #expect(name.rawValue == "X-Test")
     }
 
-    // MARK: - Header Description
-
     @Test
     func `Header description format`() throws {
         let header = try RFC_5322.Header(name: .init("X-Test"), value: .init("test value"))
@@ -92,8 +79,6 @@ struct `RFC_5322.Header Tests` {
 
         #expect(header.description == "Subject: RE: Meeting; Notes")
     }
-
-    // MARK: - Array Extensions - Subscript
 
     @Test
     func `Array subscript get header value`() throws {
@@ -146,12 +131,9 @@ struct `RFC_5322.Header Tests` {
         headers.append(try RFC_5322.Header(name: .received, value: .init("server2")))
         headers[.received] = "server3"
 
-        // Should remove both old headers and add one new one
         #expect(headers.count == 1)
         #expect(headers[0].value == "server3")
     }
-
-    // MARK: - Array Extensions - all()
 
     @Test
     func `Array all() returns multiple headers with same name`() throws {
@@ -175,8 +157,6 @@ struct `RFC_5322.Header Tests` {
         #expect(received.isEmpty)
     }
 
-    // MARK: - Array Extensions - values(for:)
-
     @Test
     func `Array values(for:) returns header values`() throws {
         var headers = [RFC_5322.Header]()
@@ -189,8 +169,6 @@ struct `RFC_5322.Header Tests` {
         #expect(values[0] == "server1")
         #expect(values[1] == "server2")
     }
-
-    // MARK: - Dictionary Literal
 
     @Test
     func `Create headers from dictionary literal`() throws {
@@ -205,8 +183,6 @@ struct `RFC_5322.Header Tests` {
         #expect(headers[.to] == "recipient@example.com")
         #expect(headers[.subject] == "Test")
     }
-
-    // MARK: - Hashable
 
     @Test
     func `Headers with same name and value are equal`() throws {
@@ -229,11 +205,8 @@ struct `RFC_5322.Header Tests` {
         let header1 = try RFC_5322.Header(name: .init("X-Test"), value: .init("value"))
         let header2 = try RFC_5322.Header(name: .init("x-test"), value: .init("value"))
 
-        // Names are case-insensitive
         #expect(header1.name == header2.name)
     }
-
-    // MARK: - Common Headers
 
     @Test
     func `RFC 5322 standard headers exist`() throws {

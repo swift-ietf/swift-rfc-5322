@@ -1,10 +1,3 @@
-//
-//  ReadmeVerificationTests.swift
-//  swift-rfc-5322
-//
-//  Verifies that README code examples actually work
-//
-
 import RFC_5322
 import Standard_Library_Extensions
 import Testing
@@ -116,7 +109,7 @@ struct `README Verification Tests` {
     func `README Line 128-129: Format date`() throws {
         let dateTime = RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200)
         #expect(!dateTime.description.isEmpty)
-        // Should contain day, month, year, time
+
         #expect(dateTime.description.contains(","))
     }
 }

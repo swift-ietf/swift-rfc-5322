@@ -1,10 +1,3 @@
-//
-//  FoundationDateFormattingTests.swift
-//  swift-rfc-5322
-//
-//  Tests for formatting Foundation.Date as RFC 5322
-//
-
 import Foundation
 import RFC_5322
 import RFC_5322_Foundation
@@ -15,32 +8,30 @@ struct `Foundation Date Formatting` {
 
     @Test
     func `Format Foundation.Date as RFC 5322`() throws {
-        // January 1, 2021 00:00:00 UTC
+
         let date = Date(timeIntervalSince1970: 1_609_459_200)
 
         let formatted = date.formatted(.rfc5322)
 
-        // Should be a valid RFC 5322 date-time string
-        #expect(formatted.contains("Fri"))  // Day name
-        #expect(formatted.contains("01"))  // Day
-        #expect(formatted.contains("Jan"))  // Month
-        #expect(formatted.contains("2021"))  // Year
-        #expect(formatted.contains("+0000"))  // UTC timezone
+        #expect(formatted.contains("Fri"))
+        #expect(formatted.contains("01"))
+        #expect(formatted.contains("Jan"))
+        #expect(formatted.contains("2021"))
+        #expect(formatted.contains("+0000"))
     }
 
     @Test
     func `Format Foundation.Date with custom timezone`() throws {
-        // January 1, 2021 00:00:00 UTC
+
         let date = Date(timeIntervalSince1970: 1_609_459_200)
 
-        // Format with EST timezone (-0500)
         let formatted = date.formatted(.rfc5322(timezoneOffsetSeconds: -18000))
 
-        #expect(formatted.contains("Thu"))  // One day earlier
-        #expect(formatted.contains("31"))  // 31st
-        #expect(formatted.contains("Dec"))  // December
-        #expect(formatted.contains("2020"))  // 2020
-        #expect(formatted.contains("-0500"))  // EST timezone
+        #expect(formatted.contains("Thu"))
+        #expect(formatted.contains("31"))
+        #expect(formatted.contains("Dec"))
+        #expect(formatted.contains("2020"))
+        #expect(formatted.contains("-0500"))
     }
 
     @Test
@@ -85,7 +76,6 @@ struct `RFC 5322 DateTime with Foundation Formatting` {
         let dt = RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200)
         let formatted = dt.formatted(Date.ISO8601FormatStyle())
 
-        // ISO 8601 format
         #expect(formatted.contains("2021"))
         #expect(formatted.contains("01"))
         #expect(formatted.contains("T") || formatted.contains("-"))
@@ -96,7 +86,6 @@ struct `RFC 5322 DateTime with Foundation Formatting` {
     func `Format RFC 5322 DateTime with date and time styles`() throws {
         let dt = try RFC_5322.DateTime(year: 2024, month: 1, day: 15, hour: 14, minute: 30)
 
-        // Numeric date, standard time
         let formatted = dt.formatted(date: .numeric, time: .standard)
 
         #expect(formatted.contains("2024") || formatted.contains("24"))
@@ -111,7 +100,6 @@ struct `RFC 5322 DateTime with Foundation Formatting` {
 
         let formatted = dt.formatted(date: .long, time: .omitted)
 
-        // Should contain month name and year
         #expect(formatted.contains("2024"))
         #expect(formatted.contains("15"))
     }
@@ -130,11 +118,10 @@ struct `RFC 5322 DateTime with Foundation Formatting` {
                 .minute()
         )
 
-        // Check major components (hour may vary based on system timezone)
         #expect(formatted.contains("2024"))
         #expect(formatted.contains("21"))
         #expect(formatted.contains("45"))
-        // Verify some hour is present (formatted in local timezone)
+
         #expect(
             formatted.range(of: #"\d{1,2}:\d{2}|at \d{1,2}:\d{2}"#, options: .regularExpression)
                 != nil

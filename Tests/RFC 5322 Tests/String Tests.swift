@@ -1,18 +1,9 @@
-//
-//  String Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for String extension initializers
-//
-
 import Testing
 
 @testable import RFC_5322
 
 @Suite
 struct `String Tests` {
-
-    // MARK: - EmailAddress to String
 
     @Test
     func `Convert simple email to string`() throws {
@@ -59,8 +50,6 @@ struct `String Tests` {
         #expect(string.contains("John@Doe"))
     }
 
-    // MARK: - Message to String
-
     @Test
     func `Convert message to string`() throws {
         let message = try RFC_5322.Message(
@@ -97,8 +86,6 @@ struct `String Tests` {
         #expect(fromString == fromBytes)
     }
 
-    // MARK: - DateTime to String
-
     @Test
     func `Convert datetime to string`() throws {
         let dateTime = try RFC_5322.DateTime(
@@ -122,8 +109,6 @@ struct `String Tests` {
 
         #expect(String(dateTime) == dateTime.description)
     }
-
-    // MARK: - Header to String
 
     @Test
     func `Convert header to string`() throws {

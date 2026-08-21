@@ -1,10 +1,3 @@
-//
-//  RFC_5322.Parse.swift
-//  swift-rfc-5322
-//
-//  Parser combinator namespace for RFC 5322 Internet Message Format.
-//
-
 import Parser_Primitives
 
 extension RFC_5322 {

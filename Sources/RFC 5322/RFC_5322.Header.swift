@@ -4,45 +4,13 @@ import INCITS_4_1986
 public import Parseable_ASCII_Primitives
 
 extension RFC_5322 {
-    /// Email header field (name-value pair)
-    ///
-    /// Represents a complete header field in Internet Message Format as defined by RFC 5322.
-    /// Headers are stored as an ordered sequence of name-value pairs.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let header = RFC_5322.Header(name: .contentType, value: "text/html")
-    ///
-    /// var headers: [RFC_5322.Header] = [
-    ///     .init(name: .from, value: "sender@example.com"),
-    ///     .init(name: .to, value: "recipient@example.com")
-    /// ]
-    ///
-    /// // Convenient subscript access
-    /// headers[.contentType] = "text/html"
-    /// print(headers[.contentType]) // Optional("text/html")
-    /// ```
-    ///
-    /// ## RFC Reference
-    ///
-    /// From RFC 5322 Section 2.2:
-    ///
-    /// > Each header field is a line of characters with a name, a colon,
-    /// > and a value. Field names are comprised of printable US-ASCII
-    /// > characters except colon. Field names are case-insensitive.
+
     public struct Header: Hashable, Sendable, Codable {
-        /// The header field name
+
         public let name: Header.Name
 
-        /// The header field value
         public let value: Header.Value
 
-        /// Creates a header field
-        ///
-        /// - Parameters:
-        ///   - name: The header field name
-        ///   - value: The header field value
         public init(
             name: Header.Name,
             value: Header.Value
@@ -53,12 +21,8 @@ extension RFC_5322 {
     }
 }
 
-// MARK: - Header Parsing
-
 extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
-    /// Own `ASCII.Serializable` verb ([FAM-012]) — `Name: Value`, composing the
-    /// already-re-cut `Header.Name` / `Header.Value` ASCII verbs directly into the
-    /// `ASCII.Code` buffer. Pure concatenation (no escape).
+
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -69,8 +33,6 @@ extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
         RFC_5322.Header.Value.serialize(value.value, into: &buffer)
     }
 
-    /// Explicit `Binary.Serializable` witness composing the same sub-part verbs
-    /// on the byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -83,40 +45,14 @@ extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
 }
 
 extension RFC_5322.Header: ASCII.Parseable {
-    /// Creates a header by validating `string`'s UTF-8 bytes as ASCII.
+
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
 
-    /// Parses a header from canonical byte representation (CANONICAL PRIMITIVE)
-    ///
-    /// This is the primitive parser that works at the byte level.
-    /// RFC 5322 headers are "Name: Value" format.
-    ///
-    /// ## Category Theory
-    ///
-    /// This is the fundamental parsing transformation:
-    /// - **Domain**: [Byte] (ASCII bytes)
-    /// - **Codomain**: RFC_5322.Header (structured data)
-    ///
-    /// String-based parsing is derived as composition:
-    /// ```
-    /// String → [Byte] (UTF-8 bytes) → Header
-    /// ```
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let bytes = Array<Byte>("Content-Type: text/html".utf8)
-    /// let header = try RFC_5322.Header(ascii: bytes)
-    /// ```
-    ///
-    /// - Parameter bytes: The ASCII byte representation of the header
-    /// - Throws: `RFC_5322.Header.Error` if the bytes are malformed
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
-        // Split on first colon to separate name from value.
-        // Project ASCII.Code.colon to the byte-domain element type.
+
         guard let colonIndex = bytes.firstIndex(of: ASCII.Code.colon.byte) else {
             let string = String(decoding: bytes, as: UTF8.self)
             throw Error.invalidFormat(string, reason: "Missing colon separator")
@@ -126,8 +62,6 @@ extension RFC_5322.Header: ASCII.Parseable {
         let valueStartIndex = bytes.index(after: colonIndex)
         let valueBytes = bytes[valueStartIndex...]
 
-        // Parse name and value through their byte-level initializers
-        // Wrap their errors in Header.Error for typed throws
         let name: RFC_5322.Header.Name
         do throws(RFC_5322.Header.Name.Error) {
             name = try RFC_5322.Header.Name(ascii: [Byte](nameBytes))
@@ -142,37 +76,19 @@ extension RFC_5322.Header: ASCII.Parseable {
             throw Error.invalidValue(error)
         }
 
-        // Use memberwise initializer
         self.init(name: name, value: value)
     }
 }
 
-// MARK: - Header Protocol Conformances
-
 extension RFC_5322.Header: CustomStringConvertible {
-    /// The header's ASCII serialization (`Name: Value`) decoded as a `String`.
+
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
-// MARK: - Array Convenience Extensions
-
 extension Array where Element == RFC_5322.Header {
-    /// Subscript for convenient header access by name
-    ///
-    /// Returns the value of the first header with the given name.
-    /// Setting a value removes all existing headers with that name and appends a new one.
-    /// Setting nil removes all headers with that name.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// var headers: [RFC_5322.Header] = []
-    /// headers[.contentType] = "text/html"
-    /// print(headers[.contentType]) // Optional("text/html")
-    /// headers[.contentType] = nil  // Removes the header
-    /// ```
+
     public subscript(name: RFC_5322.Header.Name) -> String? {
         get {
             first(where: { $0.name == name })?.value.rawValue
@@ -194,45 +110,17 @@ extension Array where Element == RFC_5322.Header {
         }
     }
 
-    /// Returns all headers with the given name
-    ///
-    /// Useful for headers that can appear multiple times (like Received).
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let received = headers.all(.received)
-    /// ```
     public func all(_ name: RFC_5322.Header.Name) -> [RFC_5322.Header] {
         filter { $0.name == name }
     }
 
-    /// Returns all values for headers with the given name
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let receivedValues = headers.values(for: .received)
-    /// ```
     public func values(for name: RFC_5322.Header.Name) -> [RFC_5322.Header.Value] {
         filter { $0.name == name }.map(\.value)
     }
 }
 
 extension Array: @retroactive ExpressibleByDictionaryLiteral where Element == RFC_5322.Header {
-    /// Creates an array of headers from a dictionary literal
-    ///
-    /// Enables convenient syntax for creating headers.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let headers: [RFC_5322.Header] = [
-    ///     .from: "sender@example.com",
-    ///     .to: "recipient@example.com",
-    ///     .subject: "Hello"
-    /// ]
-    /// ```
+
     public init(dictionaryLiteral elements: (RFC_5322.Header.Name, RFC_5322.Header.Value)...) {
         self = elements.map { RFC_5322.Header(name: $0.0, value: $0.1) }
     }

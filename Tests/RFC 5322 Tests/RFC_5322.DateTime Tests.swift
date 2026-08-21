@@ -1,10 +1,3 @@
-//
-//  RFC_5322.DateTime Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for RFC_5322.DateTime including creation, formatting, and parsing
-//
-
 import Foundation
 import Testing
 import Time_Primitives
@@ -13,8 +6,6 @@ import Time_Primitives
 
 @Suite
 struct `RFC_5322.DateTime Tests` {
-
-    // MARK: - Creation from Epoch
 
     @Test
     func `Create from seconds since epoch`() throws {
@@ -27,13 +18,11 @@ struct `RFC_5322.DateTime Tests` {
     func `Create from epoch with timezone offset`() throws {
         let dateTime = RFC_5322.DateTime(
             secondsSinceEpoch: 1_609_459_200,
-            timezoneOffsetSeconds: 3600  // +01:00
+            timezoneOffsetSeconds: 3600
         )
         #expect(dateTime.secondsSinceEpoch == 1_609_459_200)
         #expect(dateTime.timezoneOffsetSeconds == 3600)
     }
-
-    // MARK: - Creation from Components
 
     @Test
     func `Create from date components`() throws {
@@ -69,8 +58,6 @@ struct `RFC_5322.DateTime Tests` {
         #expect(dateTime.timezoneOffsetSeconds == 3600)
     }
 
-    // MARK: - Components Extraction
-
     @Test
     func `Extract components from UTC datetime`() throws {
         let dateTime = try RFC_5322.DateTime(
@@ -93,7 +80,7 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `Components reflect timezone offset`() throws {
-        // Create datetime at midnight UTC
+
         let utcDateTime = try RFC_5322.DateTime(
             year: 2024,
             month: 1,
@@ -103,18 +90,15 @@ struct `RFC_5322.DateTime Tests` {
             timezoneOffsetSeconds: 0
         )
 
-        // Same moment but displayed in +03:00 timezone
         let offsetDateTime = RFC_5322.DateTime(
             secondsSinceEpoch: utcDateTime.secondsSinceEpoch,
-            timezoneOffsetSeconds: 10800  // +03:00
+            timezoneOffsetSeconds: 10800
         )
 
         let components = offsetDateTime.components
-        // Should show 03:00 local time
+
         #expect(components.hour == 3)
     }
-
-    // MARK: - Formatting
 
     @Test
     func `Format datetime as RFC 5322 string`() throws {
@@ -131,7 +115,7 @@ struct `RFC_5322.DateTime Tests` {
         let dateTime = try RFC_5322.DateTime(
             year: 2024,
             month: 1,
-            day: 1  // Monday
+            day: 1
         )
         let formatted = String(dateTime)
 
@@ -144,7 +128,7 @@ struct `RFC_5322.DateTime Tests` {
             year: 2024,
             month: 1,
             day: 1,
-            timezoneOffsetSeconds: 3600  // +01:00
+            timezoneOffsetSeconds: 3600
         )
         let formatted = String(dateTime)
 
@@ -157,7 +141,7 @@ struct `RFC_5322.DateTime Tests` {
             year: 2024,
             month: 1,
             day: 1,
-            timezoneOffsetSeconds: -18000  // -05:00
+            timezoneOffsetSeconds: -18000
         )
         let formatted = String(dateTime)
 
@@ -168,19 +152,17 @@ struct `RFC_5322.DateTime Tests` {
     func `Format zero-pads single digit values`() throws {
         let dateTime = try RFC_5322.DateTime(
             year: 2024,
-            month: 1,  // Should be "01"
-            day: 5,  // Should be "05"
-            hour: 9,  // Should be "09"
-            minute: 3  // Should be "03"
+            month: 1,
+            day: 5,
+            hour: 9,
+            minute: 3
         )
         let formatted = String(dateTime)
 
-        #expect(formatted.contains("Jan"))  // Month name
-        #expect(formatted.contains("05"))  // Day
-        #expect(formatted.contains("09:03"))  // Hour:Minute
+        #expect(formatted.contains("Jan"))
+        #expect(formatted.contains("05"))
+        #expect(formatted.contains("09:03"))
     }
-
-    // MARK: - Parsing
 
     @Test
     func `Parse RFC 5322 datetime string`() throws {
@@ -199,31 +181,28 @@ struct `RFC_5322.DateTime Tests` {
     func `Parse datetime with timezone offset`() throws {
         let dateTime = try RFC_5322.DateTime("Mon, 15 Jan 2024 14:30:00 +0500")
 
-        #expect(dateTime.timezoneOffsetSeconds == 18000)  // 5 hours = 18000 seconds
+        #expect(dateTime.timezoneOffsetSeconds == 18000)
     }
 
     @Test
     func `Parse datetime with negative timezone`() throws {
         let dateTime = try RFC_5322.DateTime("Mon, 15 Jan 2024 14:30:00 -0800")
 
-        #expect(dateTime.timezoneOffsetSeconds == -28800)  // -8 hours
+        #expect(dateTime.timezoneOffsetSeconds == -28800)
     }
 
     @Test
     func `Parse datetime validates weekday`() throws {
 
-        // January 1, 2021 is a Friday
         #expect(throws: RFC_5322.Date.Error.self) {
-            _ = try RFC_5322.DateTime("Mon, 01 Jan 2021 12:00:00 +0000")  // Wrong weekday
+            _ = try RFC_5322.DateTime("Mon, 01 Jan 2021 12:00:00 +0000")
         }
     }
-
-    // MARK: - Leap Years
 
     @Test
     func `Handle leap year February 29`() throws {
         let dateTime = try RFC_5322.DateTime(
-            year: 2024,  // Leap year
+            year: 2024,
             month: 2,
             day: 29
         )
@@ -237,7 +216,7 @@ struct `RFC_5322.DateTime Tests` {
     @Test
     func `Non-leap year February 28`() throws {
         let dateTime = try RFC_5322.DateTime(
-            year: 2023,  // Not a leap year
+            year: 2023,
             month: 2,
             day: 28
         )
@@ -247,8 +226,6 @@ struct `RFC_5322.DateTime Tests` {
         #expect(components.month == 2)
         #expect(components.day == 28)
     }
-
-    // MARK: - Comparison
 
     @Test
     func `Compare datetimes`() throws {
@@ -278,11 +255,8 @@ struct `RFC_5322.DateTime Tests` {
             timezoneOffsetSeconds: 3600
         )
 
-        // Same epoch time = same moment in time
         #expect(utc == offset)
     }
-
-    // MARK: - Codable
 
     @Test
     func `Encode and decode datetime`() throws {
@@ -303,7 +277,7 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `Decode datetime without timezone defaults to UTC`() throws {
-        // Simulate old data that only has secondsSinceEpoch
+
         let json = "{\"secondsSinceEpoch\":1609459200}"
         let data = json.data(using: .utf8)!
 
@@ -312,8 +286,6 @@ struct `RFC_5322.DateTime Tests` {
 
         #expect(dateTime.timezoneOffsetSeconds == 0)
     }
-
-    // MARK: - Arithmetic
 
     @Test
     func `Add time interval`() throws {
@@ -330,8 +302,6 @@ struct `RFC_5322.DateTime Tests` {
 
         #expect(earlier.secondsSinceEpoch == 500)
     }
-
-    // MARK: - Edge Cases
 
     @Test
     func `Handle Unix epoch`() throws {
@@ -369,8 +339,6 @@ struct `RFC_5322.DateTime Tests` {
         #expect(components.day == 31)
     }
 
-    // MARK: - Validation Tests
-
     @Test
     func `Reject invalid month`() {
         #expect(throws: Time.Error.self) {
@@ -383,15 +351,15 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `Reject invalid day for month`() {
-        // February 30 doesn't exist
+
         #expect(throws: Time.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 2, day: 30)
         }
-        // April has only 30 days
+
         #expect(throws: Time.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 4, day: 31)
         }
-        // Day 0 is invalid
+
         #expect(throws: Time.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 0)
         }
@@ -399,11 +367,11 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `Reject invalid day for leap year`() {
-        // 2024 is a leap year, Feb 29 is valid
+
         #expect(throws: Never.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 2, day: 29)
         }
-        // 2023 is not a leap year, Feb 29 is invalid
+
         #expect(throws: Time.Error.self) {
             _ = try RFC_5322.DateTime(year: 2023, month: 2, day: 29)
         }
@@ -431,11 +399,11 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `Reject invalid second`() {
-        // Second 60 is valid (leap second)
+
         #expect(throws: Never.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 60)
         }
-        // Second 61 is invalid
+
         #expect(throws: Time.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 61)
         }
@@ -444,16 +412,14 @@ struct `RFC_5322.DateTime Tests` {
         }
     }
 
-    // MARK: - Year 2100 Edge Case Tests (century year, not a leap year)
-
     @Test
     func `Year 2100 is not a leap year`() {
-        // 2100 is divisible by 100 but not 400, so NOT a leap year
+
         let feb28 = try? RFC_5322.DateTime(year: 2100, month: 2, day: 28)
         #expect(feb28 != nil)
 
         let feb29 = try? RFC_5322.DateTime(year: 2100, month: 2, day: 29)
-        #expect(feb29 == nil)  // Should fail - 2100 is not a leap year
+        #expect(feb29 == nil)
     }
 
     @Test
@@ -479,7 +445,6 @@ struct `RFC_5322.DateTime Tests` {
         let dt1 = try RFC_5322.DateTime(year: 2100, month: 12, day: 31)
         let dt2 = try RFC_5322.DateTime(year: 2101, month: 1, day: 1)
 
-        // Should be exactly 1 day apart
         #expect(dt2.secondsSinceEpoch - dt1.secondsSinceEpoch == 86400)
     }
 }

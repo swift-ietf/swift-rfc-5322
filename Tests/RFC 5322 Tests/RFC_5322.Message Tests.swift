@@ -1,18 +1,9 @@
-//
-//  RFC_5322.Message Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for RFC_5322.Message including creation, rendering, and validation
-//
-
 import Testing
 
 @testable import RFC_5322
 
 @Suite
 struct `RFC_5322.Message Tests` {
-
-    // MARK: - Basic Message Creation
 
     @Test
     func `Create basic message with required fields`() throws {
@@ -104,8 +95,6 @@ struct `RFC_5322.Message Tests` {
         #expect(message.replyTo?.address == "replyto@example.com")
     }
 
-    // MARK: - Additional Headers
-
     @Test
     func `Create message with additional headers`() throws {
         let message = try RFC_5322.Message(
@@ -126,8 +115,6 @@ struct `RFC_5322.Message Tests` {
         #expect(message.additionalHeaders[0].value == 1)
         #expect(message.additionalHeaders[1].name == .inReplyTo)
     }
-
-    // MARK: - MIME Version
 
     @Test
     func `Create message with custom MIME version`() throws {
@@ -157,8 +144,6 @@ struct `RFC_5322.Message Tests` {
 
         #expect(message.mimeVersion == "1.0")
     }
-
-    // MARK: - Message Rendering
 
     @Test
     func `Render message to string contains all required headers`() throws {
@@ -216,7 +201,6 @@ struct `RFC_5322.Message Tests` {
 
         let rendered = String(message)
 
-        // BCC should NOT appear in rendered message per RFC 5322
         #expect(!rendered.contains("Bcc:"))
         #expect(!rendered.contains("bcc@example.com"))
     }
@@ -273,8 +257,6 @@ struct `RFC_5322.Message Tests` {
 
         #expect(rendered.contains("X-Priority: 1"))
     }
-
-    // MARK: - Generate Message ID
 
     @Test
     func `Generate message ID format`() throws {

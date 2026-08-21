@@ -1,9 +1,3 @@
-// DateTime.swift
-// RFC 5322
-//
-// RFC 5322 date-time representation and formatting
-// Format: "Mon, 01 Jan 2024 12:34:56 +0000"
-
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 import INCITS_4_1986
@@ -13,30 +7,13 @@ import Standard_Library_Extensions
 public import Time_Primitives
 
 extension RFC_5322 {
-    /// RFC 5322 date-time representation
-    ///
-    /// Represents a date-time value per RFC 5322 section 3.3.
-    /// The RFC calls this a "date-time" (not "timestamp" or "date").
-    /// Uses Standards/Time as the foundation for all calendar logic.
-    ///
-    /// Example:
-    /// ```swift
-    /// let dateTime = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, hour: 12, minute: 30)
-    /// print(dateTime.format(dateTime))  // "Mon, 01 Jan 2024 12:30:00 +0000"
-    /// ```
+
     public struct DateTime: Sendable, Equatable, Hashable, Comparable {
-        /// The UTC time
+
         public let time: Time
 
-        /// Timezone offset from UTC
-        /// Positive values are east of UTC, negative values are west
-        /// Example: +0100 = 1 hour, -0500 = -5 hours
         public let timezoneOffset: Time.Timezone.Offset
 
-        /// Create a date-time from Time and timezone offset
-        /// - Parameters:
-        ///   - time: The UTC time
-        ///   - timezoneOffset: Timezone offset (default: UTC)
         public init(time: Time, timezoneOffset: Time.Timezone.Offset = .utc) {
             self.time = time
             self.timezoneOffset = timezoneOffset
@@ -49,58 +26,44 @@ extension RFC_5322 {
 }
 
 extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
-    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 5322 §3.3 date-time
-    /// form ("Mon, 01 Jan 2024 12:34:56 +0000"), formatted natively on the
-    /// `ASCII.Code` substrate: numeric components via the decimal radix formatter
-    /// (their `utf8` lifted to `ASCII.Code`), separators as named `ASCII.Code`
-    /// constants. The same algorithm is re-expressed on the byte substrate by the
-    /// `Binary.Serializable` witness (`serializeBytes`); the date-time
-    /// serialization equivalence test guards their parity.
+
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
     ) where Buffer.Element == ASCII.Code {
         let components = value.components
 
-        buffer.reserveCapacity(31)  // "Mon, 01 Jan 2024 12:34:56 +0000" = 31 codes
+        buffer.reserveCapacity(31)
 
-        // Day name (e.g., "Mon")
         let dayName = RFC_5322.DateTime.dayNames[components.weekday]
         buffer.append(contentsOf: dayName.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.comma)
         buffer.append(ASCII.Code.space)
 
-        // Day (zero-padded 2 digits)
         let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: day.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.space)
 
-        // Month name (e.g., "Jan")
         let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
         buffer.append(contentsOf: monthName.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.space)
 
-        // Year (4 digits)
         let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
         buffer.append(contentsOf: year.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.space)
 
-        // Hour (zero-padded 2 digits)
         let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: hour.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.colon)
 
-        // Minute (zero-padded 2 digits)
         let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: minute.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.colon)
 
-        // Second (zero-padded 2 digits)
         let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: second.utf8.map { ASCII.Code($0) })
         buffer.append(ASCII.Code.space)
 
-        // Timezone offset
         let offsetSign: ASCII.Code = value.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
         buffer.append(offsetSign)
 
@@ -119,8 +82,6 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
         buffer.append(contentsOf: offsetMinutesStr.utf8.map { ASCII.Code($0) })
     }
 
-    /// Explicit `Binary.Serializable` witness (RFC 5322 §3.3 date-time) on the
-    /// byte substrate.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -128,52 +89,43 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
         serializeBytes(value, into: &buffer)
     }
 
-    /// Byte-domain serialization body (RFC 5322 §3.3 date-time).
     private static func serializeBytes<Buffer: RangeReplaceableCollection>(
         _ dateTime: RFC_5322.DateTime,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
         let components = dateTime.components
 
-        buffer.reserveCapacity(31)  // "Mon, 01 Jan 2024 12:34:56 +0000" = 31 bytes
+        buffer.reserveCapacity(31)
 
-        // Day name (e.g., "Mon")
         let dayName = RFC_5322.DateTime.dayNames[components.weekday]
         buffer.append(contentsOf: dayName.utf8)
         buffer.append(ASCII.Code.comma)
         buffer.append(ASCII.Code.space)
 
-        // Day (zero-padded 2 digits)
         let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: day.utf8)
         buffer.append(ASCII.Code.space)
 
-        // Month name (e.g., "Jan")
         let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
         buffer.append(contentsOf: monthName.utf8)
         buffer.append(ASCII.Code.space)
 
-        // Year (4 digits)
         let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
         buffer.append(contentsOf: year.utf8)
         buffer.append(ASCII.Code.space)
 
-        // Hour (zero-padded 2 digits)
         let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: hour.utf8)
         buffer.append(ASCII.Code.colon)
 
-        // Minute (zero-padded 2 digits)
         let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: minute.utf8)
         buffer.append(ASCII.Code.colon)
 
-        // Second (zero-padded 2 digits)
         let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
         buffer.append(contentsOf: second.utf8)
         buffer.append(ASCII.Code.space)
 
-        // Timezone offset
         let offsetSign: ASCII.Code = dateTime.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
         buffer.append(offsetSign)
 
@@ -194,45 +146,14 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
 }
 
 extension RFC_5322.DateTime: ASCII.Parseable {
-    /// Creates a date-time by validating `string`'s UTF-8 bytes as ASCII.
+
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
 
-    /// Parses RFC 5322 date-time from canonical byte representation (CANONICAL PRIMITIVE)
-    ///
-    /// This is the primitive parser that works at the byte level.
-    /// RFC 5322 date-times are ASCII-only.
-    ///
-    /// ## Category Theory
-    ///
-    /// This is the fundamental parsing transformation:
-    /// - **Domain**: [Byte] (ASCII bytes)
-    /// - **Codomain**: RFC_5322.DateTime (structured data)
-    ///
-    /// String-based parsing is derived as composition:
-    /// ```
-    /// String → [Byte] (UTF-8 bytes) → DateTime
-    /// ```
-    ///
-    /// ## Format
-    ///
-    /// Parses RFC 5322 date-time format: "Mon, 01 Jan 2024 12:34:56 +0000"
-    /// Supports optional seconds: "Mon, 01 Jan 2024 12:34 +0000"
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let bytes = Array<Byte>("Mon, 01 Jan 2024 12:00:00 +0000".utf8)
-    /// let dateTime = try RFC_5322.DateTime(ascii: bytes)
-    /// ```
-    ///
-    /// - Parameter bytes: The ASCII byte representation of the date-time
-    /// - Throws: `RFC_5322.DateTime.Error` if the bytes are malformed
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
-        // Type-up: lift to ASCII.Code at the entry boundary so the body works
-        // against ASCII.Code constants directly (RFC 5322 date-times are strict ASCII).
+
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
@@ -240,7 +161,6 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
         }
 
-        // Split on spaces at code level
         var parts: [[ASCII.Code]] = []
         var currentPart: [ASCII.Code] = []
 
@@ -258,12 +178,10 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             parts.append(currentPart)
         }
 
-        // Expect at least 6 parts: "Mon," "01" "Jan" "2024" "12:34:56" "+0000"
         guard parts.count >= 6 else {
             throw Error.invalidFormat("Expected at least 6 components, got \(parts.count)")
         }
 
-        // Parse day name (remove trailing comma if present)
         let dayNameCodes = parts[0].last == ASCII.Code.comma ? parts[0].dropLast() : parts[0][...]
         let dayName = String(decoding: dayNameCodes, as: UTF8.self)
 
@@ -271,26 +189,22 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             throw Error.invalidDayName(dayName)
         }
 
-        // Parse day (2 digits)
         let dayString = String(decoding: parts[1], as: UTF8.self)
         guard let day = Int(dayString), day >= 1, day <= 31 else {
             throw Error.invalidDay(dayString)
         }
 
-        // Parse month (3-letter abbreviation)
         let monthString = String(decoding: parts[2], as: UTF8.self)
         guard let monthIndex = RFC_5322.DateTime.monthNames.firstIndex(of: monthString) else {
             throw Error.invalidMonth(monthString)
         }
         let month = monthIndex + 1
 
-        // Parse year (4 digits)
         let yearString = String(decoding: parts[3], as: UTF8.self)
         guard let year = Int(yearString), year >= 1900 else {
             throw Error.invalidYear(yearString)
         }
 
-        // Parse time (HH:MM:SS or HH:MM) at code level
         let timeCodes = parts[4]
         var timeParts: [[ASCII.Code]] = []
         var currentTimePart: [ASCII.Code] = []
@@ -327,7 +241,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         let second: Int
         if timeParts.count == 3 {
             let secondString = String(decoding: timeParts[2], as: UTF8.self)
-            guard let sec = Int(secondString), sec >= 0, sec <= 60 else {  // Allow leap second
+            guard let sec = Int(secondString), sec >= 0, sec <= 60 else {
                 throw Error.invalidSecond(secondString)
             }
             second = sec
@@ -335,7 +249,6 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             second = 0
         }
 
-        // Parse timezone offset at code level (+0000 or -0500)
         let timezoneCodes = parts[5]
         guard timezoneCodes.count == 5 else {
             let timezoneString = String(decoding: timezoneCodes, as: UTF8.self)
@@ -345,7 +258,6 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         let sign = timezoneCodes[0] == ASCII.Code.plus ? 1 : -1
         let offsetCodes = timezoneCodes.dropFirst()
 
-        // Parse hours and minutes from codes
         let offsetHoursCodes = offsetCodes.prefix(2)
         let offsetMinutesCodes = offsetCodes.suffix(2)
 
@@ -366,8 +278,6 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             * (offsetHours * Time.Calendar.Gregorian.TimeConstants.secondsPerHour + offsetMinutes
                 * Time.Calendar.Gregorian.TimeConstants.secondsPerMinute)
 
-        // Create date-time in UTC with validated components
-        // Time.init throws Time.Error, not our typed error, so we use do-catch
         let dateTime: RFC_5322.DateTime
         do throws(Time.Error) {
             dateTime = try RFC_5322.DateTime(
@@ -382,11 +292,8 @@ extension RFC_5322.DateTime: ASCII.Parseable {
             throw Error.invalidFormat("Date components invalid: \(error)")
         }
 
-        // Adjust for timezone offset to get UTC
-        // If timezone is +0500, we subtract 5 hours to get UTC
         let utcDateTime = dateTime.subtracting(timezoneOffsetSeconds)
 
-        // Validate weekday matches (using the local time components)
         let localDateTime = RFC_5322.DateTime(
             secondsSinceEpoch: utcDateTime.secondsSinceEpoch,
             timezoneOffsetSeconds: timezoneOffsetSeconds
@@ -404,17 +311,14 @@ extension RFC_5322.DateTime: ASCII.Parseable {
 }
 
 extension RFC_5322.DateTime: CustomStringConvertible {
-    /// The date-time's RFC 5322 ASCII serialization decoded as a `String`.
+
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
 extension RFC_5322.DateTime {
-    /// Create a date-time from seconds since epoch
-    /// - Parameters:
-    ///   - secondsSinceEpoch: Seconds since Unix epoch (UTC)
-    ///   - timezoneOffsetSeconds: Timezone offset in seconds (default: 0 for UTC)
+
     public init(secondsSinceEpoch: Int, timezoneOffsetSeconds: Int = 0) {
         self.time = Time(secondsSinceEpoch: secondsSinceEpoch)
         self.timezoneOffset = Time.Timezone.Offset(seconds: timezoneOffsetSeconds)
@@ -422,29 +326,17 @@ extension RFC_5322.DateTime {
 }
 
 extension RFC_5322.DateTime {
-    /// Create a date-time from components with validation
-    /// - Parameters:
-    ///   - year: Year
-    ///   - month: Month (1-12)
-    ///   - day: Day (1-31, validated for month/year)
-    ///   - hour: Hour (0-23)
-    ///   - minute: Minute (0-59)
-    ///   - second: Second (0-60, allowing leap second)
-    ///   - timezoneOffsetSeconds: Timezone offset in seconds (default: 0 for UTC)
-    /// - Throws: `RFC_5322.Date.Error` if any component is out of valid range
-    ///
-    /// Components are interpreted in UTC, then the timezone offset is applied for display.
+
     public init(
         year: Int,
-        month: Int,  // 1-12
-        day: Int,  // 1-31
+        month: Int,
+        day: Int,
         hour: Int = 0,
         minute: Int = 0,
         second: Int = 0,
         timezoneOffsetSeconds: Int = 0
     ) throws(Time.Error) {
-        // Create Time with validation - Time.Error propagates naturally
-        // This is correct: Time owns calendar validation, RFC 5322 delegates to it
+
         let time = try Time(
             year: year,
             month: month,
@@ -459,18 +351,15 @@ extension RFC_5322.DateTime {
 }
 
 extension RFC_5322.DateTime {
-    /// Seconds since Unix epoch (computed property for compatibility)
+
     public var secondsSinceEpoch: Int {
         time.secondsSinceEpoch
     }
 
-    /// Timezone offset in seconds (computed property for compatibility)
     public var timezoneOffsetSeconds: Int {
         timezoneOffset.seconds
     }
 }
-
-// MARK: - Comparable
 
 extension RFC_5322.DateTime {
     public static func < (lhs: Self, rhs: Self) -> Bool {
@@ -478,30 +367,23 @@ extension RFC_5322.DateTime {
     }
 }
 
-// MARK: - Equatable & Hashable
-
 extension RFC_5322.DateTime {
-    /// Two DateTimes are equal if they represent the same moment in time
-    /// (same secondsSinceEpoch), regardless of timezone offset
+
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.secondsSinceEpoch == rhs.secondsSinceEpoch
     }
 
-    /// Hash based on the moment in time, not timezone display
     public func hash(into hasher: inout Hasher) {
         hasher.combine(secondsSinceEpoch)
     }
 }
 
-// MARK: - Components
-
 extension RFC_5322.DateTime {
-    /// Extract date components from date-time, adjusted for timezone offset
+
     public var components: RFC_5322.Date.Components {
-        // Apply timezone offset to get local time
+
         let localTime = Time(secondsSinceEpoch: secondsSinceEpoch + timezoneOffsetSeconds)
 
-        // Convert Time.Weekday to weekday number (0=Sunday)
         let weekdayNumber: Int
         switch localTime.weekday {
         case .sunday: weekdayNumber = 0
@@ -513,8 +395,6 @@ extension RFC_5322.DateTime {
         case .saturday: weekdayNumber = 6
         }
 
-        // Components calculated from valid epoch seconds are always valid
-        // Use unchecked initializer to bypass validation in hot path
         return RFC_5322.Date.Components(
             __unchecked: (),
             year: localTime.year.rawValue,
@@ -528,32 +408,18 @@ extension RFC_5322.DateTime {
     }
 }
 
-// MARK: - Constants
-
 extension RFC_5322.DateTime {
-    /// Month names per RFC 5322 section 3.3
-    /// These are protocol-mandated values and must not be localized
+
     public static let monthNames = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     ]
 
-    /// Day names per RFC 5322 section 3.3
-    /// These are protocol-mandated values and must not be localized
     public static let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 }
 
-// MARK: - Compositional Operations (Swifty monoid/functor-like behavior)
-
 extension RFC_5322.DateTime {
-    /// Returns a new DateTime by adding the specified number of seconds
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let dt = RFC_5322.DateTime(year: 2024, month: 1, day: 1)
-    /// let tomorrow = dt.addingSeconds(86400)  // Add 1 day
-    /// ```
+
     public func addingSeconds(_ seconds: Int) -> Self {
         Self(
             secondsSinceEpoch: secondsSinceEpoch + seconds,
@@ -561,38 +427,21 @@ extension RFC_5322.DateTime {
         )
     }
 
-    /// Returns a new DateTime by subtracting the specified number of seconds
     public func subtractingSeconds(_ seconds: Int) -> Self {
         addingSeconds(-seconds)
     }
 
-    /// Returns the time interval in seconds between this datetime and another
-    ///
-    /// Positive if `other` is later, negative if earlier.
     public func distance(to other: Self) -> Int {
         other.secondsSinceEpoch - secondsSinceEpoch
     }
 
-    /// Returns a new DateTime with the timezone offset changed
-    ///
-    /// This creates a new view of the same instant in time with a different timezone.
-    /// The underlying UTC moment remains the same.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let utc = RFC_5322.DateTime(year: 2024, month: 1, day: 1, hour: 12)
-    /// let est = utc.withTimezone(offsetSeconds: -18000)  // UTC-5
-    /// // Same moment, different display
-    /// ```
     public func withTimezone(offsetSeconds: Int) -> Self {
         Self(secondsSinceEpoch: secondsSinceEpoch, timezoneOffsetSeconds: offsetSeconds)
     }
 
-    /// Returns a new DateTime at the start of the day (00:00:00)
     public func startOfDay() -> Self {
         let components = self.components
-        // swiftlint:disable:next force_try
+
         return try! Self(
             year: components.year,
             month: components.month,
@@ -604,10 +453,9 @@ extension RFC_5322.DateTime {
         )
     }
 
-    /// Returns a new DateTime at the end of the day (23:59:59)
     public func endOfDay() -> Self {
         let components = self.components
-        // swiftlint:disable:next force_try
+
         return try! Self(
             year: components.year,
             month: components.month,
@@ -619,17 +467,6 @@ extension RFC_5322.DateTime {
         )
     }
 
-    /// Returns a new DateTime with the specified component values changed
-    ///
-    /// Use `nil` for components you want to keep unchanged.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let dt = RFC_5322.DateTime(year: 2024, month: 1, day: 15, hour: 10)
-    /// let changed = try dt.setting(hour: 14, minute: 30)
-    /// // Same day, different time
-    /// ```
     public func setting(
         year: Int? = nil,
         month: Int? = nil,
@@ -651,21 +488,16 @@ extension RFC_5322.DateTime {
     }
 }
 
-// MARK: - Internal Arithmetic
-
 extension RFC_5322.DateTime {
-    /// Add a time interval to this date-time (internal - for timezone conversion)
+
     internal func adding(_ interval: Int) -> Self {
         Self(secondsSinceEpoch: secondsSinceEpoch + interval)
     }
 
-    /// Subtract a time interval from this date-time (internal - for timezone conversion)
     internal func subtracting(_ interval: Int) -> Self {
         Self(secondsSinceEpoch: secondsSinceEpoch - interval)
     }
 }
-
-// MARK: - Codable
 
 extension RFC_5322.DateTime: Codable {
     private enum CodingKeys: String, CodingKey {
@@ -686,5 +518,3 @@ extension RFC_5322.DateTime: Codable {
         try container.encode(timezoneOffsetSeconds, forKey: .timezoneOffsetSeconds)
     }
 }
-
-// MARK: - CustomStringConvertible

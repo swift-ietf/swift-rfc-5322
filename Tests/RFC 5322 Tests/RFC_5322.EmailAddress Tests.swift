@@ -1,17 +1,8 @@
-//
-//  RFC_5322.EmailAddress Tests.swift
-//  RFC 5322 Tests
-//
-//  Tests for RFC_5322.EmailAddress including parsing, validation, and formatting
-//
-
 import RFC_5322
 import Testing
 
 @Suite
 struct `RFC_5322.EmailAddress Tests` {
-
-    // MARK: - Parsing Tests
 
     @Test
     func `Parse simple email address`() throws {
@@ -37,8 +28,6 @@ struct `RFC_5322.EmailAddress Tests` {
         #expect(email.address == "john@example.com")
     }
 
-    // MARK: - Creation from Components
-
     @Test
     func `Create from components without display name`() throws {
         let email = try RFC_5322.EmailAddress(
@@ -63,16 +52,11 @@ struct `RFC_5322.EmailAddress Tests` {
         #expect(email.domain.name == "example.com")
     }
 
-    // MARK: - RFC 5322 atext Character Validation
-
     @Test
     func `All RFC 5322 atext special characters are accepted`() throws {
-        // RFC 5322 Section 3.2.3 defines atext as:
-        // atext = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "/" / "=" / "?" / "^" / "_" / "`" / "{" / "|" / "}" / "~"
 
         let specialChars = "!#$%&'*+-/=?^_`{|}~"
 
-        // Test each character individually
         for char in specialChars {
             let email = try RFC_5322.EmailAddress("test\(char)user@example.com")
             #expect(email.localPart.description.contains(char))
@@ -102,7 +86,7 @@ struct `RFC_5322.EmailAddress Tests` {
 
     @Test
     func `Multiple atext special characters in same address`() throws {
-        // Test addresses with multiple special characters
+
         let testAddresses = [
             "user!tag@example.com",
             "user|tag@example.com",
@@ -117,8 +101,6 @@ struct `RFC_5322.EmailAddress Tests` {
             #expect(email.address == address)
         }
     }
-
-    // MARK: - String Formatting
 
     @Test
     func `Format email without display name`() throws {
@@ -149,8 +131,6 @@ struct `RFC_5322.EmailAddress Tests` {
         #expect(formatted == "\"Doe, John\" <john@example.com>")
     }
 
-    // MARK: - address Property
-
     @Test
     func `address returns email without display name`() throws {
         let email = try RFC_5322.EmailAddress(
@@ -160,8 +140,6 @@ struct `RFC_5322.EmailAddress Tests` {
         )
         #expect(email.address == "john@example.com")
     }
-
-    // MARK: - Validation Errors
 
     @Test
     func `Reject email without @ sign`() throws {

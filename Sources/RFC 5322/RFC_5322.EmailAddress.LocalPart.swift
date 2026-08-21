@@ -1,35 +1,25 @@
-//
-//  File.swift
-//  swift-rfc-5322
-//
-//  Created by Coen ten Thije Boonkkamp on 24/11/2025.
-//
-
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 import INCITS_4_1986
 public import Parseable_ASCII_Primitives
 
-// MARK: - Local Part
 extension RFC_5322.EmailAddress {
-    /// RFC 5322 compliant local-part
+
     public struct LocalPart: Hashable, Sendable {
         package let storage: Storage
     }
 }
 
 extension RFC_5322.EmailAddress.LocalPart {
-    // swiftlint:disable:next nesting
+
     package enum Storage: Hashable {
-        case dotAtom([Byte])  // Regular unquoted format (ASCII bytes)
-        case quoted([Byte])  // Quoted string format (ASCII bytes)
+        case dotAtom([Byte])
+        case quoted([Byte])
     }
 }
 
 extension RFC_5322.EmailAddress.LocalPart: ASCII.Serializable, Binary.Serializable {
-    /// Own `ASCII.Serializable` verb ([FAM-012]) — appends the stored
-    /// (already-validated ASCII) bytes projected into the `ASCII.Code` substrate
-    /// (lossless via `init(unchecked:)`). Leaf emit of the conformer's own field.
+
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -40,8 +30,6 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Serializable, Binary.Serializab
         }
     }
 
-    /// Explicit `Binary.Serializable` witness; bytes derive from the own
-    /// `ASCII.Serializable` verb via `.serialized`.
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
         into buffer: inout Buffer
@@ -51,40 +39,14 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Serializable, Binary.Serializab
 }
 
 extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
-    /// Creates a local-part by validating `string`'s UTF-8 bytes as ASCII.
+
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
 
-    /// Parses a local-part from canonical byte representation (CANONICAL PRIMITIVE)
-    ///
-    /// This is the primitive parser that works at the byte level.
-    /// RFC 5322 local-parts are ASCII-only.
-    ///
-    /// ## Category Theory
-    ///
-    /// This is the fundamental parsing transformation:
-    /// - **Domain**: [Byte] (ASCII bytes)
-    /// - **Codomain**: RFC_5322.EmailAddress.LocalPart (structured data)
-    ///
-    /// String-based parsing is derived as composition:
-    /// ```
-    /// String → [Byte] (UTF-8 bytes) → LocalPart
-    /// ```
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let bytes = Array<Byte>("user".utf8)
-    /// let localPart = try RFC_5322.EmailAddress.LocalPart(ascii: bytes)
-    /// ```
-    ///
-    /// - Parameter bytes: The ASCII byte representation of the local-part
-    /// - Throws: `RFC_5322.EmailAddress.LocalPart.Error` if the bytes are malformed
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
-        // Type-up: lift to ASCII.Code at the entry boundary so the body works
-        // against ASCII.Code constants directly (RFC 5322 local-parts are strict ASCII).
+
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
             codes = try [ASCII.Code](bytes)
@@ -93,19 +55,16 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
         }
         let count = codes.count
 
-        // Check overall length first
         guard count <= RFC_5322.EmailAddress.Limits.maxLength else {
             throw Error.tooLong(count)
         }
 
         guard let first = codes.first, let last = codes.last else {
-            throw Error.invalidDotAtom  // Empty local-part is invalid
+            throw Error.invalidDotAtom
         }
 
-        // Handle quoted string format: starts and ends with quotation mark
         if first == ASCII.Code.quotationMark && last == ASCII.Code.quotationMark && count >= 2 {
-            // Validate quoted-string content at byte level
-            // quoted-string = [^"\\\r\n] or \\["\]
+
             var skipNext = false
 
             for index in 1..<(count - 1) {
@@ -117,40 +76,37 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
                 }
 
                 if code == ASCII.Code.backslash {
-                    // Mark to skip next character (escape sequence)
+
                     skipNext = true
                 } else if code == ASCII.Code.quotationMark || code == ASCII.Code.cr
                     || code == ASCII.Code.lf
                 {
-                    // Unescaped quote, CR, or LF not allowed
+
                     throw Error.invalidQuotedString
                 }
             }
 
-            // If we ended with backslash expecting next char, that's invalid
             if skipNext {
                 throw Error.invalidQuotedString
             }
 
             self.storage = .quoted([Byte](bytes))
         }
-        // Handle dot-atom format
+
         else {
-            // Check for leading/trailing dots
+
             guard first != ASCII.Code.period && last != ASCII.Code.period else {
                 throw Error.leadingOrTrailingDot
             }
 
-            // Validate dot-atom characters and check for consecutive dots
             var previousCode: ASCII.Code?
             for code in codes {
-                // Check for consecutive dots
+
                 if code == ASCII.Code.period && previousCode == ASCII.Code.period {
                     throw Error.consecutiveDots
                 }
                 previousCode = code
 
-                // Validate character: atext or period
                 guard code == ASCII.Code.period || RFC_5322.isAtext(code) else {
                     throw Error.invalidDotAtom
                 }
@@ -162,7 +118,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
 }
 
 extension RFC_5322.EmailAddress.LocalPart: CustomStringConvertible {
-    /// The local-part's ASCII serialization decoded as a `String`.
+
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }

@@ -1,25 +1,9 @@
-//
-//  RFC_5322.DateTime.Parse.swift
-//  swift-rfc-5322
-//
-//  RFC 5322 date-time: [day-of-week ","] date time
-//
-
 public import ASCII_Decimal_Parser_Primitives
 import Byte_Primitives
 import Parser_Primitives
 
 extension RFC_5322.DateTime {
-    /// Parses an RFC 5322 date-time per Section 3.3.
-    ///
-    /// `date-time = [ day-of-week "," ] date time [CFWS]`
-    /// `date      = day month year`
-    /// `time      = time-of-day zone`
-    ///
-    /// Example: `Mon, 15 Jan 2024 12:30:00 +0000`
-    ///
-    /// Returns raw byte slices for each component. Interpretation of
-    /// month names and timezone abbreviations is left to the caller.
+
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == Byte {
         @inlinable
@@ -29,21 +13,21 @@ extension RFC_5322.DateTime {
 
 extension RFC_5322.DateTime.Parse {
     public struct Output: Sendable {
-        /// Day of week (3-letter abbreviation), if present
+
         public let dayOfWeek: Input?
-        /// Day of month
+
         public let day: Int
-        /// Month (3-letter abbreviation as raw bytes)
+
         public let month: Input
-        /// Year
+
         public let year: Int
-        /// Hour
+
         public let hour: Int
-        /// Minute
+
         public let minute: Int
-        /// Second (0 if not present)
+
         public let second: Int
-        /// Timezone as raw bytes, for example "+0000" or "EST"
+
         public let timezone: Input
 
         @inlinable
@@ -70,7 +54,7 @@ extension RFC_5322.DateTime.Parse {
 
     public enum Error: Swift.Error, Sendable, Equatable {
         case expectedDigit
-        /// The parsed number would overflow `Int` (a pathological digit run).
+
         case overflow
         case expectedMonth
         case expectedColon
@@ -86,7 +70,6 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     public func parse(_ input: inout Input) throws(Failure) -> Output {
         Self._skipCFWS(&input)
 
-        // Optional day-of-week (3 alpha followed by ',')
         var dayOfWeek: Input? = nil
         let saved = input
         if let dow = Self._tryDayOfWeek(&input) {
@@ -97,34 +80,27 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
 
         Self._skipCFWS(&input)
 
-        // Day (1 or 2 digits)
         let day = try Self._parseNumber(&input)
 
         Self._skipCFWS(&input)
 
-        // Month (3-letter abbreviation)
         let month = try Self._parseAlpha(&input, count: 3)
 
         Self._skipCFWS(&input)
 
-        // Year (2 or 4 digits)
         let year = try Self._parseNumber(&input)
 
         Self._skipCFWS(&input)
 
-        // Hour
         let hour = try Self._parseNumber(&input)
 
-        // ':'
         guard input.startIndex < input.endIndex, input[input.startIndex] == 0x3A else {
             throw .expectedColon
         }
         input = input[input.index(after: input.startIndex)...]
 
-        // Minute
         let minute = try Self._parseNumber(&input)
 
-        // Optional ':' + second
         var second = 0
         if input.startIndex < input.endIndex && input[input.startIndex] == 0x3A {
             input = input[input.index(after: input.startIndex)...]
@@ -133,7 +109,6 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
 
         Self._skipCFWS(&input)
 
-        // Timezone (consume remaining non-whitespace)
         let tzStart = input.startIndex
         while input.startIndex < input.endIndex {
             let byte = input[input.startIndex]
@@ -180,7 +155,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
         }
         guard count == 3 else { return nil }
         let dow = input[input.startIndex..<idx]
-        // Expect ','
+
         guard idx < input.endIndex && input[idx] == 0x2C else { return nil }
         input.formIndex(after: &idx)
         input = input[idx...]
@@ -189,8 +164,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
 
     @inlinable
     package static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
-        // Delegate to the L1 ASCII decimal parser (single source of truth; also adds the
-        // overflow check this site previously lacked — it used wrapping `&*`/`&+`).
+
         do throws(ASCII.Decimal.Error) {
             return try ASCII.Decimal.Parser<Input, Int>().parse(&input)
         } catch {

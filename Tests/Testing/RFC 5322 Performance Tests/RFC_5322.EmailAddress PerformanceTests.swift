@@ -1,10 +1,3 @@
-//
-//  RFC_5322.EmailAddress PerformanceTests.swift
-//  RFC 5322 Tests
-//
-//  Performance tests for RFC_5322.EmailAddress
-//
-
 import Testing
 
 @testable import RFC_5322
@@ -12,8 +5,6 @@ import Testing
 extension PerformanceTests {
     @Suite
     struct `RFC_5322.EmailAddress` {
-
-        // MARK: - Parsing Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(230)))
         func `parse simple email address`() throws {
@@ -35,8 +26,6 @@ extension PerformanceTests {
             _ = try RFC_5322.EmailAddress("user!tag+value@example.com")
         }
 
-        // MARK: - Construction Performance
-
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(150)))
         func `create from components without display name`() throws {
             _ = try RFC_5322.EmailAddress(
@@ -54,8 +43,6 @@ extension PerformanceTests {
                 domain: .init("example.com")
             )
         }
-
-        // MARK: - Formatting Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(230)))
         func `format to string without display name`() throws {
@@ -82,8 +69,6 @@ extension PerformanceTests {
             )
             _ = String(email)
         }
-
-        // MARK: - Byte Conversion Performance
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(240)))
         func `convert to bytes without display name`() throws {
