@@ -7,7 +7,7 @@
 
 public import ASCII_Decimal_Parser_Primitives
 import Byte_Primitives
-public import Parser_Primitives
+import Parser_Primitives
 
 extension RFC_5322.DateTime {
     /// Parses an RFC 5322 date-time per Section 3.3.

@@ -6,7 +6,7 @@
 //
 
 #if canImport(Foundation)
-public import ASCII_Serializer_Primitives
+import ASCII_Serializer_Primitives
 public import Foundation
 public import RFC_5322
 import Binary_Serializable_Primitives
