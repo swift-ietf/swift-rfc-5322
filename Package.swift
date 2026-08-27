@@ -15,26 +15,26 @@ extension Target.Dependency {
         .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
     }
     static var binary: Self {
-        .product(name: "Binary Primitives", package: "swift-binary-primitives")
+        .product(name: "Binary", package: "swift-binary")
     }
     static var radixFormat: Self {
-        .product(name: "Radix Formatter Primitives", package: "swift-radix-formatter-primitives")
+        .product(name: "Radix Formatter", package: "swift-radix-formatter")
     }
     static var binarySerializable: Self {
         .product(
-            name: "Binary Serializable Primitives",
-            package: "swift-binary-serializer-primitives"
+            name: "Binary Serializable",
+            package: "swift-binary-serializer"
         )
     }
-    static var time: Self { .product(name: "Time Primitives", package: "swift-time-primitives") }
+    static var time: Self { .product(name: "Time", package: "swift-time") }
     static var asciiSerializer: Self {
-        .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
+        .product(name: "ASCII Serializer", package: "swift-ascii-serializer")
     }
     static var asciiDecimalParser: Self {
-        .product(name: "ASCII Decimal Parser Primitives", package: "swift-ascii-parser-primitives")
+        .product(name: "ASCII Decimal Parser", package: "swift-ascii-parser")
     }
     static var asciiParser: Self {
-        .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
+        .product(name: "Parseable ASCII", package: "swift-ascii-parser")
     }
 }
 
@@ -54,36 +54,36 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swift-ietf/swift-rfc-1123.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            url: "https://github.com/swift-molecules/swift-standard-library-extensions.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-binary-primitives.git",
+            url: "https://github.com/swift-molecules/swift-binary.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-radix-formatter-primitives.git",
+            url: "https://github.com/swift-molecules/swift-radix-formatter.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git",
+            url: "https://github.com/swift-molecules/swift-binary-serializer.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-time-primitives.git",
+            url: "https://github.com/swift-molecules/swift-time.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git",
+            url: "https://github.com/swift-molecules/swift-ascii-serializer.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git",
+            url: "https://github.com/swift-molecules/swift-ascii-parser.git",
             branch: "main"
         ),
         .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-primitives/swift-parser-primitives.git",
+            url: "https://github.com/swift-molecules/swift-parser.git",
             branch: "main"
         ),
     ],
@@ -101,7 +101,7 @@ let package = Package(
                 .asciiDecimalParser,
                 .asciiParser,
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
-                .product(name: "Parser Primitives", package: "swift-parser-primitives"),
+                .product(name: "Parser", package: "swift-parser"),
             ]
         ),
         .target(

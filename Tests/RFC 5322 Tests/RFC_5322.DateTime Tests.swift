@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import Time_Primitives
+import Time
 
 @testable import RFC_5322
 

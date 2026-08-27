@@ -1,5 +1,5 @@
-public import ASCII_Serializer_Primitives
-public import Binary_Serializable_Primitives
+public import ASCII_Serializer
+public import Binary_Serializable
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions

@@ -1,10 +1,10 @@
-public import ASCII_Serializer_Primitives
-public import Binary_Serializable_Primitives
+public import ASCII_Serializer
+public import Binary_Serializable
 import INCITS_4_1986
-public import Parseable_ASCII_Primitives
-import Radix_Formatter_Primitives
+public import Parseable_ASCII
+import Radix_Formatter
 import Standard_Library_Extensions
-public import Time_Primitives
+public import Time
 
 extension RFC_5322 {
 

@@ -1,8 +1,8 @@
 #if canImport(Foundation)
-    import ASCII_Serializer_Primitives
+    import ASCII_Serializer
     public import Foundation
     public import RFC_5322
-    import Binary_Serializable_Primitives
+    import Binary_Serializable
 
     extension RFC_5322.Date {
 

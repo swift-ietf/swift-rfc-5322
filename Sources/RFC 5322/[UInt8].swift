@@ -1,8 +1,8 @@
-import ASCII_Serializer_Primitives
+import ASCII_Serializer
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
-import Time_Primitives
+import Time
 
 extension Array where Element == Byte {
     package static let fromPrefix: [Byte] = .init("From: ".utf8)
