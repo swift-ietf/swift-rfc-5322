@@ -1,3 +1,4 @@
+import Byte
 import Testing
 
 @testable import RFC_5322
@@ -16,7 +17,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Message",
             messageId: "<test@example.com>",
-            body: .init("Hello, World!".utf8)
+            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.from.address == "sender@example.com")
@@ -39,7 +40,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Group Message",
             messageId: "<group@example.com>",
-            body: .init("Hello".utf8)
+            body: "Hello".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.to.count == 3)
@@ -57,7 +58,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test CC",
             messageId: "<cc-test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.cc?.count == 1)
@@ -73,7 +74,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test BCC",
             messageId: "<bcc-test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.bcc?.count == 1)
@@ -89,7 +90,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Reply-To",
             messageId: "<reply-test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.replyTo?.address == "replyto@example.com")
@@ -103,7 +104,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Headers",
             messageId: "<headers-test@example.com>",
-            body: .init("Test".utf8),
+            body: "Test".utf8.map(Byte.init(bitPattern:)),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1),
                 RFC_5322.Header(name: .inReplyTo, value: .init("<previous@example.com>")),
@@ -124,7 +125,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test MIME",
             messageId: "<mime-test@example.com>",
-            body: .init("Test".utf8),
+            body: "Test".utf8.map(Byte.init(bitPattern:)),
             mimeVersion: "2.0"
         )
 
@@ -139,7 +140,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.mimeVersion == "1.0")
@@ -153,7 +154,7 @@ struct `RFC_5322.Message Tests` {
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Test Message",
             messageId: "<test@example.com>",
-            body: .init("Hello, World!".utf8)
+            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
         let rendered = String(message)
@@ -178,7 +179,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let rendered = String(message)
@@ -196,7 +197,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test BCC",
             messageId: "<bcc-test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let rendered = String(message)
@@ -214,7 +215,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test CC",
             messageId: "<cc-test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let rendered = String(message)
@@ -231,7 +232,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let rendered = String(message)
@@ -247,7 +248,7 @@ struct `RFC_5322.Message Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: .init("Test".utf8),
+            body: "Test".utf8.map(Byte.init(bitPattern:)),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1)
             ]

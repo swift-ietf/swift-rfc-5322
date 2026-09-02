@@ -145,7 +145,7 @@ struct `[UInt8] Conversions Tests` {
 
         var hasCRLF = false
         for i in 0..<(bytes.count - 1) {
-            if bytes[i] == UInt8.ascii.cr && bytes[i + 1] == UInt8.ascii.lf {
+            if bytes[i] == 0x0D && bytes[i + 1] == 0x0A {
                 hasCRLF = true
                 break
             }
@@ -267,8 +267,8 @@ struct `[UInt8] Conversions Tests` {
         var hasDoubleCRLF = false
         for i in 0..<(bytes.count - 3) {
             let isDoubleCRLF =
-                bytes[i] == UInt8.ascii.cr && bytes[i + 1] == UInt8.ascii.lf
-                && bytes[i + 2] == UInt8.ascii.cr && bytes[i + 3] == UInt8.ascii.lf
+                bytes[i] == 0x0D && bytes[i + 1] == 0x0A
+                && bytes[i + 2] == 0x0D && bytes[i + 3] == 0x0A
             if isDoubleCRLF {
                 hasDoubleCRLF = true
                 break
