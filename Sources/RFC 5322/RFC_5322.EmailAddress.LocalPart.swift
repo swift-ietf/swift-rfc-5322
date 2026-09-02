@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 
@@ -41,7 +43,7 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Serializable, Binary.Serializab
 extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -49,7 +51,12 @@ extension RFC_5322.EmailAddress.LocalPart: ASCII.Parseable {
 
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            codes = try [ASCII.Code](bytes)
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
         } catch {
             throw Error.nonASCIICharacters
         }

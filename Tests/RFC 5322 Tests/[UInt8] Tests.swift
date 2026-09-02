@@ -1,4 +1,5 @@
 import ASCII_Serializer
+import Byte
 import INCITS_4_1986
 import Testing
 
@@ -117,7 +118,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Hello".utf8)
+            body: "Hello".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -137,7 +138,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -161,7 +162,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test Subject",
             messageId: "<unique@example.com>",
-            body: Array("Body".utf8)
+            body: "Body".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -184,7 +185,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -203,7 +204,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -221,7 +222,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -238,7 +239,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8),
+            body: "Test".utf8.map(Byte.init(bitPattern:)),
             additionalHeaders: [
                 RFC_5322.Header(name: .init("X-Priority"), value: 1)
             ]
@@ -258,7 +259,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Body content".utf8)
+            body: "Body content".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -286,7 +287,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array(bodyContent.utf8)
+            body: bodyContent.utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -306,7 +307,7 @@ struct `[UInt8] Conversions Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes = [UInt8](message)
@@ -323,7 +324,7 @@ struct `[UInt8] Conversions Tests` {
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Test Message",
             messageId: "<test@example.com>",
-            body: Array("Hello, World!".utf8)
+            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
         let bytes1 = [UInt8](message)

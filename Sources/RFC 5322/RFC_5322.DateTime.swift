@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 import Radix_Formatter
@@ -98,36 +100,36 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
         buffer.reserveCapacity(31)
 
         let dayName = RFC_5322.DateTime.dayNames[components.weekday]
-        buffer.append(contentsOf: dayName.utf8)
-        buffer.append(ASCII.Code.comma)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: dayName.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.comma.byte)
+        buffer.append(ASCII.Code.space.byte)
 
         let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: day.utf8)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: day.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.space.byte)
 
         let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
-        buffer.append(contentsOf: monthName.utf8)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: monthName.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.space.byte)
 
         let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
-        buffer.append(contentsOf: year.utf8)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: year.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.space.byte)
 
         let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: hour.utf8)
-        buffer.append(ASCII.Code.colon)
+        buffer.append(contentsOf: hour.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.colon.byte)
 
         let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: minute.utf8)
-        buffer.append(ASCII.Code.colon)
+        buffer.append(contentsOf: minute.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.colon.byte)
 
         let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: second.utf8)
-        buffer.append(ASCII.Code.space)
+        buffer.append(contentsOf: second.utf8.lazy.map(Byte.init(bitPattern:)))
+        buffer.append(ASCII.Code.space.byte)
 
         let offsetSign: ASCII.Code = dateTime.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
-        buffer.append(offsetSign)
+        buffer.append(offsetSign.byte)
 
         let offsetHours =
             abs(dateTime.timezoneOffsetSeconds)
@@ -138,17 +140,17 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
             / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
 
         let offsetHoursStr = offsetHours.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetHoursStr.utf8)
+        buffer.append(contentsOf: offsetHoursStr.utf8.lazy.map(Byte.init(bitPattern:)))
 
         let offsetMinutesStr = offsetMinutes.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetMinutesStr.utf8)
+        buffer.append(contentsOf: offsetMinutesStr.utf8.lazy.map(Byte.init(bitPattern:)))
     }
 }
 
 extension RFC_5322.DateTime: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -156,7 +158,12 @@ extension RFC_5322.DateTime: ASCII.Parseable {
 
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            codes = try [ASCII.Code](bytes)
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
         }
@@ -183,24 +190,24 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         }
 
         let dayNameCodes = parts[0].last == ASCII.Code.comma ? parts[0].dropLast() : parts[0][...]
-        let dayName = String(decoding: dayNameCodes, as: UTF8.self)
+        let dayName = String(decoding: dayNameCodes.lazy.map(\.underlying), as: UTF8.self)
 
         guard let expectedWeekday = RFC_5322.DateTime.dayNames.firstIndex(of: dayName) else {
             throw Error.invalidDayName(dayName)
         }
 
-        let dayString = String(decoding: parts[1], as: UTF8.self)
+        let dayString = String(decoding: parts[1].lazy.map(\.underlying), as: UTF8.self)
         guard let day = Int(dayString), day >= 1, day <= 31 else {
             throw Error.invalidDay(dayString)
         }
 
-        let monthString = String(decoding: parts[2], as: UTF8.self)
+        let monthString = String(decoding: parts[2].lazy.map(\.underlying), as: UTF8.self)
         guard let monthIndex = RFC_5322.DateTime.monthNames.firstIndex(of: monthString) else {
             throw Error.invalidMonth(monthString)
         }
         let month = monthIndex + 1
 
-        let yearString = String(decoding: parts[3], as: UTF8.self)
+        let yearString = String(decoding: parts[3].lazy.map(\.underlying), as: UTF8.self)
         guard let year = Int(yearString), year >= 1900 else {
             throw Error.invalidYear(yearString)
         }
@@ -224,23 +231,23 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         }
 
         guard timeParts.count >= 2, timeParts.count <= 3 else {
-            let timeString = String(decoding: timeCodes, as: UTF8.self)
+            let timeString = String(decoding: timeCodes.lazy.map(\.underlying), as: UTF8.self)
             throw Error.invalidTime(timeString)
         }
 
-        let hourString = String(decoding: timeParts[0], as: UTF8.self)
+        let hourString = String(decoding: timeParts[0].lazy.map(\.underlying), as: UTF8.self)
         guard let hour = Int(hourString), hour >= 0, hour <= 23 else {
             throw Error.invalidHour(hourString)
         }
 
-        let minuteString = String(decoding: timeParts[1], as: UTF8.self)
+        let minuteString = String(decoding: timeParts[1].lazy.map(\.underlying), as: UTF8.self)
         guard let minute = Int(minuteString), minute >= 0, minute <= 59 else {
             throw Error.invalidMinute(minuteString)
         }
 
         let second: Int
         if timeParts.count == 3 {
-            let secondString = String(decoding: timeParts[2], as: UTF8.self)
+            let secondString = String(decoding: timeParts[2].lazy.map(\.underlying), as: UTF8.self)
             guard let sec = Int(secondString), sec >= 0, sec <= 60 else {
                 throw Error.invalidSecond(secondString)
             }
@@ -251,7 +258,7 @@ extension RFC_5322.DateTime: ASCII.Parseable {
 
         let timezoneCodes = parts[5]
         guard timezoneCodes.count == 5 else {
-            let timezoneString = String(decoding: timezoneCodes, as: UTF8.self)
+            let timezoneString = String(decoding: timezoneCodes.lazy.map(\.underlying), as: UTF8.self)
             throw Error.invalidTimezone(timezoneString)
         }
 
@@ -261,15 +268,15 @@ extension RFC_5322.DateTime: ASCII.Parseable {
         let offsetHoursCodes = offsetCodes.prefix(2)
         let offsetMinutesCodes = offsetCodes.suffix(2)
 
-        let offsetHoursString = String(decoding: offsetHoursCodes, as: UTF8.self)
-        let offsetMinutesString = String(decoding: offsetMinutesCodes, as: UTF8.self)
+        let offsetHoursString = String(decoding: offsetHoursCodes.lazy.map(\.underlying), as: UTF8.self)
+        let offsetMinutesString = String(decoding: offsetMinutesCodes.lazy.map(\.underlying), as: UTF8.self)
 
         guard let offsetHours = Int(offsetHoursString),
             let offsetMinutes = Int(offsetMinutesString),
             offsetHours >= 0, offsetHours <= 23,
             offsetMinutes >= 0, offsetMinutes <= 59
         else {
-            let timezoneString = String(decoding: timezoneCodes, as: UTF8.self)
+            let timezoneString = String(decoding: timezoneCodes.lazy.map(\.underlying), as: UTF8.self)
             throw Error.invalidTimezone(timezoneString)
         }
 

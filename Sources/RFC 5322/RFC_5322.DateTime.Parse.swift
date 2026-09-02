@@ -1,11 +1,21 @@
 public import ASCII_Decimal_Parser
-import Byte
-import Parser
+public import Byte
+public import Byte_Parser
+public import Checkpoint
+public import Cursor
+public import Cursor_Parser_First
+public import Cursor_Parser_Many
+public import Cursor_Parser_Optionally
+public import Iterator_Protocol
+public import Parser
+public import Parser_Error
+public import Parser_Sequence
+public import Parser_Skip
 
 extension RFC_5322.DateTime {
 
-    public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
-    where Input: Sendable, Input.Element == Byte {
+    public struct Parse<Input: Cursor.`Protocol`>: Sendable
+    where Input.Element == Byte, Input.Failure == Never, Input.Checkpoint: Equatable {
         @inlinable
         public init() {}
     }
@@ -14,11 +24,11 @@ extension RFC_5322.DateTime {
 extension RFC_5322.DateTime.Parse {
     public struct Output: Sendable {
 
-        public let dayOfWeek: Input?
+        public let dayOfWeek: [Byte]?
 
         public let day: Int
 
-        public let month: Input
+        public let month: [Byte]
 
         public let year: Int
 
@@ -28,18 +38,18 @@ extension RFC_5322.DateTime.Parse {
 
         public let second: Int
 
-        public let timezone: Input
+        public let timezone: [Byte]
 
         @inlinable
         public init(
-            dayOfWeek: Input?,
+            dayOfWeek: [Byte]?,
             day: Int,
-            month: Input,
+            month: [Byte],
             year: Int,
             hour: Int,
             minute: Int,
             second: Int,
-            timezone: Input
+            timezone: [Byte]
         ) {
             self.dayOfWeek = dayOfWeek
             self.month = month
@@ -59,138 +69,126 @@ extension RFC_5322.DateTime.Parse {
         case expectedMonth
         case expectedColon
         case expectedTimezone
-        case unexpectedEndOfInput
     }
 }
 
 extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
     public typealias Failure = RFC_5322.DateTime.Parse<Input>.Error
 
+    public typealias Body = Never
+
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
-        Self._skipCFWS(&input)
+        let number = ASCII.Decimal.Parser<Input, Int>()
+            .error.map { error -> Failure in
+                switch error {
+                case .overflow: .overflow
+                case .noDigits, .insufficientDigits, .invalidSign: .expectedDigit
+                }
+            }
 
-        var dayOfWeek: Input? = nil
-        let saved = input
-        if let dow = Self._tryDayOfWeek(&input) {
-            dayOfWeek = dow
-        } else {
-            input = saved
+        let dayOfWeekLetters = Parser.Many(3...3) {
+            Parser.First.Where<Input>(expected: "day of week letter", Self._isLetter)
         }
+        let dayOfWeekComma = Byte.Literal.Parser<Input>(",")
+        let dayOfWeek = Parser.Optionally(
+            Parser.Sequence(Input.self) {
+                dayOfWeekLetters
+                dayOfWeekComma
+            }
+        )
 
-        Self._skipCFWS(&input)
-
-        let day = try Self._parseNumber(&input)
-
-        Self._skipCFWS(&input)
-
-        let month = try Self._parseAlpha(&input, count: 3)
-
-        Self._skipCFWS(&input)
-
-        let year = try Self._parseNumber(&input)
-
-        Self._skipCFWS(&input)
-
-        let hour = try Self._parseNumber(&input)
-
-        guard input.startIndex < input.endIndex, input[input.startIndex] == 0x3A else {
-            throw .expectedColon
+        let month = Parser.Many(3...3) {
+            Parser.First.Where<Input>(expected: "month letter", Self._isLetter)
         }
-        input = input[input.index(after: input.startIndex)...]
+        .error.map { _ in Failure.expectedMonth }
 
-        let minute = try Self._parseNumber(&input)
+        let colon = Byte.Literal.Parser<Input>(":")
+            .error.map { _ in Failure.expectedColon }
 
-        var second = 0
-        if input.startIndex < input.endIndex && input[input.startIndex] == 0x3A {
-            input = input[input.index(after: input.startIndex)...]
-            second = try Self._parseNumber(&input)
+        let secondsColon = Byte.Literal.Parser<Input>(":")
+        let secondsNumber = ASCII.Decimal.Parser<Input, Int>()
+        let seconds = Parser.Optionally(
+            Parser.Sequence(Input.self) {
+                secondsColon
+                secondsNumber
+            }
+        )
+
+        let timezone = Parser.Many(1...) {
+            Parser.First.Where<Input>(expected: "timezone byte", Self._isNotWhitespace)
         }
+        .error.map { _ in Failure.expectedTimezone }
 
-        Self._skipCFWS(&input)
+        Self._skipWhitespace(&input)
 
-        let tzStart = input.startIndex
-        while input.startIndex < input.endIndex {
-            let byte = input[input.startIndex]
-            if byte == 0x20 || byte == 0x09 || byte == 0x0D || byte == 0x0A { break }
-            input = input[input.index(after: input.startIndex)...]
-        }
-        guard tzStart < input.startIndex else { throw .expectedTimezone }
-        let timezone = input[tzStart..<input.startIndex]
+        let weekday = dayOfWeek.parse(&input)
 
-        Self._skipCFWS(&input)
+        Self._skipWhitespace(&input)
+
+        let day = try number.parse(&input)
+
+        Self._skipWhitespace(&input)
+
+        let monthName = try month.parse(&input)
+
+        Self._skipWhitespace(&input)
+
+        let year = try number.parse(&input)
+
+        Self._skipWhitespace(&input)
+
+        let hour = try number.parse(&input)
+
+        try colon.parse(&input)
+
+        let minute = try number.parse(&input)
+
+        let second = seconds.parse(&input) ?? 0
+
+        Self._skipWhitespace(&input)
+
+        let zone = try timezone.parse(&input)
+
+        Self._skipWhitespace(&input)
 
         return Output(
-            dayOfWeek: dayOfWeek,
+            dayOfWeek: weekday,
             day: day,
-            month: month,
+            month: monthName,
             year: year,
             hour: hour,
             minute: minute,
             second: second,
-            timezone: timezone
+            timezone: zone
         )
     }
 
     @inlinable
-    package static func _skipCFWS(_ input: inout Input) {
-        while input.startIndex < input.endIndex {
-            let byte = input[input.startIndex]
-            guard byte == 0x20 || byte == 0x09 || byte == 0x0D || byte == 0x0A else { break }
-            input = input[input.index(after: input.startIndex)...]
-        }
+    package static func _isWhitespace(_ byte: Byte) -> Bool {
+        let code = byte.bitPattern
+        return code == 0x20 || code == 0x09 || code == 0x0D || code == 0x0A
     }
 
     @inlinable
-    package static func _tryDayOfWeek(_ input: inout Input) -> Input? {
-        var idx = input.startIndex
-        var count = 0
-        while idx < input.endIndex && count < 3 {
-            let byte = input[idx]
-            guard (byte >= 0x41 && byte <= 0x5A) || (byte >= 0x61 && byte <= 0x7A) else {
-                return nil
-            }
-            input.formIndex(after: &idx)
-            count += 1
-        }
-        guard count == 3 else { return nil }
-        let dow = input[input.startIndex..<idx]
-
-        guard idx < input.endIndex && input[idx] == 0x2C else { return nil }
-        input.formIndex(after: &idx)
-        input = input[idx...]
-        return dow
+    package static func _isNotWhitespace(_ byte: Byte) -> Bool {
+        !_isWhitespace(byte)
     }
 
     @inlinable
-    package static func _parseNumber(_ input: inout Input) throws(Failure) -> Int {
-
-        do throws(ASCII.Decimal.Error) {
-            return try ASCII.Decimal.Parser<Input, Int>().parse(&input)
-        } catch {
-            switch error {
-            case .noDigits, .insufficientDigits, .invalidSign: throw .expectedDigit
-            case .overflow: throw .overflow
-            }
-        }
+    package static func _isLetter(_ byte: Byte) -> Bool {
+        let code = byte.bitPattern
+        return (code >= 0x41 && code <= 0x5A) || (code >= 0x61 && code <= 0x7A)
     }
 
     @inlinable
-    package static func _parseAlpha(_ input: inout Input, count: Int) throws(Failure) -> Input {
-        let start = input.startIndex
-        var idx = start
-        var n = 0
-        while idx < input.endIndex && n < count {
-            let byte = input[idx]
-            guard (byte >= 0x41 && byte <= 0x5A) || (byte >= 0x61 && byte <= 0x7A) else {
-                throw .expectedMonth
+    package static func _skipWhitespace(_ input: inout Input) {
+        while true {
+            let mark = input.checkpoint
+            guard let byte = input.next(), _isWhitespace(byte) else {
+                input.seek(to: mark)
+                return
             }
-            input.formIndex(after: &idx)
-            n += 1
         }
-        guard n == count else { throw .expectedMonth }
-        let result = input[start..<idx]
-        input = input[idx...]
-        return result
     }
 }

@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 
@@ -62,7 +64,7 @@ extension RFC_5322.Header.Value: CustomStringConvertible {
 extension RFC_5322.Header.Value: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -70,7 +72,12 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
 
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            codes = try [ASCII.Code](bytes)
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
         }
@@ -132,7 +139,7 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
             let valid = code.isPrintable || code == ASCII.Code.htab
 
             guard valid else {
-                let string = String(decoding: trimmed, as: UTF8.self)
+                let string = String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
                 let reason: String
                 if code.isControl {
                     reason = "Control characters not allowed (except HTAB)"
@@ -145,7 +152,7 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
 
         self.init(
             __unchecked: (),
-            rawValue: String(decoding: trimmed, as: UTF8.self)
+            rawValue: String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
         )
     }
 }
@@ -153,7 +160,7 @@ extension RFC_5322.Header.Value: ASCII.Parseable {
 extension [Byte] {
 
     public init(_ value: RFC_5322.Header.Value) {
-        self = [Byte](value.rawValue.utf8)
+        self = value.rawValue.utf8.map(Byte.init(bitPattern:))
     }
 }
 

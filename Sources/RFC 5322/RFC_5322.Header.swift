@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 
@@ -38,8 +40,8 @@ extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
         RFC_5322.Header.Name.serialize(value.name, into: &buffer)
-        buffer.append(ASCII.Code.colon)
-        buffer.append(ASCII.Code.space)
+        buffer.append(ASCII.Code.colon.byte)
+        buffer.append(ASCII.Code.space.byte)
         RFC_5322.Header.Value.serialize(value.value, into: &buffer)
     }
 }
@@ -47,7 +49,7 @@ extension RFC_5322.Header: ASCII.Serializable, Binary.Serializable {
 extension RFC_5322.Header: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)

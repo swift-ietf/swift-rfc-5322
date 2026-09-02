@@ -1,3 +1,4 @@
+import Byte
 import Testing
 
 @testable import RFC_5322
@@ -58,7 +59,7 @@ struct `String Tests` {
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Hello".utf8)
+            body: "Hello".utf8.map(Byte.init(bitPattern:))
         )
 
         let string = String(message)
@@ -77,7 +78,7 @@ struct `String Tests` {
             date: .init(secondsSinceEpoch: 0),
             subject: "Test",
             messageId: "<test@example.com>",
-            body: Array("Test".utf8)
+            body: "Test".utf8.map(Byte.init(bitPattern:))
         )
 
         let fromString = String(message)

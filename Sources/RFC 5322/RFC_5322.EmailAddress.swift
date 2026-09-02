@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 public import RFC_1123
@@ -92,26 +94,30 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             })
 
             if needsQuoting {
-                buffer.append(ASCII.Code.quotationMark)
-                buffer.append(contentsOf: Self.escapedForQuotedString(displayName).utf8)
-                buffer.append(ASCII.Code.quotationMark)
+                buffer.append(ASCII.Code.quotationMark.byte)
+                buffer.append(
+                    contentsOf: Self.escapedForQuotedString(displayName).utf8.lazy.map(
+                        Byte.init(bitPattern:)
+                    )
+                )
+                buffer.append(ASCII.Code.quotationMark.byte)
             } else {
-                buffer.append(contentsOf: displayName.utf8)
+                buffer.append(contentsOf: displayName.utf8.lazy.map(Byte.init(bitPattern:)))
             }
 
-            buffer.append(ASCII.Code.space)
-            buffer.append(ASCII.Code.lessThanSign)
+            buffer.append(ASCII.Code.space.byte)
+            buffer.append(ASCII.Code.lessThanSign.byte)
 
             RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt)
+            buffer.append(ASCII.Code.commercialAt.byte)
 
             RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
 
-            buffer.append(ASCII.Code.greaterThanSign)
+            buffer.append(ASCII.Code.greaterThanSign.byte)
         } else {
 
             RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt)
+            buffer.append(ASCII.Code.commercialAt.byte)
             RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
         }
     }
@@ -126,7 +132,7 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
 extension RFC_5322.EmailAddress: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -139,7 +145,12 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
 
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            codes = try [ASCII.Code](bytes)
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
         } catch {
             throw Error.localPart(.nonASCIICharacters)
         }
@@ -181,7 +192,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 }
 
                 if !trimmedCodes.isEmpty {
-                    var nameString = String(decoding: trimmedCodes, as: UTF8.self)
+                    var nameString = String(decoding: trimmedCodes.lazy.map(\.underlying), as: UTF8.self)
 
                     if nameString.hasPrefix("\"") && nameString.hasSuffix("\"") {
                         nameString = String(nameString.dropFirst().dropLast())
@@ -201,8 +212,8 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 throw Error.missingAtSign
             }
 
-            let localBytes = [Byte](emailCodes[..<atIdx])
-            let domainBytes = [Byte](emailCodes[(atIdx + 1)...])
+            let localBytes = emailCodes[..<atIdx].map(\.byte)
+            let domainBytes = emailCodes[(atIdx + 1)...].map(\.byte)
 
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
@@ -214,8 +225,8 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
                 throw Error.missingAtSign
             }
 
-            let localBytes = [Byte](codes[..<atIdx])
-            let domainBytes = [Byte](codes[(atIdx + 1)...])
+            let localBytes = codes[..<atIdx].map(\.byte)
+            let domainBytes = codes[(atIdx + 1)...].map(\.byte)
 
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)

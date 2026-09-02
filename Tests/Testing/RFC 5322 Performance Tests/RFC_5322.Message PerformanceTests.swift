@@ -1,3 +1,4 @@
+import Byte
 import Testing
 
 @testable import RFC_5322
@@ -14,7 +15,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Test",
                 messageId: "<test@example.com>",
-                body: Array("Hello, World!".utf8)
+                body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
             )
             _ = String(message)
         }
@@ -31,7 +32,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Group Message",
                 messageId: "<group@example.com>",
-                body: Array("Hello everyone!".utf8)
+                body: "Hello everyone!".utf8.map(Byte.init(bitPattern:))
             )
             _ = String(message)
         }
@@ -47,7 +48,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Full Message",
                 messageId: "<full@example.com>",
-                body: Array("Test body".utf8),
+                body: "Test body".utf8.map(Byte.init(bitPattern:)),
                 additionalHeaders: [
                     RFC_5322.Header(name: .xPriority, value: 1)
                 ]
@@ -64,7 +65,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Large Message",
                 messageId: "<large@example.com>",
-                body: Array(largeBody.utf8)
+                body: largeBody.utf8.map(Byte.init(bitPattern:))
             )
             _ = String(message)
         }
@@ -77,7 +78,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Test",
                 messageId: "<test@example.com>",
-                body: Array("Hello".utf8)
+                body: "Hello".utf8.map(Byte.init(bitPattern:))
             )
             _ = [UInt8](message)
         }
@@ -91,7 +92,7 @@ extension PerformanceTests {
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Large",
                 messageId: "<large@example.com>",
-                body: Array(largeBody.utf8)
+                body: largeBody.utf8.map(Byte.init(bitPattern:))
             )
             _ = [UInt8](message)
         }

@@ -1,3 +1,5 @@
+import Byte
+import Byte_Standard_Library_Integration
 import RFC_5322
 import Standard_Library_Extensions
 import Testing
@@ -46,13 +48,13 @@ struct `README Verification Tests` {
                 uniqueId: "test-unique-id",
                 domain: try RFC_5322.EmailAddress("john@example.com").domain,
             ),
-            body: Array("Hello, World!".utf8)
+            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
         #expect(message.from.displayName == "John Doe")
         #expect(message.to.count == 1)
         #expect(message.subject == "Hello from Swift!")
-        #expect(String(message.body) == "Hello, World!")
+        #expect(String(decoding: message.body, as: UTF8.self) == "Hello, World!")
     }
 
     @Test
@@ -67,7 +69,7 @@ struct `README Verification Tests` {
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Hello from Swift!",
             messageId: "<test@example.com>",
-            body: Array("Hello, World!".utf8)
+            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
         let emlContent = String(message)
@@ -89,7 +91,7 @@ struct `README Verification Tests` {
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Meeting Notes",
             messageId: "<unique-id@example.com>",
-            body: Array("Meeting summary...".utf8),
+            body: "Meeting summary...".utf8.map(Byte.init(bitPattern:)),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1),
                 RFC_5322.Header(

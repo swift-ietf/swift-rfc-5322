@@ -1,12 +1,14 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions
 
 extension RFC_5322 {
 
-    public struct Message: Hashable, Sendable, Codable {
+    public struct Message: Hashable, Sendable {
 
         public let from: EmailAddress
 
@@ -157,8 +159,8 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
         var first = true
         for address in message.to {
             if !first {
-                buffer.append(ASCII.Code.comma)
-                buffer.append(ASCII.Code.space)
+                buffer.append(ASCII.Code.comma.byte)
+                buffer.append(ASCII.Code.space.byte)
             }
             first = false
             RFC_5322.EmailAddress.serialize(address, into: &buffer)
@@ -170,8 +172,8 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
             first = true
             for address in cc {
                 if !first {
-                    buffer.append(ASCII.Code.comma)
-                    buffer.append(ASCII.Code.space)
+                    buffer.append(ASCII.Code.comma.byte)
+                    buffer.append(ASCII.Code.space.byte)
                 }
                 first = false
                 RFC_5322.EmailAddress.serialize(address, into: &buffer)
@@ -180,7 +182,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
         }
 
         buffer.append(contentsOf: [Byte].subjectPrefix)
-        buffer.append(contentsOf: message.subject.utf8)
+        buffer.append(contentsOf: message.subject.utf8.lazy.map(Byte.init(bitPattern:)))
         buffer.append(contentsOf: [Byte].crlf)
 
         buffer.append(contentsOf: [Byte].datePrefix)
@@ -198,7 +200,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
         }
 
         buffer.append(contentsOf: [Byte].mimeVersionPrefix)
-        buffer.append(contentsOf: message.mimeVersion.utf8)
+        buffer.append(contentsOf: message.mimeVersion.utf8.lazy.map(Byte.init(bitPattern:)))
         buffer.append(contentsOf: [Byte].crlf)
 
         for header in message.additionalHeaders {

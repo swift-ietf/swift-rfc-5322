@@ -1,9 +1,20 @@
+public import Byte
+public import Byte_Parser
+public import Checkpoint
+public import Cursor
+public import Cursor_Parser_First
+public import Cursor_Parser_Many
+public import Either
 public import Parser
+public import Parser_Error
+public import Parser_Map
+public import Parser_Sequence
+public import Parser_Skip
 
 extension RFC_5322.Message.ID {
 
-    public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
-    where Input: Sendable, Input.Element == Byte {
+    public struct Parse<Input: Cursor.`Protocol`>: Sendable
+    where Input.Element == Byte, Input.Failure == Never, Input.Checkpoint: Equatable {
         @inlinable
         public init() {}
     }
@@ -11,11 +22,11 @@ extension RFC_5322.Message.ID {
 
 extension RFC_5322.Message.ID.Parse {
     public struct Output: Sendable {
-        public let left: Input
-        public let right: Input
+        public let left: [Byte]
+        public let right: [Byte]
 
         @inlinable
-        public init(left: Input, right: Input) {
+        public init(left: [Byte], right: [Byte]) {
             self.left = left
             self.right = right
         }
@@ -31,34 +42,44 @@ extension RFC_5322.Message.ID.Parse {
 extension RFC_5322.Message.ID.Parse: Parser.`Protocol` {
     public typealias Failure = RFC_5322.Message.ID.Parse<Input>.Error
 
+    public typealias Body = Never
+
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
-
-        guard input.startIndex < input.endIndex,
-            input[input.startIndex] == 0x3C
-        else {
-            throw .expectedOpenAngle
+        let messageID = Parser.Sequence(Input.self) {
+            Byte.Literal.Parser<Input>("<")
+            Parser.Many {
+                Parser.First.Where<Input>(expected: "byte before @", Self._isNotAtSign)
+            }
+            Byte.Literal.Parser<Input>("@")
+            Parser.Many {
+                Parser.First.Where<Input>(expected: "byte before >", Self._isNotCloseAngle)
+            }
+            Byte.Literal.Parser<Input>(">")
         }
-        input = input[input.index(after: input.startIndex)...]
-
-        let leftStart = input.startIndex
-        while input.startIndex < input.endIndex && input[input.startIndex] != 0x40 {
-            input = input[input.index(after: input.startIndex)...]
+        .map { (pair: ([Byte], [Byte])) in
+            Output(left: pair.0, right: pair.1)
         }
-        guard input.startIndex < input.endIndex else { throw .expectedAtSign }
-        let left = input[leftStart..<input.startIndex]
-
-        input = input[input.index(after: input.startIndex)...]
-
-        let rightStart = input.startIndex
-        while input.startIndex < input.endIndex && input[input.startIndex] != 0x3E {
-            input = input[input.index(after: input.startIndex)...]
+        .error.map { error -> Failure in
+            switch error {
+            case .right: .expectedCloseAngle
+            case .left(.right): .expectedCloseAngle
+            case .left(.left(.right)): .expectedAtSign
+            case .left(.left(.left(.right))): .expectedAtSign
+            case .left(.left(.left(.left))): .expectedOpenAngle
+            }
         }
-        guard input.startIndex < input.endIndex else { throw .expectedCloseAngle }
-        let right = input[rightStart..<input.startIndex]
 
-        input = input[input.index(after: input.startIndex)...]
+        return try messageID.parse(&input)
+    }
 
-        return Output(left: left, right: right)
+    @inlinable
+    package static func _isNotAtSign(_ byte: Byte) -> Bool {
+        byte != Byte(bitPattern: 0x40)
+    }
+
+    @inlinable
+    package static func _isNotCloseAngle(_ byte: Byte) -> Bool {
+        byte != Byte(bitPattern: 0x3E)
     }
 }

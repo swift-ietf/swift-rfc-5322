@@ -1,5 +1,7 @@
 public import ASCII_Serializer
 public import Binary_Serializable
+import Byte
+import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import Parseable_ASCII
 
@@ -41,7 +43,7 @@ extension RFC_5322.Message.ID: ASCII.Serializable, Binary.Serializable {
 extension RFC_5322.Message.ID: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -49,7 +51,12 @@ extension RFC_5322.Message.ID: ASCII.Parseable {
 
         let codes: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            codes = try [ASCII.Code](bytes)
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
         } catch {
             throw Error.nonASCII(String(decoding: bytes, as: UTF8.self))
         }
@@ -91,7 +98,7 @@ extension RFC_5322.Message.ID: ASCII.Parseable {
                 )
             }
 
-            result.append(code)
+            result.append(code.byte)
         }
 
         self.value = result
@@ -102,9 +109,9 @@ extension RFC_5322.Message.ID {
 
     public init(uniqueId: String, domain: RFC_1123.Domain) {
         var result = [Byte]()
-        result.append(contentsOf: uniqueId.utf8)
-        result.append(ASCII.Code.at)
-        result.append(contentsOf: domain.name.utf8)
+        result.append(contentsOf: uniqueId.utf8.lazy.map(Byte.init(bitPattern:)))
+        result.append(ASCII.Code.at.byte)
+        result.append(contentsOf: domain.name.utf8.lazy.map(Byte.init(bitPattern:)))
         self.value = result
     }
 }
