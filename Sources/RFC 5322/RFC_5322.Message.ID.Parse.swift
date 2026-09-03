@@ -3,7 +3,6 @@ public import Byte_Parser
 import Byte_Standard_Library_Integration
 public import Checkpoint
 public import Cursor
-public import Cursor_Parser_First
 public import Cursor_Parser_Many
 public import Either
 public import Parser

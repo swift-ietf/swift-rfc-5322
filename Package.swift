@@ -54,9 +54,6 @@ extension Target.Dependency {
     static var iteratorProtocol: Self {
         .product(name: "Iterator Protocol", package: "swift-iterator")
     }
-    static var cursorParserFirst: Self {
-        .product(name: "Cursor Parser First", package: "swift-cursor-parser")
-    }
     static var cursorParserMany: Self {
         .product(name: "Cursor Parser Many", package: "swift-cursor-parser")
     }
@@ -197,7 +194,6 @@ let package = Package(
                 .checkpoint,
                 .iterator,
                 .iteratorProtocol,
-                .cursorParserFirst,
                 .cursorParserMany,
                 .cursorParserOptionally,
                 .byteParser,
