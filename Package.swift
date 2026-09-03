@@ -59,43 +59,7 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-atoms/swift-parser.git",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/swift-atoms/swift-byte.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-atoms/swift-cursor.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-atoms/swift-checkpoint.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-atoms/swift-iterator.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-cursor-parser.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-atoms/swift-either.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-atoms/swift-pair.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-pair-parser.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-iterator-parser.git",
             branch: "main"
         ),
     ],
@@ -110,26 +74,10 @@ let package = Package(
                 .product(name: "Time", package: "swift-time"),
                 .product(name: "RFC 1123", package: "swift-rfc-1123"),
                 .product(name: "ASCII Serializer", package: "swift-ascii-serializer"),
-                .product(name: "ASCII Decimal Parser", package: "swift-ascii-parser"),
                 .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Byte Standard Library Integration", package: "swift-byte"),
-                .product(name: "Cursor", package: "swift-cursor"),
-                .product(name: "Checkpoint", package: "swift-checkpoint"),
-                .product(name: "Iterator", package: "swift-iterator"),
-                .product(name: "Iterator Protocol", package: "swift-iterator"),
-                .product(name: "Cursor Parser Many", package: "swift-cursor-parser"),
-                .product(name: "Cursor Parser Optionally", package: "swift-cursor-parser"),
-                .product(name: "Parser Error", package: "swift-parser"),
-                .product(name: "Parser Skip", package: "swift-parser"),
-                .product(name: "Iterator Parser", package: "swift-iterator-parser"),
-                .product(name: "Parser Map", package: "swift-parser"),
-                .product(name: "Parser Sequence", package: "swift-parser"),
-                .product(name: "Either", package: "swift-either"),
-                .product(name: "Pair", package: "swift-pair"),
-                .product(name: "Pair Parser", package: "swift-pair-parser"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
-                .product(name: "Parser", package: "swift-parser"),
             ]
         ),
         .target(
