@@ -1,9 +1,9 @@
 public import ASCII_Decimal_Parser
 public import Byte
-public import Byte_Parser
+public import Cursor
+public import Either
 import Byte_Standard_Library_Integration
 public import Checkpoint
-public import Cursor
 public import Cursor_Parser_Many
 public import Cursor_Parser_Optionally
 public import Iterator_Protocol

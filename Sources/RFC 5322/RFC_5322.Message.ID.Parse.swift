@@ -1,8 +1,7 @@
 public import Byte
-public import Byte_Parser
+public import Cursor
 import Byte_Standard_Library_Integration
 public import Checkpoint
-public import Cursor
 public import Cursor_Parser_Many
 public import Either
 public import Parser

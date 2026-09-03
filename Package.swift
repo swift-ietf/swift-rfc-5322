@@ -2,93 +2,6 @@
 
 import PackageDescription
 
-extension String {
-    static let rfc5322: Self = "RFC 5322"
-    static let rfc5322Foundation: Self = "RFC 5322 Foundation"
-}
-
-extension Target.Dependency {
-    static var rfc5322: Self { .target(name: .rfc5322) }
-    static var rfc5322Foundation: Self { .target(name: .rfc5322Foundation) }
-    static var rfc1123: Self { .product(name: "RFC 1123", package: "swift-rfc-1123") }
-    static var standards: Self {
-        .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
-    }
-    static var binary: Self {
-        .product(name: "Binary", package: "swift-binary")
-    }
-    static var radixFormat: Self {
-        .product(name: "Radix Formatter", package: "swift-radix-formatter")
-    }
-    static var binarySerializable: Self {
-        .product(
-            name: "Binary Serializable",
-            package: "swift-binary-serializer"
-        )
-    }
-    static var time: Self { .product(name: "Time", package: "swift-time") }
-    static var asciiSerializer: Self {
-        .product(name: "ASCII Serializer", package: "swift-ascii-serializer")
-    }
-    static var asciiDecimalParser: Self {
-        .product(name: "ASCII Decimal Parser", package: "swift-ascii-parser")
-    }
-    static var asciiParser: Self {
-        .product(name: "Parseable ASCII", package: "swift-ascii-parser")
-    }
-    static var byte: Self {
-        .product(name: "Byte", package: "swift-byte")
-    }
-    static var byteStandardLibraryIntegration: Self {
-        .product(name: "Byte Standard Library Integration", package: "swift-byte")
-    }
-    static var cursor: Self {
-        .product(name: "Cursor", package: "swift-cursor")
-    }
-    static var checkpoint: Self {
-        .product(name: "Checkpoint", package: "swift-checkpoint")
-    }
-    static var iterator: Self {
-        .product(name: "Iterator", package: "swift-iterator")
-    }
-    static var iteratorProtocol: Self {
-        .product(name: "Iterator Protocol", package: "swift-iterator")
-    }
-    static var cursorParserMany: Self {
-        .product(name: "Cursor Parser Many", package: "swift-cursor-parser")
-    }
-    static var cursorParserOptionally: Self {
-        .product(name: "Cursor Parser Optionally", package: "swift-cursor-parser")
-    }
-    static var byteParser: Self {
-        .product(name: "Byte Parser", package: "swift-byte-parser")
-    }
-    static var parserError: Self {
-        .product(name: "Parser Error", package: "swift-parser")
-    }
-    static var parserSkip: Self {
-        .product(name: "Parser Skip", package: "swift-parser")
-    }
-    static var iteratorParser: Self {
-        .product(name: "Iterator Parser", package: "swift-iterator-parser")
-    }
-    static var parserMap: Self {
-        .product(name: "Parser Map", package: "swift-parser")
-    }
-    static var parserSequence: Self {
-        .product(name: "Parser Sequence", package: "swift-parser")
-    }
-    static var either: Self {
-        .product(name: "Either", package: "swift-either")
-    }
-    static var pair: Self {
-        .product(name: "Pair", package: "swift-pair")
-    }
-    static var pairParser: Self {
-        .product(name: "Pair Parser", package: "swift-pair-parser")
-    }
-}
-
 let package = Package(
     name: "swift-rfc-5322",
     platforms: [
@@ -99,11 +12,20 @@ let package = Package(
         .visionOS(.v27),
     ],
     products: [
-        .library(name: "RFC 5322", targets: ["RFC 5322"]),
-        .library(name: "RFC 5322 Foundation", targets: ["RFC 5322 Foundation"]),
+        .library(
+            name: "RFC 5322",
+            targets: ["RFC 5322"]
+        ),
+        .library(
+            name: "RFC 5322 Foundation",
+            targets: ["RFC 5322 Foundation"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-ietf/swift-rfc-1123.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-ietf/swift-rfc-1123.git",
+            branch: "main"
+        ),
         .package(
             url: "https://github.com/swift-atoms/swift-standard-library-extensions.git",
             branch: "main"
@@ -132,7 +54,10 @@ let package = Package(
             url: "https://github.com/swift-molecules/swift-ascii-parser.git",
             branch: "main"
         ),
-        .package(url: "https://github.com/swift-incits/swift-incits-4-1986.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-incits/swift-incits-4-1986.git",
+            branch: "main"
+        ),
         .package(
             url: "https://github.com/swift-atoms/swift-parser.git",
             branch: "main"
@@ -158,10 +83,6 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-byte-parser.git",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/swift-atoms/swift-either.git",
             branch: "main"
         ),
@@ -173,38 +94,40 @@ let package = Package(
             url: "https://github.com/swift-molecules/swift-pair-parser.git",
             branch: "main"
         ),
-        .package(url: "https://github.com/swift-molecules/swift-iterator-parser.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-molecules/swift-iterator-parser.git",
+            branch: "main"
+        ),
     ],
     targets: [
         .target(
             name: "RFC 5322",
             dependencies: [
-                .standards,
-                .binary,
-                .radixFormat,
-                .binarySerializable,
-                .time,
-                .rfc1123,
-                .asciiSerializer,
-                .asciiDecimalParser,
-                .asciiParser,
-                .byte,
-                .byteStandardLibraryIntegration,
-                .cursor,
-                .checkpoint,
-                .iterator,
-                .iteratorProtocol,
-                .cursorParserMany,
-                .cursorParserOptionally,
-                .byteParser,
-                .parserError,
-                .parserSkip,
-                .iteratorParser,
-                .parserMap,
-                .parserSequence,
-                .either,
-                .pair,
-                .pairParser,
+                .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
+                .product(name: "Binary", package: "swift-binary"),
+                .product(name: "Radix Formatter", package: "swift-radix-formatter"),
+                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
+                .product(name: "Time", package: "swift-time"),
+                .product(name: "RFC 1123", package: "swift-rfc-1123"),
+                .product(name: "ASCII Serializer", package: "swift-ascii-serializer"),
+                .product(name: "ASCII Decimal Parser", package: "swift-ascii-parser"),
+                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
+                .product(name: "Byte", package: "swift-byte"),
+                .product(name: "Byte Standard Library Integration", package: "swift-byte"),
+                .product(name: "Cursor", package: "swift-cursor"),
+                .product(name: "Checkpoint", package: "swift-checkpoint"),
+                .product(name: "Iterator", package: "swift-iterator"),
+                .product(name: "Iterator Protocol", package: "swift-iterator"),
+                .product(name: "Cursor Parser Many", package: "swift-cursor-parser"),
+                .product(name: "Cursor Parser Optionally", package: "swift-cursor-parser"),
+                .product(name: "Parser Error", package: "swift-parser"),
+                .product(name: "Parser Skip", package: "swift-parser"),
+                .product(name: "Iterator Parser", package: "swift-iterator-parser"),
+                .product(name: "Parser Map", package: "swift-parser"),
+                .product(name: "Parser Sequence", package: "swift-parser"),
+                .product(name: "Either", package: "swift-either"),
+                .product(name: "Pair", package: "swift-pair"),
+                .product(name: "Pair Parser", package: "swift-pair-parser"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
                 .product(name: "Parser", package: "swift-parser"),
             ]
@@ -212,35 +135,30 @@ let package = Package(
         .target(
             name: "RFC 5322 Foundation",
             dependencies: [
-                .rfc5322,
-                .binarySerializable,
-                .byte,
+                .target(name: "RFC 5322"),
+                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
+                .product(name: "Byte", package: "swift-byte"),
             ]
         ),
         .testTarget(
             name: "RFC 5322 Foundation Tests",
             dependencies: [
-                "RFC 5322",
-                "RFC 5322 Foundation",
+                .target(name: "RFC 5322"),
+                .target(name: "RFC 5322 Foundation"),
             ]
         ),
         .testTarget(
             name: "RFC 5322 Tests",
             dependencies: [
-                "RFC 5322",
-                .asciiParser,
-                .byte,
-                .byteStandardLibraryIntegration,
+                .target(name: "RFC 5322"),
+                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
+                .product(name: "Byte", package: "swift-byte"),
+                .product(name: "Byte Standard Library Integration", package: "swift-byte"),
             ]
         ),
     ],
     swiftLanguageModes: [.v6]
 )
-
-extension String {
-    var tests: Self { self + " Tests" }
-    var foundation: Self { self + " Foundation" }
-}
 
 for target in package.targets where ![.system, .binary, .plugin, .macro].contains(target.type) {
     let ecosystem: [SwiftSetting] = [
