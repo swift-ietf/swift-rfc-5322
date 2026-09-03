@@ -1,5 +1,6 @@
 public import Byte
 public import Byte_Parser
+import Byte_Standard_Library_Integration
 public import Checkpoint
 public import Cursor
 public import Cursor_Parser_First
@@ -10,6 +11,7 @@ public import Parser_Error
 public import Parser_Map
 public import Parser_Sequence
 public import Parser_Skip
+public import Iterator_Parser
 
 extension RFC_5322.Message.ID {
 
@@ -47,15 +49,15 @@ extension RFC_5322.Message.ID.Parse: Parser.`Protocol` {
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
         let messageID = Parser.Sequence(Input.self) {
-            Byte.Literal.Parser<Input>("<")
+            [Byte].Parser<Input>("<")
             Parser.Many {
                 Parser.First.Where<Input>(expected: "byte before @", Self._isNotAtSign)
             }
-            Byte.Literal.Parser<Input>("@")
+            [Byte].Parser<Input>("@")
             Parser.Many {
                 Parser.First.Where<Input>(expected: "byte before >", Self._isNotCloseAngle)
             }
-            Byte.Literal.Parser<Input>(">")
+            [Byte].Parser<Input>(">")
         }
         .map { (pair: ([Byte], [Byte])) in
             Output(left: pair.0, right: pair.1)

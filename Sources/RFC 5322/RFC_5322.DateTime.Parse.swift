@@ -1,6 +1,7 @@
 public import ASCII_Decimal_Parser
 public import Byte
 public import Byte_Parser
+import Byte_Standard_Library_Integration
 public import Checkpoint
 public import Cursor
 public import Cursor_Parser_First
@@ -11,6 +12,7 @@ public import Parser
 public import Parser_Error
 public import Parser_Sequence
 public import Parser_Skip
+public import Iterator_Parser
 
 extension RFC_5322.DateTime {
 
@@ -90,7 +92,7 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
         let dayOfWeekLetters = Parser.Many(3...3) {
             Parser.First.Where<Input>(expected: "day of week letter", Self._isLetter)
         }
-        let dayOfWeekComma = Byte.Literal.Parser<Input>(",")
+        let dayOfWeekComma = [Byte].Parser<Input>(",")
         let dayOfWeek = Parser.Optionally(
             Parser.Sequence(Input.self) {
                 dayOfWeekLetters
@@ -103,10 +105,10 @@ extension RFC_5322.DateTime.Parse: Parser.`Protocol` {
         }
         .error.map { _ in Failure.expectedMonth }
 
-        let colon = Byte.Literal.Parser<Input>(":")
+        let colon = [Byte].Parser<Input>(":")
             .error.map { _ in Failure.expectedColon }
 
-        let secondsColon = Byte.Literal.Parser<Input>(":")
+        let secondsColon = [Byte].Parser<Input>(":")
         let secondsNumber = ASCII.Decimal.Parser<Input, Int>()
         let seconds = Parser.Optionally(
             Parser.Sequence(Input.self) {

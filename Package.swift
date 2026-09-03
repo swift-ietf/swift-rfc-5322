@@ -72,6 +72,9 @@ extension Target.Dependency {
     static var parserSkip: Self {
         .product(name: "Parser Skip", package: "swift-parser")
     }
+    static var iteratorParser: Self {
+        .product(name: "Iterator Parser", package: "swift-iterator-parser")
+    }
     static var parserMap: Self {
         .product(name: "Parser Map", package: "swift-parser")
     }
@@ -173,6 +176,7 @@ let package = Package(
             url: "https://github.com/swift-molecules/swift-pair-parser.git",
             branch: "main"
         ),
+        .package(url: "https://github.com/swift-molecules/swift-iterator-parser.git", branch: "main"),
     ],
     targets: [
         .target(
@@ -199,6 +203,7 @@ let package = Package(
                 .byteParser,
                 .parserError,
                 .parserSkip,
+                .iteratorParser,
                 .parserMap,
                 .parserSequence,
                 .either,
