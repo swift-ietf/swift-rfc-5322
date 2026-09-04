@@ -1,6 +1,6 @@
 import Foundation
 import RFC_5322
-import RFC_5322_Foundation
+import RFC_5322_Foundation_Integration
 import Testing
 
 @Suite

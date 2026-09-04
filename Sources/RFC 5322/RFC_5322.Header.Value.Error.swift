@@ -1,4 +1,3 @@
-public import ASCII_Serializer
 
 extension RFC_5322.Header.Value {
 

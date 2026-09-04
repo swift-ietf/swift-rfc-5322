@@ -1,9 +1,7 @@
 #if canImport(Foundation)
-    import ASCII_Serializer
     import Byte
     public import Foundation
     public import RFC_5322
-    import Binary_Serializable
 
     extension RFC_5322.Date {
 
@@ -24,7 +22,7 @@
                 secondsSinceEpoch: Int(date.timeIntervalSince1970),
                 timezoneOffsetSeconds: timezoneOffsetSeconds
             )
-            return String(dateTime)
+            return dateTime.description
         }
 
         public func parse(

@@ -21,7 +21,6 @@ The package handles email addresses with more permissive rules than SMTP (RFC 53
 - **Header Management**: Structured header handling with proper ordering
 - **RFC 5321 Compatibility**: Convert between RFC 5322 and RFC 5321 formats
 - **Type-Safe API**: Structured components with compile-time safety
-- **Codable Support**: Seamless JSON encoding/decoding
 
 ## Installation
 
@@ -52,17 +51,17 @@ Then add it to your target:
 import RFC_5322
 
 // Parse email address
-let email = try RFC_5322.EmailAddress("user@example.com")
+let email = try RFC_5322.Mailbox("user@example.com")
 print(email.localPart.stringValue) // "user"
 print(email.domain.name) // "example.com"
 
 // Parse with display name
-let named = try RFC_5322.EmailAddress("John Doe <john@example.com>")
+let named = try RFC_5322.Mailbox("John Doe <john@example.com>")
 print(named.displayName) // "John Doe"
 print(named.address) // "john@example.com"
 
 // Create from components
-let addr = try RFC_5322.EmailAddress(
+let addr = try RFC_5322.Mailbox(
     displayName: "Jane Smith",
     localPart: .init("jane"),
     domain: .init("example.com")
@@ -74,16 +73,16 @@ let addr = try RFC_5322.EmailAddress(
 ```swift
 // Create a message
 let message = try RFC_5322.Message(
-    from: try RFC_5322.EmailAddress(
+    from: try RFC_5322.Mailbox(
         displayName: "John Doe",
         localPart: .init("john"),
         domain: .init("example.com")
     ),
-    to: [try RFC_5322.EmailAddress("jane@example.com")],
+    to: [try RFC_5322.Mailbox("jane@example.com")],
     subject: "Hello from Swift!",
     date: Date(),
     messageId: RFC_5322.Message.generateMessageId(
-        from: try RFC_5322.EmailAddress("john@example.com")
+        from: try RFC_5322.Mailbox("john@example.com")
     ),
     body: "Hello, World!".data(using: .utf8)!
 )
@@ -106,11 +105,11 @@ print(emlContent)
 ```swift
 // Message with CC, BCC, and custom headers
 let message = try RFC_5322.Message(
-    from: try RFC_5322.EmailAddress("sender@example.com"),
-    to: [try RFC_5322.EmailAddress("recipient@example.com")],
-    cc: [try RFC_5322.EmailAddress("cc@example.com")],
-    bcc: [try RFC_5322.EmailAddress("bcc@example.com")],
-    replyTo: try RFC_5322.EmailAddress("replyto@example.com"),
+    from: try RFC_5322.Mailbox("sender@example.com"),
+    to: [try RFC_5322.Mailbox("recipient@example.com")],
+    cc: [try RFC_5322.Mailbox("cc@example.com")],
+    bcc: [try RFC_5322.Mailbox("bcc@example.com")],
+    replyTo: try RFC_5322.Mailbox("replyto@example.com"),
     subject: "Meeting Notes",
     date: Date(),
     messageId: "<unique-id@example.com>",
@@ -135,12 +134,12 @@ let date = try RFC_5322.Date.date(from: "Tue, 12 Nov 2025 20:00:00 +0000")
 
 ## Usage
 
-### EmailAddress Type
+### Mailbox Type
 
 Extended email address validation per RFC 5322:
 
 ```swift
-public struct EmailAddress: Hashable, Sendable {
+public struct Mailbox: Hashable, Sendable {
     public let displayName: String?
     public let localPart: LocalPart
     public let domain: Domain
@@ -150,7 +149,7 @@ public struct EmailAddress: Hashable, Sendable {
 
     public var stringValue: String      // Full format with display name
     public var address: String     // Just the email address part
-    public func toRFC5321() throws -> RFC_5321.EmailAddress
+    public func toRFC5321() throws -> RFC_5321.Mailbox
 }
 ```
 
@@ -165,11 +164,11 @@ Complete Internet Message Format:
 
 ```swift
 public struct Message: Hashable, Sendable {
-    public let from: EmailAddress
-    public let to: [EmailAddress]
-    public let cc: [EmailAddress]?
-    public let bcc: [EmailAddress]?
-    public let replyTo: EmailAddress?
+    public let from: Mailbox
+    public let to: [Mailbox]
+    public let cc: [Mailbox]?
+    public let bcc: [Mailbox]?
+    public let replyTo: Mailbox?
     public let subject: String
     public let date: RFC_5322.DateTime
     public let messageId: Message.ID
@@ -195,7 +194,7 @@ RFC 5322 compliant Message-ID with canonical byte representation:
 public struct Message.ID: Hashable, Sendable {
     // Convenience constructors
     public init(uniqueId: String, domain: RFC_1123.Domain)
-    public init(from: RFC_5322.EmailAddress, uniqueId: String)
+    public init(from: RFC_5322.Mailbox, uniqueId: String)
 
     // Canonical transformations
     public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
@@ -215,7 +214,7 @@ let messageId = RFC_5322.Message.ID(
 )
 
 let messageId2 = RFC_5322.Message.ID(
-    from: emailAddress,
+    from: mailbox,
     uniqueId: "\(Date().timeIntervalSince1970)"
 )
 
@@ -251,7 +250,7 @@ public enum HeaderName {
 - [swift-rfc-5321](https://github.com/swift-ietf/swift-rfc-5321) - SMTP email address format
 
 ### Related Standards
-- [swift-rfc-6068](https://github.com/swift-ietf/swift-rfc-6068) - The 'mailto' URI Scheme (uses RFC 5322 EmailAddress)
+- [swift-rfc-6068](https://github.com/swift-ietf/swift-rfc-6068) - The 'mailto' URI Scheme (uses RFC 5322 Mailbox)
 - [swift-rfc-2369](https://github.com/swift-ietf/swift-rfc-2369) - URLs for Mailing List Management
 
 ### Used By

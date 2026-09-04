@@ -57,7 +57,7 @@ extension PerformanceTests {
                 hour: 12,
                 minute: 30
             )
-            _ = String(dateTime)
+            _ = dateTime.description
         }
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(110)))
@@ -70,7 +70,7 @@ extension PerformanceTests {
                 minute: 30,
                 timezoneOffsetSeconds: 3600
             )
-            _ = String(dateTime)
+            _ = dateTime.description
         }
 
         @Test(.timed(iterations: 1000, warmup: 100, threshold: .microseconds(115)))

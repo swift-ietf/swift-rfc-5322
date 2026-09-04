@@ -1,4 +1,3 @@
-import Parseable_ASCII
 import RFC_5322
 import Testing
 
@@ -9,20 +8,14 @@ extension RFC_5322.Message {
 extension RFC_5322.Message.`Edge Case` {
 
     @Test
-    func `Message no longer conforms to ASCII Parseable`() {
-
-        #expect(!(RFC_5322.Message.self is any ASCII.Parseable.Type))
-    }
-
-    @Test
     func `subject containing a bare CRLF is rejected`() throws {
         #expect(throws: RFC_5322.Message.Error.self) {
             _ = try RFC_5322.Message(
-                from: try RFC_5322.EmailAddress("sender@example.com"),
-                to: [try RFC_5322.EmailAddress("recipient@example.com")],
+                from: try RFC_5322.Mailbox("sender@example.com"),
+                to: [try RFC_5322.Mailbox("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Free Money\r\nBcc: attacker@evil.com",
-                messageId: "<test@example.com>",
+                messageId: try RFC_5322.Message.ID("<test@example.com>"),
                 body: []
             )
         }
@@ -32,11 +25,11 @@ extension RFC_5322.Message.`Edge Case` {
     func `subject containing a non-ASCII byte is rejected`() throws {
         #expect(throws: RFC_5322.Message.Error.self) {
             _ = try RFC_5322.Message(
-                from: try RFC_5322.EmailAddress("sender@example.com"),
-                to: [try RFC_5322.EmailAddress("recipient@example.com")],
+                from: try RFC_5322.Mailbox("sender@example.com"),
+                to: [try RFC_5322.Mailbox("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Caf\u{00E9}",
-                messageId: "<test@example.com>",
+                messageId: try RFC_5322.Message.ID("<test@example.com>"),
                 body: []
             )
         }
@@ -46,11 +39,11 @@ extension RFC_5322.Message.`Edge Case` {
     func `mimeVersion containing a bare CRLF is rejected`() throws {
         #expect(throws: RFC_5322.Message.Error.self) {
             _ = try RFC_5322.Message(
-                from: try RFC_5322.EmailAddress("sender@example.com"),
-                to: [try RFC_5322.EmailAddress("recipient@example.com")],
+                from: try RFC_5322.Mailbox("sender@example.com"),
+                to: [try RFC_5322.Mailbox("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Hello",
-                messageId: "<test@example.com>",
+                messageId: try RFC_5322.Message.ID("<test@example.com>"),
                 body: [],
                 mimeVersion: "1.0\r\nBcc: attacker@evil.com"
             )
@@ -61,11 +54,11 @@ extension RFC_5322.Message.`Edge Case` {
     func `mimeVersion containing a non-ASCII byte is rejected`() throws {
         #expect(throws: RFC_5322.Message.Error.self) {
             _ = try RFC_5322.Message(
-                from: try RFC_5322.EmailAddress("sender@example.com"),
-                to: [try RFC_5322.EmailAddress("recipient@example.com")],
+                from: try RFC_5322.Mailbox("sender@example.com"),
+                to: [try RFC_5322.Mailbox("recipient@example.com")],
                 date: .init(secondsSinceEpoch: 0),
                 subject: "Hello",
-                messageId: "<test@example.com>",
+                messageId: try RFC_5322.Message.ID("<test@example.com>"),
                 body: [],
                 mimeVersion: "1.\u{00E9}0"
             )
@@ -75,11 +68,11 @@ extension RFC_5322.Message.`Edge Case` {
     @Test
     func `valid subject and mimeVersion still construct a message`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.EmailAddress("sender@example.com"),
-            to: [try RFC_5322.EmailAddress("recipient@example.com")],
+            from: try RFC_5322.Mailbox("sender@example.com"),
+            to: [try RFC_5322.Mailbox("recipient@example.com")],
             date: .init(secondsSinceEpoch: 0),
             subject: "Hello, World!",
-            messageId: "<test@example.com>",
+            messageId: try RFC_5322.Message.ID("<test@example.com>"),
             body: []
         )
         #expect(message.subject == "Hello, World!")

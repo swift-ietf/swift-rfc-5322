@@ -9,21 +9,21 @@ struct `README Verification Tests` {
 
     @Test
     func `README Line 54-57: Parse email address`() throws {
-        let email = try RFC_5322.EmailAddress("user@example.com")
+        let email = try RFC_5322.Mailbox("user@example.com")
         #expect(email.localPart.description == "user")
         #expect(email.domain.name == "example.com")
     }
 
     @Test
     func `README Line 59-62: Parse with display name`() throws {
-        let named = try RFC_5322.EmailAddress("John Doe <john@example.com>")
+        let named = try RFC_5322.Mailbox("John Doe <john@example.com>")
         #expect(named.displayName == "John Doe")
         #expect(named.address == "john@example.com")
     }
 
     @Test
     func `README Line 64-69: Create from components`() throws {
-        let addr = try RFC_5322.EmailAddress(
+        let addr = try RFC_5322.Mailbox(
             displayName: "Jane Smith",
             localPart: .init("jane"),
             domain: .init("example.com")
@@ -36,17 +36,17 @@ struct `README Verification Tests` {
     @Test
     func `README Line 75-89: Create a message`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.EmailAddress(
+            from: try RFC_5322.Mailbox(
                 displayName: "John Doe",
                 localPart: .init("john"),
                 domain: .init("example.com")
             ),
-            to: [try RFC_5322.EmailAddress("jane@example.com")],
+            to: [try RFC_5322.Mailbox("jane@example.com")],
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Hello from Swift!",
             messageId: RFC_5322.Message.ID(
                 uniqueId: "test-unique-id",
-                domain: try RFC_5322.EmailAddress("john@example.com").domain,
+                domain: try RFC_5322.Mailbox("john@example.com").domain,
             ),
             body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
@@ -60,19 +60,19 @@ struct `README Verification Tests` {
     @Test
     func `README Line 91-92: Render message`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.EmailAddress(
+            from: try RFC_5322.Mailbox(
                 displayName: "John Doe",
                 localPart: .init("john"),
                 domain: .init("example.com")
             ),
-            to: [try RFC_5322.EmailAddress("jane@example.com")],
+            to: [try RFC_5322.Mailbox("jane@example.com")],
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Hello from Swift!",
-            messageId: "<test@example.com>",
+            messageId: try RFC_5322.Message.ID("<test@example.com>"),
             body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
         )
 
-        let emlContent = String(message)
+        let emlContent = message.description
         #expect(emlContent.contains("From: John Doe <john@example.com>"))
         #expect(emlContent.contains("To: jane@example.com"))
         #expect(emlContent.contains("Subject: Hello from Swift!"))
@@ -83,14 +83,14 @@ struct `README Verification Tests` {
     @Test
     func `README Line 107-122: Advanced message features`() throws {
         let message = try RFC_5322.Message(
-            from: RFC_5322.EmailAddress("sender@example.com"),
-            to: [RFC_5322.EmailAddress("recipient@example.com")],
-            cc: [RFC_5322.EmailAddress("cc@example.com")],
-            bcc: [RFC_5322.EmailAddress("bcc@example.com")],
-            replyTo: RFC_5322.EmailAddress("replyto@example.com"),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("recipient@example.com")],
+            cc: [RFC_5322.Mailbox("cc@example.com")],
+            bcc: [RFC_5322.Mailbox("bcc@example.com")],
+            replyTo: RFC_5322.Mailbox("replyto@example.com"),
             date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
             subject: "Meeting Notes",
-            messageId: "<unique-id@example.com>",
+            messageId: try RFC_5322.Message.ID("<unique-id@example.com>"),
             body: "Meeting summary...".utf8.map(Byte.init(bitPattern:)),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1),

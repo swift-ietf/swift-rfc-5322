@@ -1,4 +1,4 @@
-extension RFC_5322.EmailAddress.LocalPart {
+extension RFC_5322.Mailbox.LocalPart {
 
     public enum Error: Swift.Error, Sendable, Equatable {
         case nonASCIICharacters

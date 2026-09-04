@@ -1,14 +1,12 @@
-public import ASCII_Serializer
-public import Binary_Serializable
-import Byte
+public import ASCII
+public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
-public import Parseable_ASCII
 public import RFC_1123
 
 extension RFC_5322 {
 
-    public struct EmailAddress: Hashable, Sendable {
+    public struct Mailbox: Hashable, Sendable {
 
         public let displayName: String?
 
@@ -36,7 +34,7 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
+extension RFC_5322.Mailbox {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -62,14 +60,14 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             buffer.append(ASCII.Code.space)
             buffer.append(ASCII.Code.lessThanSign)
 
-            RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
+            RFC_5322.Mailbox.LocalPart.serialize(value.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(value.domain, into: &buffer)
 
             buffer.append(ASCII.Code.greaterThanSign)
         } else {
 
-            RFC_5322.EmailAddress.LocalPart.serialize(value.localPart, into: &buffer)
+            RFC_5322.Mailbox.LocalPart.serialize(value.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt)
             RFC_1123.Domain.serialize(value.domain, into: &buffer)
         }
@@ -83,10 +81,10 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
     }
 
     private static func serializeBytes<Buffer: RangeReplaceableCollection>(
-        _ emailAddress: RFC_5322.EmailAddress,
+        _ mailbox: RFC_5322.Mailbox,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
-        if let displayName = emailAddress.displayName {
+        if let displayName = mailbox.displayName {
 
             let needsQuoting = displayName.contains(where: {
                 !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
@@ -108,17 +106,17 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
             buffer.append(ASCII.Code.space.byte)
             buffer.append(ASCII.Code.lessThanSign.byte)
 
-            RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
+            RFC_5322.Mailbox.LocalPart.serialize(mailbox.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt.byte)
 
-            RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
+            RFC_1123.Domain.serialize(mailbox.domain, into: &buffer)
 
             buffer.append(ASCII.Code.greaterThanSign.byte)
         } else {
 
-            RFC_5322.EmailAddress.LocalPart.serialize(emailAddress.localPart, into: &buffer)
+            RFC_5322.Mailbox.LocalPart.serialize(mailbox.localPart, into: &buffer)
             buffer.append(ASCII.Code.commercialAt.byte)
-            RFC_1123.Domain.serialize(emailAddress.domain, into: &buffer)
+            RFC_1123.Domain.serialize(mailbox.domain, into: &buffer)
         }
     }
 
@@ -129,7 +127,7 @@ extension RFC_5322.EmailAddress: ASCII.Serializable, Binary.Serializable {
     }
 }
 
-extension RFC_5322.EmailAddress: ASCII.Parseable {
+extension RFC_5322.Mailbox {
 
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
@@ -236,7 +234,7 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
     }
 
     private static func parseLocalPart(_ bytes: [Byte]) throws(Error) -> LocalPart {
-        do throws(RFC_5322.EmailAddress.LocalPart.Error) {
+        do throws(RFC_5322.Mailbox.LocalPart.Error) {
             return try LocalPart(ascii: bytes)
         } catch {
             throw Error.localPart(error)
@@ -252,37 +250,29 @@ extension RFC_5322.EmailAddress: ASCII.Parseable {
     }
 }
 
-extension RFC_5322.EmailAddress {
+extension RFC_5322.Mailbox {
 
     public var address: String {
         "\(localPart)@\(domain.name)"
     }
 }
 
-extension RFC_5322.EmailAddress: Codable {
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.rawValue)
-    }
 
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let rawValue = try container.decode(String.self)
-        try self.init(rawValue)
-    }
-}
-
-extension RFC_5322.EmailAddress: CustomStringConvertible {
+extension RFC_5322.Mailbox: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized, as: UTF8.self)
+        var bytes: [Byte] = []
+        Self.serialize(self, into: &bytes)
+        return String(decoding: bytes, as: UTF8.self)
     }
 }
 
-extension RFC_5322.EmailAddress: Swift.RawRepresentable {
+extension RFC_5322.Mailbox: Swift.RawRepresentable {
 
     public var rawValue: String {
-        String(decoding: serialized, as: UTF8.self)
+        var bytes: [Byte] = []
+        Self.serialize(self, into: &bytes)
+        return String(decoding: bytes, as: UTF8.self)
     }
 
     public init?(rawValue: String) {

@@ -1,5 +1,4 @@
-import ASCII_Serializer
-import Byte
+public import Byte
 import INCITS_4_1986
 import RFC_1123
 import Standard_Library_Extensions

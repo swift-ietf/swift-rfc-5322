@@ -4,7 +4,7 @@ extension RFC_5322 {
 
         case dateTime(Date.Error)
 
-        case emailAddress(EmailAddress.Error)
+        case mailbox(Mailbox.Error)
 
         case invalidFormat(String)
 
@@ -18,7 +18,7 @@ extension RFC_5322.Error {
         switch self {
         case .dateTime(let error): return String(describing: error)
 
-        case .emailAddress(let error): return String(describing: error)
+        case .mailbox(let error): return String(describing: error)
 
         case .invalidFormat(let message): return message
 
@@ -35,10 +35,10 @@ extension RFC_5322.Date.Error {
     }
 }
 
-extension RFC_5322.EmailAddress.Error {
+extension RFC_5322.Mailbox.Error {
 
     public var unified: RFC_5322.Error {
-        .emailAddress(self)
+        .mailbox(self)
     }
 }
 
@@ -48,7 +48,7 @@ extension RFC_5322.Error: CustomStringConvertible {
         case .dateTime(let error):
             return "DateTime error: \(error)"
 
-        case .emailAddress(let error):
+        case .mailbox(let error):
             return "Email address error: \(error)"
 
         case .invalidFormat(let message):

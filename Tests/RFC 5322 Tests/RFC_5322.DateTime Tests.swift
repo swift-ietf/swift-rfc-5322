@@ -1,4 +1,3 @@
-import Foundation
 import Testing
 import Time
 
@@ -117,7 +116,7 @@ struct `RFC_5322.DateTime Tests` {
             month: 1,
             day: 1
         )
-        let formatted = String(dateTime)
+        let formatted = dateTime.description
 
         #expect(formatted.hasPrefix("Mon,"))
     }
@@ -130,7 +129,7 @@ struct `RFC_5322.DateTime Tests` {
             day: 1,
             timezoneOffsetSeconds: 3600
         )
-        let formatted = String(dateTime)
+        let formatted = dateTime.description
 
         #expect(formatted.contains("+0100"))
     }
@@ -143,7 +142,7 @@ struct `RFC_5322.DateTime Tests` {
             day: 1,
             timezoneOffsetSeconds: -18000
         )
-        let formatted = String(dateTime)
+        let formatted = dateTime.description
 
         #expect(formatted.contains("-0500"))
     }
@@ -157,7 +156,7 @@ struct `RFC_5322.DateTime Tests` {
             hour: 9,
             minute: 3
         )
-        let formatted = String(dateTime)
+        let formatted = dateTime.description
 
         #expect(formatted.contains("Jan"))
         #expect(formatted.contains("05"))
@@ -258,34 +257,7 @@ struct `RFC_5322.DateTime Tests` {
         #expect(utc == offset)
     }
 
-    @Test
-    func `Encode and decode datetime`() throws {
-        let original = RFC_5322.DateTime(
-            secondsSinceEpoch: 1_609_459_200,
-            timezoneOffsetSeconds: 3600
-        )
 
-        let encoder = JSONEncoder()
-        let data = try encoder.encode(original)
-
-        let decoder = JSONDecoder()
-        let decoded = try decoder.decode(RFC_5322.DateTime.self, from: data)
-
-        #expect(decoded.secondsSinceEpoch == original.secondsSinceEpoch)
-        #expect(decoded.timezoneOffsetSeconds == original.timezoneOffsetSeconds)
-    }
-
-    @Test
-    func `Decode datetime without timezone defaults to UTC`() throws {
-
-        let json = "{\"secondsSinceEpoch\":1609459200}"
-        let data = json.data(using: .utf8)!
-
-        let decoder = JSONDecoder()
-        let dateTime = try decoder.decode(RFC_5322.DateTime.self, from: data)
-
-        #expect(dateTime.timezoneOffsetSeconds == 0)
-    }
 
     @Test
     func `Add time interval`() throws {

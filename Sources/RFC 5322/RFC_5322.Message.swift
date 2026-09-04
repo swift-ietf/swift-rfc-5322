@@ -1,6 +1,5 @@
-public import ASCII_Serializer
-public import Binary_Serializable
-import Byte
+public import ASCII
+public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
 import RFC_1123
@@ -10,15 +9,15 @@ extension RFC_5322 {
 
     public struct Message: Hashable, Sendable {
 
-        public let from: EmailAddress
+        public let from: Mailbox
 
-        public let to: [EmailAddress]
+        public let to: [Mailbox]
 
-        public let cc: [EmailAddress]?
+        public let cc: [Mailbox]?
 
-        public let bcc: [EmailAddress]?
+        public let bcc: [Mailbox]?
 
-        public let replyTo: EmailAddress?
+        public let replyTo: Mailbox?
 
         public let subject: String
 
@@ -33,11 +32,11 @@ extension RFC_5322 {
         public let mimeVersion: String
 
         public init(
-            from: EmailAddress,
-            to: [EmailAddress],
-            cc: [EmailAddress]? = nil,
-            bcc: [EmailAddress]? = nil,
-            replyTo: EmailAddress? = nil,
+            from: Mailbox,
+            to: [Mailbox],
+            cc: [Mailbox]? = nil,
+            bcc: [Mailbox]? = nil,
+            replyTo: Mailbox? = nil,
             date: RFC_5322.DateTime,
             subject: String,
             messageId: Message.ID,
@@ -66,7 +65,7 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
+extension RFC_5322.Message {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -76,7 +75,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
         buffer.reserveCapacity(500 + value.body.count)
 
         buffer.append(contentsOf: [Byte].fromPrefix.map { ASCII.Code(unchecked: $0) })
-        RFC_5322.EmailAddress.serialize(value.from, into: &buffer)
+        RFC_5322.Mailbox.serialize(value.from, into: &buffer)
         buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
 
         buffer.append(contentsOf: [Byte].toPrefix.map { ASCII.Code(unchecked: $0) })
@@ -87,7 +86,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
                 buffer.append(ASCII.Code.space)
             }
             first = false
-            RFC_5322.EmailAddress.serialize(address, into: &buffer)
+            RFC_5322.Mailbox.serialize(address, into: &buffer)
         }
         buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
 
@@ -100,7 +99,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
                     buffer.append(ASCII.Code.space)
                 }
                 first = false
-                RFC_5322.EmailAddress.serialize(address, into: &buffer)
+                RFC_5322.Mailbox.serialize(address, into: &buffer)
             }
             buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
         }
@@ -119,7 +118,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
 
         if let replyTo = value.replyTo {
             buffer.append(contentsOf: [Byte].replyToPrefix.map { ASCII.Code(unchecked: $0) })
-            RFC_5322.EmailAddress.serialize(replyTo, into: &buffer)
+            RFC_5322.Mailbox.serialize(replyTo, into: &buffer)
             buffer.append(contentsOf: [Byte].crlf.map { ASCII.Code(unchecked: $0) })
         }
 
@@ -152,7 +151,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
         buffer.reserveCapacity(500 + message.body.count)
 
         buffer.append(contentsOf: [Byte].fromPrefix)
-        RFC_5322.EmailAddress.serialize(message.from, into: &buffer)
+        RFC_5322.Mailbox.serialize(message.from, into: &buffer)
         buffer.append(contentsOf: [Byte].crlf)
 
         buffer.append(contentsOf: [Byte].toPrefix)
@@ -163,7 +162,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
                 buffer.append(ASCII.Code.space.byte)
             }
             first = false
-            RFC_5322.EmailAddress.serialize(address, into: &buffer)
+            RFC_5322.Mailbox.serialize(address, into: &buffer)
         }
         buffer.append(contentsOf: [Byte].crlf)
 
@@ -176,7 +175,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
                     buffer.append(ASCII.Code.space.byte)
                 }
                 first = false
-                RFC_5322.EmailAddress.serialize(address, into: &buffer)
+                RFC_5322.Mailbox.serialize(address, into: &buffer)
             }
             buffer.append(contentsOf: [Byte].crlf)
         }
@@ -195,7 +194,7 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
 
         if let replyTo = message.replyTo {
             buffer.append(contentsOf: [Byte].replyToPrefix)
-            RFC_5322.EmailAddress.serialize(replyTo, into: &buffer)
+            RFC_5322.Mailbox.serialize(replyTo, into: &buffer)
             buffer.append(contentsOf: [Byte].crlf)
         }
 
@@ -217,6 +216,8 @@ extension RFC_5322.Message: ASCII.Serializable, Binary.Serializable {
 extension RFC_5322.Message: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized, as: UTF8.self)
+        var bytes: [Byte] = []
+        Self.serialize(self, into: &bytes)
+        return String(decoding: bytes, as: UTF8.self)
     }
 }

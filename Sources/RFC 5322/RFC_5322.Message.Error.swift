@@ -15,7 +15,7 @@ extension RFC_5322.Message {
         case invalidMimeStructure(String)
         case unsupportedEncoding(String)
 
-        case emailAddress(RFC_5322.EmailAddress.Error)
+        case mailbox(RFC_5322.Mailbox.Error)
         case dateTime(RFC_5322.DateTime.Error)
         case header(RFC_5322.Header.Error)
 

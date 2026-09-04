@@ -1,12 +1,10 @@
-public import ASCII_Serializer
-public import Binary_Serializable
-import Byte
+public import ASCII
+public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
-public import Parseable_ASCII
 
 extension RFC_5322.Header {
-    public struct Value: Sendable, Hashable, Codable {
+    public struct Value: Sendable, Hashable {
         public let rawValue: String
 
         init(
@@ -29,7 +27,7 @@ extension RFC_5322.Header.Value {
     }
 }
 
-extension RFC_5322.Header.Value: Swift.RawRepresentable, ASCII.Serializable, Binary.Serializable {
+extension RFC_5322.Header.Value: Swift.RawRepresentable {
 
     public init?(rawValue: String) {
         do throws(Error) {
@@ -50,18 +48,22 @@ extension RFC_5322.Header.Value: Swift.RawRepresentable, ASCII.Serializable, Bin
         _ value: Self,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
-        buffer.append(contentsOf: value.serialized)
+        var codes: [ASCII.Code] = []
+        Self.serialize(value, into: &codes)
+        buffer.append(contentsOf: codes.map(\.byte))
     }
 }
 
 extension RFC_5322.Header.Value: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized, as: UTF8.self)
+        var bytes: [Byte] = []
+        Self.serialize(self, into: &bytes)
+        return String(decoding: bytes, as: UTF8.self)
     }
 }
 
-extension RFC_5322.Header.Value: ASCII.Parseable {
+extension RFC_5322.Header.Value {
 
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))

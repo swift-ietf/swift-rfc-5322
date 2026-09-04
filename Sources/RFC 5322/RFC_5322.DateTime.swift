@@ -1,9 +1,7 @@
-public import ASCII_Serializer
-public import Binary_Serializable
-import Byte
+public import ASCII
+public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
-public import Parseable_ASCII
 import Radix_Formatter
 import Standard_Library_Extensions
 public import Time
@@ -27,7 +25,7 @@ extension RFC_5322 {
     public typealias Date = RFC_5322.DateTime
 }
 
-extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
+extension RFC_5322.DateTime {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -147,7 +145,7 @@ extension RFC_5322.DateTime: ASCII.Serializable, Binary.Serializable {
     }
 }
 
-extension RFC_5322.DateTime: ASCII.Parseable {
+extension RFC_5322.DateTime {
 
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
@@ -320,7 +318,9 @@ extension RFC_5322.DateTime: ASCII.Parseable {
 extension RFC_5322.DateTime: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized, as: UTF8.self)
+        var bytes: [Byte] = []
+        Self.serialize(self, into: &bytes)
+        return String(decoding: bytes, as: UTF8.self)
     }
 }
 
@@ -506,22 +506,3 @@ extension RFC_5322.DateTime {
     }
 }
 
-extension RFC_5322.DateTime: Codable {
-    private enum CodingKeys: String, CodingKey {
-        case secondsSinceEpoch
-        case timezoneOffsetSeconds
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let seconds = try container.decode(Int.self, forKey: .secondsSinceEpoch)
-        let offset = try container.decodeIfPresent(Int.self, forKey: .timezoneOffsetSeconds) ?? 0
-        self.init(secondsSinceEpoch: seconds, timezoneOffsetSeconds: offset)
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(secondsSinceEpoch, forKey: .secondsSinceEpoch)
-        try container.encode(timezoneOffsetSeconds, forKey: .timezoneOffsetSeconds)
-    }
-}

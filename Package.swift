@@ -17,8 +17,8 @@ let package = Package(
             targets: ["RFC 5322"]
         ),
         .library(
-            name: "RFC 5322 Foundation",
-            targets: ["RFC 5322 Foundation"]
+            name: "RFC 5322 Foundation Integration",
+            targets: ["RFC 5322 Foundation Integration"]
         ),
     ],
     dependencies: [
@@ -39,19 +39,11 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-binary-serializer.git",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/swift-atoms/swift-time.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-ascii-serializer.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-ascii-parser.git",
+            url: "https://github.com/swift-atoms/swift-ascii.git",
             branch: "main"
         ),
         .package(
@@ -70,36 +62,33 @@ let package = Package(
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "Binary", package: "swift-binary"),
                 .product(name: "Radix Formatter", package: "swift-radix-formatter"),
-                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
                 .product(name: "Time", package: "swift-time"),
                 .product(name: "RFC 1123", package: "swift-rfc-1123"),
-                .product(name: "ASCII Serializer", package: "swift-ascii-serializer"),
-                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
+                .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Byte Standard Library Integration", package: "swift-byte"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
             ]
         ),
         .target(
-            name: "RFC 5322 Foundation",
+            name: "RFC 5322 Foundation Integration",
             dependencies: [
                 .target(name: "RFC 5322"),
-                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
                 .product(name: "Byte", package: "swift-byte"),
             ]
         ),
         .testTarget(
-            name: "RFC 5322 Foundation Tests",
+            name: "RFC 5322 Foundation Integration Tests",
             dependencies: [
                 .target(name: "RFC 5322"),
-                .target(name: "RFC 5322 Foundation"),
+                .target(name: "RFC 5322 Foundation Integration"),
             ]
         ),
         .testTarget(
             name: "RFC 5322 Tests",
             dependencies: [
                 .target(name: "RFC 5322"),
-                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
+                .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Byte Standard Library Integration", package: "swift-byte"),
             ]

@@ -2,11 +2,11 @@ import RFC_5322
 import Testing
 
 @Suite
-struct `RFC_5322.EmailAddress Tests` {
+struct `RFC_5322.Mailbox Tests` {
 
     @Test
     func `Parse simple email address`() throws {
-        let email = try RFC_5322.EmailAddress("user@example.com")
+        let email = try RFC_5322.Mailbox("user@example.com")
         #expect(email.localPart.description == "user")
         #expect(email.domain.name == "example.com")
         #expect(email.displayName == nil)
@@ -14,7 +14,7 @@ struct `RFC_5322.EmailAddress Tests` {
 
     @Test
     func `Parse email with display name`() throws {
-        let email = try RFC_5322.EmailAddress("John Doe <john@example.com>")
+        let email = try RFC_5322.Mailbox("John Doe <john@example.com>")
         #expect(email.displayName == "John Doe")
         #expect(email.localPart.description == "john")
         #expect(email.domain.name == "example.com")
@@ -23,14 +23,14 @@ struct `RFC_5322.EmailAddress Tests` {
 
     @Test
     func `Parse email with quoted display name`() throws {
-        let email = try RFC_5322.EmailAddress("\"Doe, John\" <john@example.com>")
+        let email = try RFC_5322.Mailbox("\"Doe, John\" <john@example.com>")
         #expect(email.displayName == "Doe, John")
         #expect(email.address == "john@example.com")
     }
 
     @Test
     func `Create from components without display name`() throws {
-        let email = try RFC_5322.EmailAddress(
+        let email = try RFC_5322.Mailbox(
             displayName: nil,
             localPart: .init("user"),
             domain: .init("example.com")
@@ -42,7 +42,7 @@ struct `RFC_5322.EmailAddress Tests` {
 
     @Test
     func `Create from components with display name`() throws {
-        let email = try RFC_5322.EmailAddress(
+        let email = try RFC_5322.Mailbox(
             displayName: "Jane Smith",
             localPart: .init("jane"),
             domain: .init("example.com")
@@ -58,21 +58,21 @@ struct `RFC_5322.EmailAddress Tests` {
         let specialChars = "!#$%&'*+-/=?^_`{|}~"
 
         for char in specialChars {
-            let email = try RFC_5322.EmailAddress("test\(char)user@example.com")
+            let email = try RFC_5322.Mailbox("test\(char)user@example.com")
             #expect(email.localPart.description.contains(char))
         }
     }
 
     @Test
     func `Exclamation mark (!) is accepted in local-part`() throws {
-        let email = try RFC_5322.EmailAddress("user!tag@example.com")
+        let email = try RFC_5322.Mailbox("user!tag@example.com")
         #expect(email.localPart.description == "user!tag")
         #expect(email.address == "user!tag@example.com")
     }
 
     @Test
     func `Pipe character (|) is accepted in local-part`() throws {
-        let email = try RFC_5322.EmailAddress("user|tag@example.com")
+        let email = try RFC_5322.Mailbox("user|tag@example.com")
         #expect(email.localPart.description == "user|tag")
         #expect(email.address == "user|tag@example.com")
     }
@@ -80,7 +80,7 @@ struct `RFC_5322.EmailAddress Tests` {
     @Test
     func `All atext characters together in local-part`() throws {
         let allChars = "test!#$%&'*+-/=?^_`{|}~user"
-        let email = try RFC_5322.EmailAddress("\(allChars)@example.com")
+        let email = try RFC_5322.Mailbox("\(allChars)@example.com")
         #expect(email.localPart.description == allChars)
     }
 
@@ -97,43 +97,43 @@ struct `RFC_5322.EmailAddress Tests` {
         ]
 
         for address in testAddresses {
-            let email = try RFC_5322.EmailAddress(address)
+            let email = try RFC_5322.Mailbox(address)
             #expect(email.address == address)
         }
     }
 
     @Test
     func `Format email without display name`() throws {
-        let email = try RFC_5322.EmailAddress("user@example.com")
-        let formatted = String(email)
+        let email = try RFC_5322.Mailbox("user@example.com")
+        let formatted = email.description
         #expect(formatted == "user@example.com")
     }
 
     @Test
     func `Format email with display name`() throws {
-        let email = try RFC_5322.EmailAddress(
+        let email = try RFC_5322.Mailbox(
             displayName: "John Doe",
             localPart: .init("john"),
             domain: .init("example.com")
         )
-        let formatted = String(email)
+        let formatted = email.description
         #expect(formatted == "John Doe <john@example.com>")
     }
 
     @Test
     func `Format email with display name requiring quotes`() throws {
-        let email = try RFC_5322.EmailAddress(
+        let email = try RFC_5322.Mailbox(
             displayName: "Doe, John",
             localPart: .init("john"),
             domain: .init("example.com")
         )
-        let formatted = String(email)
+        let formatted = email.description
         #expect(formatted == "\"Doe, John\" <john@example.com>")
     }
 
     @Test
     func `address returns email without display name`() throws {
-        let email = try RFC_5322.EmailAddress(
+        let email = try RFC_5322.Mailbox(
             displayName: "John Doe",
             localPart: .init("john"),
             domain: .init("example.com")
@@ -143,37 +143,37 @@ struct `RFC_5322.EmailAddress Tests` {
 
     @Test
     func `Reject email without @ sign`() throws {
-        #expect(throws: RFC_5322.EmailAddress.Error.self) {
-            _ = try RFC_5322.EmailAddress("userexample.com")
+        #expect(throws: RFC_5322.Mailbox.Error.self) {
+            _ = try RFC_5322.Mailbox("userexample.com")
         }
     }
 
     @Test
     func `Reject consecutive dots in local-part`() throws {
-        #expect(throws: RFC_5322.EmailAddress.Error.self) {
-            _ = try RFC_5322.EmailAddress("user..name@example.com")
+        #expect(throws: RFC_5322.Mailbox.Error.self) {
+            _ = try RFC_5322.Mailbox("user..name@example.com")
         }
     }
 
     @Test
     func `Reject leading dot in local-part`() throws {
-        #expect(throws: RFC_5322.EmailAddress.Error.self) {
-            _ = try RFC_5322.EmailAddress(".user@example.com")
+        #expect(throws: RFC_5322.Mailbox.Error.self) {
+            _ = try RFC_5322.Mailbox(".user@example.com")
         }
     }
 
     @Test
     func `Reject trailing dot in local-part`() throws {
-        #expect(throws: RFC_5322.EmailAddress.Error.self) {
-            _ = try RFC_5322.EmailAddress("user.@example.com")
+        #expect(throws: RFC_5322.Mailbox.Error.self) {
+            _ = try RFC_5322.Mailbox("user.@example.com")
         }
     }
 
     @Test
     func `Reject local-part exceeding 64 characters`() throws {
         let longLocalPart = String(repeating: "a", count: 65)
-        #expect(throws: RFC_5322.EmailAddress.Error.localPart(.tooLong(65))) {
-            _ = try RFC_5322.EmailAddress("\(longLocalPart)@example.com")
+        #expect(throws: RFC_5322.Mailbox.Error.localPart(.tooLong(65))) {
+            _ = try RFC_5322.Mailbox("\(longLocalPart)@example.com")
         }
     }
 }

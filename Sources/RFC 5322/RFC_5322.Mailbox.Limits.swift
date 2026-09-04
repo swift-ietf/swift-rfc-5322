@@ -1,7 +1,7 @@
-public import ASCII_Serializer
+public import ASCII
 import INCITS_4_1986
 
-extension RFC_5322.EmailAddress {
+extension RFC_5322.Mailbox {
     package enum Limits {}
 
     nonisolated(unsafe) package static let addressRegex = /(?:((?:\".*?\"|[^<]+)\s+))?<(.*?)@(.*?)>/
@@ -12,7 +12,7 @@ extension RFC_5322.EmailAddress {
     nonisolated(unsafe) package static let quotedRegex = /(?:[^"\\\r\n]|\\["\\])+/
 }
 
-extension RFC_5322.EmailAddress.Limits {
+extension RFC_5322.Mailbox.Limits {
     static let maxLength = 64
 }
 
