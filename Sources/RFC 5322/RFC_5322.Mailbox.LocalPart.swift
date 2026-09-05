@@ -20,28 +20,6 @@ extension RFC_5322.Mailbox.LocalPart {
 
 extension RFC_5322.Mailbox.LocalPart {
 
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        switch value.storage {
-        case .dotAtom(let bytes), .quoted(let bytes):
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
-        }
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        var codes: [ASCII.Code] = []
-        Self.serialize(value, into: &codes)
-        buffer.append(contentsOf: codes.map(\.byte))
-    }
-}
-
-extension RFC_5322.Mailbox.LocalPart {
-
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
@@ -127,8 +105,9 @@ extension RFC_5322.Mailbox.LocalPart {
 extension RFC_5322.Mailbox.LocalPart: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        switch storage {
+        case .dotAtom(let bytes), .quoted(let bytes):
+            String(decoding: bytes, as: UTF8.self)
+        }
     }
 }

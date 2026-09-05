@@ -36,30 +36,12 @@ extension RFC_5322.Header.Value: Swift.RawRepresentable {
             return nil
         }
     }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        for byte in value.rawValue.utf8 { buffer.append(ASCII.Code(byte)) }
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        var codes: [ASCII.Code] = []
-        Self.serialize(value, into: &codes)
-        buffer.append(contentsOf: codes.map(\.byte))
-    }
 }
 
 extension RFC_5322.Header.Value: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        rawValue
     }
 }
 
@@ -156,13 +138,6 @@ extension RFC_5322.Header.Value {
             __unchecked: (),
             rawValue: String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
         )
-    }
-}
-
-extension [Byte] {
-
-    public init(_ value: RFC_5322.Header.Value) {
-        self = value.rawValue.utf8.map(Byte.init(bitPattern:))
     }
 }
 

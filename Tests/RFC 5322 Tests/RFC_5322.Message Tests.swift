@@ -1,26 +1,21 @@
 import Byte
 import Byte_Standard_Library_Integration
+import RFC_5322
 import Testing
-
-@testable import RFC_5322
 
 @Suite
 struct `RFC_5322.Message Tests` {
 
     @Test
-    func `Create basic message with required fields`() throws {
-        let from = try RFC_5322.Mailbox("sender@example.com")
-        let to = [try RFC_5322.Mailbox("recipient@example.com")]
-
+    func `a message carries its required fields`() throws {
         let message = try RFC_5322.Message(
-            from: from,
-            to: to,
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("recipient@example.com")],
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test Message",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<test@example.com>"),
+            body: [Byte](utf8: "Hello, World!")
         )
-
         #expect(message.from.address == "sender@example.com")
         #expect(message.to.count == 1)
         #expect(message.to[0].address == "recipient@example.com")
@@ -30,20 +25,19 @@ struct `RFC_5322.Message Tests` {
     }
 
     @Test
-    func `Create message with multiple recipients`() throws {
+    func `a message addresses several recipients`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
+            from: RFC_5322.Mailbox("sender@example.com"),
             to: [
-                try RFC_5322.Mailbox("alice@example.com"),
-                try RFC_5322.Mailbox("bob@example.com"),
-                try RFC_5322.Mailbox("charlie@example.com"),
+                RFC_5322.Mailbox("alice@example.com"),
+                RFC_5322.Mailbox("bob@example.com"),
+                RFC_5322.Mailbox("charlie@example.com"),
             ],
-            date: .init(secondsSinceEpoch: 0),
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Group Message",
-            messageId: try RFC_5322.Message.ID("<group@example.com>"),
-            body: "Hello".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<group@example.com>"),
+            body: [Byte](utf8: "Hello")
         )
-
         #expect(message.to.count == 3)
         #expect(message.to[0].address == "alice@example.com")
         #expect(message.to[1].address == "bob@example.com")
@@ -51,226 +45,114 @@ struct `RFC_5322.Message Tests` {
     }
 
     @Test
-    func `Create message with CC recipients`() throws {
+    func `a message copies cc recipients`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("primary@example.com")],
-            cc: [try RFC_5322.Mailbox("cc@example.com")],
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("primary@example.com")],
+            cc: [RFC_5322.Mailbox("cc@example.com")],
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test CC",
-            messageId: try RFC_5322.Message.ID("<cc-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<cc-test@example.com>"),
+            body: [Byte](utf8: "Test")
         )
-
         #expect(message.cc?.count == 1)
         #expect(message.cc?[0].address == "cc@example.com")
     }
 
     @Test
-    func `Create message with BCC recipients`() throws {
+    func `a message blind-copies bcc recipients`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("primary@example.com")],
-            bcc: [try RFC_5322.Mailbox("bcc@example.com")],
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("primary@example.com")],
+            bcc: [RFC_5322.Mailbox("bcc@example.com")],
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test BCC",
-            messageId: try RFC_5322.Message.ID("<bcc-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<bcc-test@example.com>"),
+            body: [Byte](utf8: "Test")
         )
-
         #expect(message.bcc?.count == 1)
         #expect(message.bcc?[0].address == "bcc@example.com")
     }
 
     @Test
-    func `Create message with Reply-To`() throws {
+    func `a message names a reply-to mailbox`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            replyTo: try RFC_5322.Mailbox("replyto@example.com"),
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("recipient@example.com")],
+            replyTo: RFC_5322.Mailbox("replyto@example.com"),
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test Reply-To",
-            messageId: try RFC_5322.Message.ID("<reply-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<reply-test@example.com>"),
+            body: [Byte](utf8: "Test")
         )
-
         #expect(message.replyTo?.address == "replyto@example.com")
     }
 
     @Test
-    func `Create message with additional headers`() throws {
+    func `a message carries additional headers`() throws {
         let message = try RFC_5322.Message(
             from: RFC_5322.Mailbox("sender@example.com"),
             to: [RFC_5322.Mailbox("recipient@example.com")],
-            date: .init(secondsSinceEpoch: 0),
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test Headers",
-            messageId: try RFC_5322.Message.ID("<headers-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:)),
+            messageId: RFC_5322.Message.ID("<headers-test@example.com>"),
+            body: [Byte](utf8: "Test"),
             additionalHeaders: [
                 RFC_5322.Header(name: .xPriority, value: 1),
                 RFC_5322.Header(name: .inReplyTo, value: .init("<previous@example.com>")),
             ]
         )
-
         #expect(message.additionalHeaders.count == 2)
-        #expect(message.additionalHeaders[0].name.rawValue == "X-Priority")
+        #expect(message.additionalHeaders[0].name == .xPriority)
         #expect(message.additionalHeaders[0].value == 1)
         #expect(message.additionalHeaders[1].name == .inReplyTo)
+        #expect(message.additionalHeaders[.inReplyTo] == "<previous@example.com>")
     }
 
     @Test
-    func `Create message with custom MIME version`() throws {
+    func `a message states its MIME version`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("recipient@example.com")],
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test MIME",
-            messageId: try RFC_5322.Message.ID("<mime-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:)),
+            messageId: RFC_5322.Message.ID("<mime-test@example.com>"),
+            body: [Byte](utf8: "Test"),
             mimeVersion: "2.0"
         )
-
         #expect(message.mimeVersion == "2.0")
     }
 
     @Test
-    func `Default MIME version is 1.0`() throws {
+    func `the MIME version defaults to 1.0`() throws {
         let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            date: .init(secondsSinceEpoch: 0),
+            from: RFC_5322.Mailbox("sender@example.com"),
+            to: [RFC_5322.Mailbox("recipient@example.com")],
+            date: RFC_5322.DateTime(secondsSinceEpoch: 0),
             subject: "Test",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
+            messageId: RFC_5322.Message.ID("<test@example.com>"),
+            body: [Byte](utf8: "Test")
         )
-
         #expect(message.mimeVersion == "1.0")
     }
 
     @Test
-    func `Render message to string contains all required headers`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
-            subject: "Test Message",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Hello, World!".utf8.map(Byte.init(bitPattern:))
-        )
-
-        let rendered = message.description
-
-        #expect(rendered.contains("From: sender@example.com"))
-        #expect(rendered.contains("To: recipient@example.com"))
-        #expect(rendered.contains("Subject: Test Message"))
-        #expect(rendered.contains("Message-ID: <test@example.com>"))
-        #expect(rendered.contains("MIME-Version: 1.0"))
-        #expect(rendered.contains("Hello, World!"))
-    }
-
-    @Test
-    func `Render message with display names`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox(
-                displayName: "John Doe",
-                localPart: .init("john"),
-                domain: .init("example.com")
-            ),
-            to: [try RFC_5322.Mailbox("Jane Smith <jane@example.com>")],
-            date: .init(secondsSinceEpoch: 0),
-            subject: "Test",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
-        )
-
-        let rendered = message.description
-
-        #expect(rendered.contains("From: John Doe <john@example.com>"))
-        #expect(rendered.contains("To: Jane Smith <jane@example.com>"))
-    }
-
-    @Test
-    func `Render message does not include BCC header`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            bcc: [try RFC_5322.Mailbox("bcc@example.com")],
-            date: .init(secondsSinceEpoch: 0),
-            subject: "Test BCC",
-            messageId: try RFC_5322.Message.ID("<bcc-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
-        )
-
-        let rendered = message.description
-
-        #expect(!rendered.contains("Bcc:"))
-        #expect(!rendered.contains("bcc@example.com"))
-    }
-
-    @Test
-    func `Render message includes CC header`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            cc: [try RFC_5322.Mailbox("cc@example.com")],
-            date: .init(secondsSinceEpoch: 0),
-            subject: "Test CC",
-            messageId: try RFC_5322.Message.ID("<cc-test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
-        )
-
-        let rendered = message.description
-
-        #expect(rendered.contains("Cc: cc@example.com"))
-    }
-
-    @Test
-    func `Render message includes Reply-To header`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            replyTo: try RFC_5322.Mailbox("replyto@example.com"),
-            date: .init(secondsSinceEpoch: 0),
-            subject: "Test",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:))
-        )
-
-        let rendered = message.description
-
-        #expect(rendered.contains("Reply-To: replyto@example.com"))
-    }
-
-    @Test
-    func `Render message includes additional headers`() throws {
-        let message = try RFC_5322.Message(
-            from: try RFC_5322.Mailbox("sender@example.com"),
-            to: [try RFC_5322.Mailbox("recipient@example.com")],
-            date: .init(secondsSinceEpoch: 0),
-            subject: "Test",
-            messageId: try RFC_5322.Message.ID("<test@example.com>"),
-            body: "Test".utf8.map(Byte.init(bitPattern:)),
-            additionalHeaders: [
-                RFC_5322.Header(name: .xPriority, value: 1)
-            ]
-        )
-
-        let rendered = message.description
-
-        #expect(rendered.contains("X-Priority: 1"))
-    }
-
-    @Test
-    func `Generate message ID format`() throws {
-        let from = try RFC_5322.Mailbox("sender@example.com")
-        let messageId = RFC_5322.Message.ID(
-            uniqueId: "test-123",
-            domain: from.domain
-        )
-
+    func `a message ID builds from a unique part and the sender's domain`() throws {
+        let sender = try RFC_5322.Mailbox("sender@example.com")
+        let messageId = RFC_5322.Message.ID(uniqueId: "test-123", domain: sender.domain)
         #expect(messageId.description == "<test-123@example.com>")
-        #expect(messageId.description.hasPrefix("<"))
-        #expect(messageId.description.hasSuffix(">"))
-        #expect(messageId.description.contains("@"))
+    }
+
+    @Test
+    func `a message ID reads from its angle-bracketed text form`() throws {
+        let messageId = try RFC_5322.Message.ID("<test-123@example.com>")
+        #expect(messageId.description == "<test-123@example.com>")
+    }
+
+    @Test
+    func `a message ID without an at sign is rejected`() {
+        #expect(throws: RFC_5322.Message.ID.Error.self) {
+            _ = try RFC_5322.Message.ID("<test-123>")
+        }
     }
 }

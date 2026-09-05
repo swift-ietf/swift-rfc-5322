@@ -12,22 +12,6 @@ extension RFC_5322 {
     }
 }
 
-extension RFC_5322.Error {
-
-    public var errorDescription: String {
-        switch self {
-        case .dateTime(let error): return String(describing: error)
-
-        case .mailbox(let error): return String(describing: error)
-
-        case .invalidFormat(let message): return message
-
-        case .invalidFieldName(let name, let reason):
-            return "Invalid field name '\(name)': \(reason)"
-        }
-    }
-}
-
 extension RFC_5322.Date.Error {
 
     public var unified: RFC_5322.Error {

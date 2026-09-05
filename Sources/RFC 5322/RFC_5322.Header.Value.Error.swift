@@ -1,3 +1,4 @@
+public import ASCII
 
 extension RFC_5322.Header.Value {
 

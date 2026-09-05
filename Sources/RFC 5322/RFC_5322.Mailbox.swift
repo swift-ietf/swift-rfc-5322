@@ -3,6 +3,7 @@ public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
 public import RFC_1123
+import Standard_Library_Extensions
 
 extension RFC_5322 {
 
@@ -31,99 +32,6 @@ extension RFC_5322 {
             self.localPart = localPart
             self.domain = domain
         }
-    }
-}
-
-extension RFC_5322.Mailbox {
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        if let displayName = value.displayName {
-
-            let needsQuoting = displayName.contains(where: {
-                !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
-                    || $0.asciiValue == nil
-            })
-
-            if needsQuoting {
-                buffer.append(ASCII.Code.quotationMark)
-                buffer.append(
-                    contentsOf: Self.escapedForQuotedString(displayName).utf8.map { ASCII.Code($0) }
-                )
-                buffer.append(ASCII.Code.quotationMark)
-            } else {
-                buffer.append(contentsOf: displayName.utf8.map { ASCII.Code($0) })
-            }
-
-            buffer.append(ASCII.Code.space)
-            buffer.append(ASCII.Code.lessThanSign)
-
-            RFC_5322.Mailbox.LocalPart.serialize(value.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt)
-            RFC_1123.Domain.serialize(value.domain, into: &buffer)
-
-            buffer.append(ASCII.Code.greaterThanSign)
-        } else {
-
-            RFC_5322.Mailbox.LocalPart.serialize(value.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt)
-            RFC_1123.Domain.serialize(value.domain, into: &buffer)
-        }
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        serializeBytes(value, into: &buffer)
-    }
-
-    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
-        _ mailbox: RFC_5322.Mailbox,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        if let displayName = mailbox.displayName {
-
-            let needsQuoting = displayName.contains(where: {
-                !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
-                    || $0.asciiValue == nil
-            })
-
-            if needsQuoting {
-                buffer.append(ASCII.Code.quotationMark.byte)
-                buffer.append(
-                    contentsOf: Self.escapedForQuotedString(displayName).utf8.lazy.map(
-                        Byte.init(bitPattern:)
-                    )
-                )
-                buffer.append(ASCII.Code.quotationMark.byte)
-            } else {
-                buffer.append(contentsOf: displayName.utf8.lazy.map(Byte.init(bitPattern:)))
-            }
-
-            buffer.append(ASCII.Code.space.byte)
-            buffer.append(ASCII.Code.lessThanSign.byte)
-
-            RFC_5322.Mailbox.LocalPart.serialize(mailbox.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt.byte)
-
-            RFC_1123.Domain.serialize(mailbox.domain, into: &buffer)
-
-            buffer.append(ASCII.Code.greaterThanSign.byte)
-        } else {
-
-            RFC_5322.Mailbox.LocalPart.serialize(mailbox.localPart, into: &buffer)
-            buffer.append(ASCII.Code.commercialAt.byte)
-            RFC_1123.Domain.serialize(mailbox.domain, into: &buffer)
-        }
-    }
-
-    private static func escapedForQuotedString(_ displayName: String) -> String {
-        displayName
-            .replacing("\\", with: "\\\\")
-            .replacing("\"", with: "\\\"")
     }
 }
 
@@ -261,18 +169,30 @@ extension RFC_5322.Mailbox {
 extension RFC_5322.Mailbox: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        guard let displayName else {
+            return address
+        }
+
+        let needsQuoting = displayName.contains(where: {
+            !$0.ascii.isLetter && !$0.ascii.isDigit && !$0.ascii.isWhitespace
+                || $0.asciiValue == nil
+        })
+
+        let name = needsQuoting ? "\"\(Self.escapedForQuotedString(displayName))\"" : displayName
+        return "\(name) <\(address)>"
+    }
+
+    private static func escapedForQuotedString(_ displayName: String) -> String {
+        displayName
+            .replacing("\\", with: "\\\\")
+            .replacing("\"", with: "\\\"")
     }
 }
 
 extension RFC_5322.Mailbox: Swift.RawRepresentable {
 
     public var rawValue: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        description
     }
 
     public init?(rawValue: String) {

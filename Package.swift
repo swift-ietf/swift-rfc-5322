@@ -31,14 +31,6 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-atoms/swift-binary.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-radix-formatter.git",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/swift-atoms/swift-time.git",
             branch: "main"
         ),
@@ -60,8 +52,6 @@ let package = Package(
             name: "RFC 5322",
             dependencies: [
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
-                .product(name: "Binary", package: "swift-binary"),
-                .product(name: "Radix Formatter", package: "swift-radix-formatter"),
                 .product(name: "Time", package: "swift-time"),
                 .product(name: "RFC 1123", package: "swift-rfc-1123"),
                 .product(name: "ASCII", package: "swift-ascii"),
@@ -91,6 +81,7 @@ let package = Package(
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Byte Standard Library Integration", package: "swift-byte"),
+                .product(name: "Time", package: "swift-time"),
             ]
         ),
     ],

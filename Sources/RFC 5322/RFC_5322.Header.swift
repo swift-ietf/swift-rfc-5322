@@ -23,29 +23,6 @@ extension RFC_5322 {
 
 extension RFC_5322.Header {
 
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        RFC_5322.Header.Name.serialize(value.name, into: &buffer)
-        buffer.append(ASCII.Code.colon)
-        buffer.append(ASCII.Code.space)
-        RFC_5322.Header.Value.serialize(value.value, into: &buffer)
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        RFC_5322.Header.Name.serialize(value.name, into: &buffer)
-        buffer.append(ASCII.Code.colon.byte)
-        buffer.append(ASCII.Code.space.byte)
-        RFC_5322.Header.Value.serialize(value.value, into: &buffer)
-    }
-}
-
-extension RFC_5322.Header {
-
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
@@ -83,9 +60,7 @@ extension RFC_5322.Header {
 extension RFC_5322.Header: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        "\(name.rawValue): \(value.rawValue)"
     }
 }
 

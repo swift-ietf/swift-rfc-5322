@@ -40,7 +40,7 @@ extension RFC_5322.Mailbox.`Edge Case` {
     }
 
     @Test
-    func `display name containing a quote is escaped on serialization`() throws {
+    func `display name containing a quote is escaped in the text form`() throws {
         let email = try RFC_5322.Mailbox(
             displayName: "Say \"Hi\"",
             localPart: .init("john"),
@@ -51,7 +51,7 @@ extension RFC_5322.Mailbox.`Edge Case` {
     }
 
     @Test
-    func `display name containing a backslash is escaped on serialization`() throws {
+    func `display name containing a backslash is escaped in the text form`() throws {
         let email = try RFC_5322.Mailbox(
             displayName: #"C:\Users\John"#,
             localPart: .init("john"),

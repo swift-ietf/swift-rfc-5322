@@ -3,13 +3,6 @@ import INCITS_4_1986
 
 extension RFC_5322.Mailbox {
     package enum Limits {}
-
-    nonisolated(unsafe) package static let addressRegex = /(?:((?:\".*?\"|[^<]+)\s+))?<(.*?)@(.*?)>/
-
-    nonisolated(unsafe) package static let dotAtomRegex =
-        /[a-zA-Z0-9!#$%&'\*\+\-\/=\?\^_`\{\|}~]+(?:\.[a-zA-Z0-9!#$%&'\*\+\-\/=\?\^_`\{\|}~]+)*/
-
-    nonisolated(unsafe) package static let quotedRegex = /(?:[^"\\\r\n]|\\["\\])+/
 }
 
 extension RFC_5322.Mailbox.Limits {

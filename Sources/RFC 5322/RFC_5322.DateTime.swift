@@ -1,9 +1,7 @@
-public import ASCII
+import ASCII
 public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
-import Radix_Formatter
-import Standard_Library_Extensions
 public import Time
 
 extension RFC_5322 {
@@ -23,126 +21,6 @@ extension RFC_5322 {
 
 extension RFC_5322 {
     public typealias Date = RFC_5322.DateTime
-}
-
-extension RFC_5322.DateTime {
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        let components = value.components
-
-        buffer.reserveCapacity(31)
-
-        let dayName = RFC_5322.DateTime.dayNames[components.weekday]
-        buffer.append(contentsOf: dayName.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.comma)
-        buffer.append(ASCII.Code.space)
-
-        let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: day.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.space)
-
-        let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
-        buffer.append(contentsOf: monthName.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.space)
-
-        let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
-        buffer.append(contentsOf: year.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.space)
-
-        let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: hour.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.colon)
-
-        let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: minute.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.colon)
-
-        let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: second.utf8.map { ASCII.Code($0) })
-        buffer.append(ASCII.Code.space)
-
-        let offsetSign: ASCII.Code = value.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
-        buffer.append(offsetSign)
-
-        let offsetHours =
-            abs(value.timezoneOffsetSeconds)
-            / Time.Calendar.Gregorian.TimeConstants.secondsPerHour
-        let offsetMinutes =
-            (abs(value.timezoneOffsetSeconds)
-                % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
-            / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
-
-        let offsetHoursStr = offsetHours.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetHoursStr.utf8.map { ASCII.Code($0) })
-
-        let offsetMinutesStr = offsetMinutes.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetMinutesStr.utf8.map { ASCII.Code($0) })
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        serializeBytes(value, into: &buffer)
-    }
-
-    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
-        _ dateTime: RFC_5322.DateTime,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        let components = dateTime.components
-
-        buffer.reserveCapacity(31)
-
-        let dayName = RFC_5322.DateTime.dayNames[components.weekday]
-        buffer.append(contentsOf: dayName.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.comma.byte)
-        buffer.append(ASCII.Code.space.byte)
-
-        let day = components.day.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: day.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.space.byte)
-
-        let monthName = RFC_5322.DateTime.monthNames[components.month - 1]
-        buffer.append(contentsOf: monthName.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.space.byte)
-
-        let year = components.year.formatted(Radix.Formatter.decimal.zeroPadded(width: 4))
-        buffer.append(contentsOf: year.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.space.byte)
-
-        let hour = components.hour.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: hour.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.colon.byte)
-
-        let minute = components.minute.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: minute.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.colon.byte)
-
-        let second = components.second.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: second.utf8.lazy.map(Byte.init(bitPattern:)))
-        buffer.append(ASCII.Code.space.byte)
-
-        let offsetSign: ASCII.Code = dateTime.timezoneOffsetSeconds >= 0 ? .plus : .hyphen
-        buffer.append(offsetSign.byte)
-
-        let offsetHours =
-            abs(dateTime.timezoneOffsetSeconds)
-            / Time.Calendar.Gregorian.TimeConstants.secondsPerHour
-        let offsetMinutes =
-            (abs(dateTime.timezoneOffsetSeconds)
-                % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
-            / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
-
-        let offsetHoursStr = offsetHours.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetHoursStr.utf8.lazy.map(Byte.init(bitPattern:)))
-
-        let offsetMinutesStr = offsetMinutes.formatted(Radix.Formatter.decimal.zeroPadded(width: 2))
-        buffer.append(contentsOf: offsetMinutesStr.utf8.lazy.map(Byte.init(bitPattern:)))
-    }
 }
 
 extension RFC_5322.DateTime {
@@ -318,9 +196,38 @@ extension RFC_5322.DateTime {
 extension RFC_5322.DateTime: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        let components = self.components
+        let offset = abs(timezoneOffsetSeconds)
+        let offsetHours = offset / Time.Calendar.Gregorian.TimeConstants.secondsPerHour
+        let offsetMinutes =
+            (offset % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
+            / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
+        let sign = timezoneOffsetSeconds >= 0 ? "+" : "-"
+
+        var text = Self.dayNames[components.weekday]
+        text += ", "
+        text += Self.decimal(components.day, width: 2)
+        text += " "
+        text += Self.monthNames[components.month - 1]
+        text += " "
+        text += Self.decimal(components.year, width: 4)
+        text += " "
+        text += Self.decimal(components.hour, width: 2)
+        text += ":"
+        text += Self.decimal(components.minute, width: 2)
+        text += ":"
+        text += Self.decimal(components.second, width: 2)
+        text += " "
+        text += sign
+        text += Self.decimal(offsetHours, width: 2)
+        text += Self.decimal(offsetMinutes, width: 2)
+        return text
+    }
+
+    private static func decimal(_ value: Int, width: Int) -> String {
+        let digits = String(value)
+        guard digits.count < width else { return digits }
+        return String(repeating: "0", count: width - digits.count) + digits
     }
 }
 

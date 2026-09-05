@@ -2,6 +2,7 @@ public import ASCII
 public import Byte
 import Byte_Standard_Library_Integration
 import INCITS_4_1986
+public import RFC_1123
 
 extension RFC_5322.Message {
 
@@ -15,28 +16,6 @@ extension RFC_5322.Message {
         ) {
             self.value = rawValue
         }
-    }
-}
-
-extension RFC_5322.Message.ID {
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == ASCII.Code {
-        buffer.reserveCapacity(value.value.count + 2)
-        buffer.append(ASCII.Code.lt)
-        buffer.append(contentsOf: value.value.map { ASCII.Code(unchecked: $0) })
-        buffer.append(ASCII.Code.gt)
-    }
-
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        _ value: Self,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        var codes: [ASCII.Code] = []
-        Self.serialize(value, into: &codes)
-        buffer.append(contentsOf: codes.map(\.byte))
     }
 }
 
@@ -119,9 +98,7 @@ extension RFC_5322.Message.ID {
 extension RFC_5322.Message.ID: CustomStringConvertible {
 
     public var description: String {
-        var bytes: [Byte] = []
-        Self.serialize(self, into: &bytes)
-        return String(decoding: bytes, as: UTF8.self)
+        "<\(String(decoding: value, as: UTF8.self))>"
     }
 }
 
