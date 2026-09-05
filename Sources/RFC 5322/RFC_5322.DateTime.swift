@@ -161,26 +161,21 @@ extension RFC_5322.DateTime {
             * (offsetHours * Time.Calendar.Gregorian.TimeConstants.secondsPerHour + offsetMinutes
                 * Time.Calendar.Gregorian.TimeConstants.secondsPerMinute)
 
-        let dateTime: RFC_5322.DateTime
+        let localDateTime: RFC_5322.DateTime
         do throws(Time.Error) {
-            dateTime = try RFC_5322.DateTime(
+            localDateTime = try RFC_5322.DateTime(
                 year: year,
                 month: month,
                 day: day,
                 hour: hour,
                 minute: minute,
-                second: second
+                second: second,
+                timezoneOffsetSeconds: timezoneOffsetSeconds
             )
         } catch {
             throw Error.invalidFormat("Date components invalid: \(error)")
         }
 
-        let utcDateTime = dateTime.subtracting(timezoneOffsetSeconds)
-
-        let localDateTime = RFC_5322.DateTime(
-            secondsSinceEpoch: utcDateTime.secondsSinceEpoch,
-            timezoneOffsetSeconds: timezoneOffsetSeconds
-        )
         let actualWeekday = localDateTime.components.weekday
         guard actualWeekday == expectedWeekday else {
             throw Error.weekdayMismatch(
@@ -251,7 +246,7 @@ extension RFC_5322.DateTime {
         timezoneOffsetSeconds: Int = 0
     ) throws(Time.Error) {
 
-        let time = try Time(
+        let local = try Time(
             year: year,
             month: month,
             day: day,
@@ -260,7 +255,10 @@ extension RFC_5322.DateTime {
             second: second
         )
 
-        self.init(time: time, timezoneOffset: Time.Timezone.Offset(seconds: timezoneOffsetSeconds))
+        self.init(
+            secondsSinceEpoch: local.secondsSinceEpoch - timezoneOffsetSeconds,
+            timezoneOffsetSeconds: timezoneOffsetSeconds
+        )
     }
 }
 
@@ -399,17 +397,6 @@ extension RFC_5322.DateTime {
             second: second ?? current.second,
             timezoneOffsetSeconds: timezoneOffsetSeconds
         )
-    }
-}
-
-extension RFC_5322.DateTime {
-
-    internal func adding(_ interval: Int) -> Self {
-        Self(secondsSinceEpoch: secondsSinceEpoch + interval)
-    }
-
-    internal func subtracting(_ interval: Int) -> Self {
-        Self(secondsSinceEpoch: secondsSinceEpoch - interval)
     }
 }
 
