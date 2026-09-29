@@ -1,4 +1,4 @@
-import Time
+import Calendar_Gregorian
 
 extension RFC_5322.Date {
 
@@ -25,7 +25,7 @@ extension RFC_5322.Date {
                 throw Error.monthOutOfRange(month)
             }
 
-            let maxDay = Time.Calendar.Gregorian.daysInMonths(year: year)[month - 1]
+            let maxDay = Gregorian.daysInMonths(year: year)[month - 1]
             guard (1...maxDay).contains(day) else {
                 throw Error.dayOutOfRange(day, month: month, year: year)
             }

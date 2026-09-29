@@ -1,18 +1,20 @@
 import ASCII
 public import Byte
-import Byte_Standard_Library_Integration
+import Byte
 import INCITS_4_1986
 public import Time
+public import Calendar
+public import Calendar_Gregorian
 
 extension RFC_5322 {
 
     public struct DateTime: Sendable, Equatable, Hashable, Comparable {
 
-        public let time: Time
+        public let time: Gregorian.DateTime
 
-        public let timezoneOffset: Time.Timezone.Offset
+        public let timezoneOffset: Time.Zone
 
-        public init(time: Time, timezoneOffset: Time.Timezone.Offset = .utc) {
+        public init(time: Gregorian.DateTime, timezoneOffset: Time.Zone = .utc) {
             self.time = time
             self.timezoneOffset = timezoneOffset
         }
@@ -158,11 +160,11 @@ extension RFC_5322.DateTime {
 
         let timezoneOffsetSeconds =
             sign
-            * (offsetHours * Time.Calendar.Gregorian.TimeConstants.secondsPerHour + offsetMinutes
-                * Time.Calendar.Gregorian.TimeConstants.secondsPerMinute)
+            * (offsetHours * Gregorian.TimeConstants.secondsPerHour + offsetMinutes
+                * Gregorian.TimeConstants.secondsPerMinute)
 
         let localDateTime: RFC_5322.DateTime
-        do throws(Time.Error) {
+        do throws(Gregorian.DateTime.Error) {
             localDateTime = try RFC_5322.DateTime(
                 year: year,
                 month: month,
@@ -193,10 +195,10 @@ extension RFC_5322.DateTime: CustomStringConvertible {
     public var description: String {
         let components = self.components
         let offset = abs(timezoneOffsetSeconds)
-        let offsetHours = offset / Time.Calendar.Gregorian.TimeConstants.secondsPerHour
+        let offsetHours = offset / Gregorian.TimeConstants.secondsPerHour
         let offsetMinutes =
-            (offset % Time.Calendar.Gregorian.TimeConstants.secondsPerHour)
-            / Time.Calendar.Gregorian.TimeConstants.secondsPerMinute
+            (offset % Gregorian.TimeConstants.secondsPerHour)
+            / Gregorian.TimeConstants.secondsPerMinute
         let sign = timezoneOffsetSeconds >= 0 ? "+" : "-"
 
         var text = Self.dayNames[components.weekday]
@@ -229,8 +231,8 @@ extension RFC_5322.DateTime: CustomStringConvertible {
 extension RFC_5322.DateTime {
 
     public init(secondsSinceEpoch: Int, timezoneOffsetSeconds: Int = 0) {
-        self.time = Time(secondsSinceEpoch: secondsSinceEpoch)
-        self.timezoneOffset = Time.Timezone.Offset(seconds: timezoneOffsetSeconds)
+        self.time = Gregorian.DateTime(secondsSinceEpoch: secondsSinceEpoch)
+        self.timezoneOffset = Time.Zone(seconds: timezoneOffsetSeconds)
     }
 }
 
@@ -244,9 +246,9 @@ extension RFC_5322.DateTime {
         minute: Int = 0,
         second: Int = 0,
         timezoneOffsetSeconds: Int = 0
-    ) throws(Time.Error) {
+    ) throws(Gregorian.DateTime.Error) {
 
-        let local = try Time(
+        let local = try Gregorian.DateTime(
             year: year,
             month: month,
             day: day,
@@ -269,7 +271,9 @@ extension RFC_5322.DateTime {
     }
 
     public var timezoneOffsetSeconds: Int {
-        timezoneOffset.seconds
+        let offset = timezoneOffset.offset.underlying
+        let magnitude = Int(offset.magnitude.value.rawValue)
+        return offset.polarity == .negative ? -magnitude : magnitude
     }
 }
 
@@ -294,7 +298,7 @@ extension RFC_5322.DateTime {
 
     public var components: RFC_5322.Date.Components {
 
-        let localTime = Time(secondsSinceEpoch: secondsSinceEpoch + timezoneOffsetSeconds)
+        let localTime = Gregorian.DateTime(secondsSinceEpoch: secondsSinceEpoch + timezoneOffsetSeconds)
 
         let weekdayNumber: Int
         switch localTime.weekday {
@@ -386,7 +390,7 @@ extension RFC_5322.DateTime {
         hour: Int? = nil,
         minute: Int? = nil,
         second: Int? = nil
-    ) throws(Time.Error) -> Self {
+    ) throws(Gregorian.DateTime.Error) -> Self {
         let current = components
         return try Self(
             year: year ?? current.year,

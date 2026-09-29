@@ -35,6 +35,14 @@ let package = Package(
             branch: "main"
         ),
         .package(
+            url: "https://github.com/swift-atoms/swift-calendar.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-molecules/swift-calendar-gregorian.git",
+            branch: "main"
+        ),
+        .package(
             url: "https://github.com/swift-atoms/swift-ascii.git",
             branch: "main"
         ),
@@ -53,10 +61,12 @@ let package = Package(
             dependencies: [
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "Time", package: "swift-time"),
+                .product(name: "Calendar", package: "swift-calendar"),
+                .product(name: "Calendar Gregorian", package: "swift-calendar-gregorian"),
                 .product(name: "RFC 1123", package: "swift-rfc-1123"),
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
-                .product(name: "Byte Standard Library Integration", package: "swift-byte"),
+                .product(name: "Calendar Gregorian", package: "swift-calendar-gregorian"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
             ]
         ),
@@ -80,7 +90,7 @@ let package = Package(
                 .target(name: "RFC 5322"),
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
-                .product(name: "Byte Standard Library Integration", package: "swift-byte"),
+                .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Time", package: "swift-time"),
             ]
         ),

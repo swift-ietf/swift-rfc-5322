@@ -1,3 +1,4 @@
+import Calendar_Gregorian
 import RFC_5322
 import Testing
 import Time
@@ -232,23 +233,23 @@ struct `RFC_5322.DateTime Tests` {
 
     @Test
     func `a month outside 1 through 12 is rejected`() {
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 13, day: 1)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 0, day: 1)
         }
     }
 
     @Test
     func `a day outside its month is rejected`() {
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 2, day: 30)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 4, day: 31)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 0)
         }
     }
@@ -258,27 +259,27 @@ struct `RFC_5322.DateTime Tests` {
         #expect(throws: Never.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 2, day: 29)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2023, month: 2, day: 29)
         }
     }
 
     @Test
     func `an hour outside 0 through 23 is rejected`() {
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, hour: 24)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, hour: -1)
         }
     }
 
     @Test
     func `a minute outside 0 through 59 is rejected`() {
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, minute: 60)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, minute: -1)
         }
     }
@@ -288,10 +289,10 @@ struct `RFC_5322.DateTime Tests` {
         #expect(throws: Never.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 60)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 61)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: -1)
         }
     }
@@ -301,7 +302,7 @@ struct `RFC_5322.DateTime Tests` {
         #expect(throws: Never.self) {
             _ = try RFC_5322.DateTime(year: 2100, month: 2, day: 28)
         }
-        #expect(throws: Time.Error.self) {
+        #expect(throws: Gregorian.DateTime.Error.self) {
             _ = try RFC_5322.DateTime(year: 2100, month: 2, day: 29)
         }
     }

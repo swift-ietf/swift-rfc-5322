@@ -1,6 +1,6 @@
-public import ASCII
+import ASCII
 public import Byte
-import Byte_Standard_Library_Integration
+import Byte
 import INCITS_4_1986
 
 extension RFC_5322 {
