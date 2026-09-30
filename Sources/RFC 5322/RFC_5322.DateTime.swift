@@ -75,7 +75,7 @@ extension RFC_5322.DateTime {
         }
 
         let dayString = String(decoding: parts[1].lazy.map(\.underlying), as: UTF8.self)
-        guard let day = Int(dayString), day >= 1, day <= 31 else {
+        guard let day = Self.decimal(dayString), day >= 1, day <= 31 else {
             throw Error.invalidDay(dayString)
         }
 
@@ -86,7 +86,7 @@ extension RFC_5322.DateTime {
         let month = monthIndex + 1
 
         let yearString = String(decoding: parts[3].lazy.map(\.underlying), as: UTF8.self)
-        guard let year = Int(yearString), year >= 1900 else {
+        guard let year = Self.decimal(yearString), year >= 1900 else {
             throw Error.invalidYear(yearString)
         }
 
@@ -114,19 +114,19 @@ extension RFC_5322.DateTime {
         }
 
         let hourString = String(decoding: timeParts[0].lazy.map(\.underlying), as: UTF8.self)
-        guard let hour = Int(hourString), hour >= 0, hour <= 23 else {
+        guard let hour = Self.decimal(hourString), hour >= 0, hour <= 23 else {
             throw Error.invalidHour(hourString)
         }
 
         let minuteString = String(decoding: timeParts[1].lazy.map(\.underlying), as: UTF8.self)
-        guard let minute = Int(minuteString), minute >= 0, minute <= 59 else {
+        guard let minute = Self.decimal(minuteString), minute >= 0, minute <= 59 else {
             throw Error.invalidMinute(minuteString)
         }
 
         let second: Int
         if timeParts.count == 3 {
             let secondString = String(decoding: timeParts[2].lazy.map(\.underlying), as: UTF8.self)
-            guard let sec = Int(secondString), sec >= 0, sec <= 60 else {
+            guard let sec = Self.decimal(secondString), sec >= 0, sec <= 60 else {
                 throw Error.invalidSecond(secondString)
             }
             second = sec
@@ -140,6 +140,10 @@ extension RFC_5322.DateTime {
             throw Error.invalidTimezone(timezoneString)
         }
 
+        guard timezoneCodes[0] == ASCII.Code.plus || timezoneCodes[0] == ASCII.Code.hyphen else {
+            let timezoneString = String(decoding: timezoneCodes.lazy.map(\.underlying), as: UTF8.self)
+            throw Error.invalidTimezone(timezoneString)
+        }
         let sign = timezoneCodes[0] == ASCII.Code.plus ? 1 : -1
         let offsetCodes = timezoneCodes.dropFirst()
 
@@ -149,8 +153,8 @@ extension RFC_5322.DateTime {
         let offsetHoursString = String(decoding: offsetHoursCodes.lazy.map(\.underlying), as: UTF8.self)
         let offsetMinutesString = String(decoding: offsetMinutesCodes.lazy.map(\.underlying), as: UTF8.self)
 
-        guard let offsetHours = Int(offsetHoursString),
-            let offsetMinutes = Int(offsetMinutesString),
+        guard let offsetHours = Self.decimal(offsetHoursString),
+            let offsetMinutes = Self.decimal(offsetMinutesString),
             offsetHours >= 0, offsetHours <= 23,
             offsetMinutes >= 0, offsetMinutes <= 59
         else {
@@ -404,3 +408,10 @@ extension RFC_5322.DateTime {
     }
 }
 
+extension RFC_5322.DateTime {
+
+    private static func decimal(_ text: String) -> Int? {
+        guard !text.isEmpty, text.utf8.allSatisfy({ $0 >= 0x30 && $0 <= 0x39 }) else { return nil }
+        return Int(text)
+    }
+}
