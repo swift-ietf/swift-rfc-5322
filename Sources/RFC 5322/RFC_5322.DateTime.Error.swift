@@ -1,6 +1,6 @@
 extension RFC_5322.DateTime {
 
-    public enum Error: Swift.Error, Sendable, Equatable {
+    public enum Error: Swift::Error, Sendable, Equatable {
         case invalidFormat(String)
         case invalidDayName(String)
         case invalidDay(String)

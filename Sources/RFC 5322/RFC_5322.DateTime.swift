@@ -1,6 +1,5 @@
 import ASCII
 public import Byte
-import Byte
 import INCITS_4_1986
 public import Time
 public import Calendar
@@ -31,7 +30,7 @@ extension RFC_5322.DateTime {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
 
         let codes: [ASCII.Code]

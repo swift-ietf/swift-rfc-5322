@@ -1,6 +1,5 @@
 import ASCII
 public import Byte
-import Byte
 import INCITS_4_1986
 
 extension RFC_5322 {
@@ -27,7 +26,7 @@ extension RFC_5322.Header {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
 
         guard let colonIndex = bytes.firstIndex(of: ASCII.Code.colon.byte) else {

@@ -1,6 +1,5 @@
 import ASCII
 public import Byte
-import Byte
 import INCITS_4_1986
 public import RFC_1123
 import Standard_Library_Extensions
@@ -41,7 +40,7 @@ extension RFC_5322.Mailbox {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
 
         try self.init(ascii: [Byte](bytes))
@@ -189,7 +188,7 @@ extension RFC_5322.Mailbox: CustomStringConvertible {
     }
 }
 
-extension RFC_5322.Mailbox: Swift.RawRepresentable {
+extension RFC_5322.Mailbox: Swift::RawRepresentable {
 
     public var rawValue: String {
         description

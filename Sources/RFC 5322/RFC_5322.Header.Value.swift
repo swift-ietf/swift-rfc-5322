@@ -1,6 +1,5 @@
 import ASCII
 public import Byte
-import Byte
 import INCITS_4_1986
 
 extension RFC_5322.Header {
@@ -27,7 +26,7 @@ extension RFC_5322.Header.Value {
     }
 }
 
-extension RFC_5322.Header.Value: Swift.RawRepresentable {
+extension RFC_5322.Header.Value: Swift::RawRepresentable {
 
     public init?(rawValue: String) {
         do throws(Error) {
@@ -51,7 +50,7 @@ extension RFC_5322.Header.Value {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
 
         let codes: [ASCII.Code]

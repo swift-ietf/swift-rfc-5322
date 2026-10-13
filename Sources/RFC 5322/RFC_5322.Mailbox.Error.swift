@@ -1,6 +1,6 @@
 extension RFC_5322.Mailbox {
 
-    public enum Error: Swift.Error, Sendable, Equatable {
+    public enum Error: Swift::Error, Sendable, Equatable {
 
         case missingAtSign
 
