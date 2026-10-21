@@ -1,9 +1,9 @@
 import ASCII
 public import Byte
-import INCITS_4_1986
-public import Time
 public import Calendar
 public import Calendar_Gregorian
+import INCITS_4_1986
+public import Time
 
 extension RFC_5322 {
 
@@ -361,29 +361,37 @@ extension RFC_5322.DateTime {
     public func startOfDay() -> Self {
         let components = self.components
 
-        return try! Self(
-            year: components.year,
-            month: components.month,
-            day: components.day,
-            hour: 0,
-            minute: 0,
-            second: 0,
-            timezoneOffsetSeconds: timezoneOffsetSeconds
-        )
+        do {
+            return try Self(
+                year: components.year,
+                month: components.month,
+                day: components.day,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                timezoneOffsetSeconds: timezoneOffsetSeconds
+            )
+        } catch {
+            preconditionFailure("Components of a valid date at a fixed time of day are always valid: \(error)")
+        }
     }
 
     public func endOfDay() -> Self {
         let components = self.components
 
-        return try! Self(
-            year: components.year,
-            month: components.month,
-            day: components.day,
-            hour: 23,
-            minute: 59,
-            second: 59,
-            timezoneOffsetSeconds: timezoneOffsetSeconds
-        )
+        do {
+            return try Self(
+                year: components.year,
+                month: components.month,
+                day: components.day,
+                hour: 23,
+                minute: 59,
+                second: 59,
+                timezoneOffsetSeconds: timezoneOffsetSeconds
+            )
+        } catch {
+            preconditionFailure("Components of a valid date at a fixed time of day are always valid: \(error)")
+        }
     }
 
     public func setting(

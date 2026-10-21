@@ -164,7 +164,6 @@ extension RFC_5322.Mailbox {
     }
 }
 
-
 extension RFC_5322.Mailbox: CustomStringConvertible {
 
     public var description: String {

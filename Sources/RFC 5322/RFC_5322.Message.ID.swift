@@ -101,7 +101,6 @@ extension RFC_5322.Message.ID: CustomStringConvertible {
     }
 }
 
-
 extension RFC_5322.Message.ID: ExpressibleByFloatLiteral {
 
     public init(floatLiteral value: Double) {

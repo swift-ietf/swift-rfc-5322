@@ -89,10 +89,7 @@ extension RFC_5322.Header.Value {
                     afterLFIndex < codes.count
                     && (codes[afterLFIndex] == ASCII.Code.sp
                         || codes[afterLFIndex] == ASCII.Code.htab)
-                if hasWSP {
-
-                    index = afterLFIndex
-                } else {
+                guard hasWSP else {
 
                     let string = String(decoding: bytes, as: UTF8.self)
                     throw Error.invalidFolding(
@@ -101,6 +98,8 @@ extension RFC_5322.Header.Value {
                         reason: "CRLF must be followed by WSP (space or tab) for folding"
                     )
                 }
+
+                index = afterLFIndex
             } else if code == ASCII.Code.lf {
 
                 let string = String(decoding: bytes, as: UTF8.self)
