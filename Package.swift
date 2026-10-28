@@ -66,7 +66,6 @@ let package = Package(
                 .product(name: "RFC 1123", package: "swift-rfc-1123"),
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
-                .product(name: "Calendar Gregorian", package: "swift-calendar-gregorian"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
             ]
         ),
@@ -89,7 +88,6 @@ let package = Package(
             dependencies: [
                 .target(name: "RFC 5322"),
                 .product(name: "ASCII", package: "swift-ascii"),
-                .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Time", package: "swift-time"),
             ]
