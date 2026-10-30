@@ -65,9 +65,7 @@ let package = Package(
         .package(
             url: "https://github.com/swift-atoms/swift-binary.git",
             branch: "main",
-            traits: [
-                .trait(name: "Serializer", condition: .when(traits: ["Coder"])),
-            ]
+            traits: [.trait(name: "Serializer", condition: .when(traits: ["Coder"]))]
         ),
         .package(
             url: "https://github.com/swift-atoms/swift-coder.git",
