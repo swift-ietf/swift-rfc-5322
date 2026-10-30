@@ -21,6 +21,9 @@ let package = Package(
             targets: ["RFC 5322 Foundation Integration"]
         ),
     ],
+    traits: [
+        .trait(name: "Coder", description: "Wire coders for RFC 5322 types")
+    ],
     dependencies: [
         .package(
             url: "https://github.com/swift-ietf/swift-rfc-1123.git",
@@ -44,7 +47,12 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/swift-atoms/swift-ascii.git",
-            branch: "main"
+            branch: "main",
+            traits: [
+                .trait(name: "Coder", condition: .when(traits: ["Coder"])),
+                .trait(name: "Parser", condition: .when(traits: ["Coder"])),
+                .trait(name: "Serializer", condition: .when(traits: ["Coder"])),
+            ]
         ),
         .package(
             url: "https://github.com/swift-incits/swift-incits-4-1986.git",
@@ -53,6 +61,61 @@ let package = Package(
         .package(
             url: "https://github.com/swift-atoms/swift-byte.git",
             branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-atoms/swift-binary.git",
+            branch: "main",
+            traits: [
+                .trait(name: "Serializer", condition: .when(traits: ["Coder"])),
+            ]
+        ),
+        .package(
+            url: "https://github.com/swift-atoms/swift-coder.git",
+            branch: "main",
+            traits: [
+                .trait(name: "Carrier", condition: .when(traits: ["Coder"])),
+                .trait(name: "Checkpoint", condition: .when(traits: ["Coder"])),
+                .trait(name: "Choice", condition: .when(traits: ["Coder"])),
+                .trait(name: "Either", condition: .when(traits: ["Coder"])),
+                .trait(name: "IteratorLeaves", condition: .when(traits: ["Coder"])),
+                .trait(name: "Map", condition: .when(traits: ["Coder"])),
+                .trait(name: "Pair", condition: .when(traits: ["Coder"])),
+                .trait(name: "Predicate", condition: .when(traits: ["Coder"])),
+                .trait(name: "Repetition", condition: .when(traits: ["Coder"])),
+                .trait(name: "Skip", condition: .when(traits: ["Coder"])),
+            ]
+        ),
+        .package(url: "https://github.com/swift-atoms/swift-cursor.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-either.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-pair.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-atoms/swift-parser.git",
+            branch: "main",
+            traits: [
+                .trait(name: "Always", condition: .when(traits: ["Coder"])),
+                .trait(name: "Append", condition: .when(traits: ["Coder"])),
+                .trait(name: "Choice", condition: .when(traits: ["Coder"])),
+                .trait(name: "Either", condition: .when(traits: ["Coder"])),
+                .trait(name: "FlatMap", condition: .when(traits: ["Coder"])),
+                .trait(name: "Iterator", condition: .when(traits: ["Coder"])),
+                .trait(name: "IteratorLeaves", condition: .when(traits: ["Coder"])),
+                .trait(name: "Map", condition: .when(traits: ["Coder"])),
+                .trait(name: "Pair", condition: .when(traits: ["Coder"])),
+                .trait(name: "Predicate", condition: .when(traits: ["Coder"])),
+                .trait(name: "Product", condition: .when(traits: ["Coder"])),
+                .trait(name: "Repetition", condition: .when(traits: ["Coder"])),
+                .trait(name: "Skip", condition: .when(traits: ["Coder"])),
+            ]
+        ),
+        .package(
+            url: "https://github.com/swift-atoms/swift-serializer.git",
+            branch: "main",
+            traits: [
+                .trait(name: "Either", condition: .when(traits: ["Coder"])),
+                .trait(name: "Map", condition: .when(traits: ["Coder"])),
+                .trait(name: "Pair", condition: .when(traits: ["Coder"])),
+                .trait(name: "Repetition", condition: .when(traits: ["Coder"])),
+            ]
         ),
     ],
     targets: [
@@ -67,6 +130,13 @@ let package = Package(
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "INCITS 4 1986", package: "swift-incits-4-1986"),
+                .product(name: "Coder", package: "swift-coder", condition: .when(traits: ["Coder"])),
+                .product(name: "Cursor", package: "swift-cursor", condition: .when(traits: ["Coder"])),
+                .product(name: "Either", package: "swift-either", condition: .when(traits: ["Coder"])),
+                .product(name: "Parser", package: "swift-parser", condition: .when(traits: ["Coder"])),
+                .product(name: "Serializer", package: "swift-serializer", condition: .when(traits: ["Coder"])),
+                .product(name: "Binary", package: "swift-binary", condition: .when(traits: ["Coder"])),
+                .product(name: "Pair", package: "swift-pair", condition: .when(traits: ["Coder"])),
             ]
         ),
         .target(
@@ -90,6 +160,11 @@ let package = Package(
                 .product(name: "ASCII", package: "swift-ascii"),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Time", package: "swift-time"),
+                .product(name: "Coder", package: "swift-coder", condition: .when(traits: ["Coder"])),
+                .product(name: "Cursor", package: "swift-cursor", condition: .when(traits: ["Coder"])),
+                .product(name: "Parser", package: "swift-parser", condition: .when(traits: ["Coder"])),
+                .product(name: "Serializer", package: "swift-serializer", condition: .when(traits: ["Coder"])),
+                .product(name: "Binary", package: "swift-binary", condition: .when(traits: ["Coder"])),
             ]
         ),
     ],
