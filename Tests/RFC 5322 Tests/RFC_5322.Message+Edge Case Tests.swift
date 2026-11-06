@@ -1,11 +1,11 @@
 import RFC_5322
 import Testing
 
-extension RFC_5322.Message {
+extension `RFC_5322.Message Tests` {
     @Suite struct `Edge Case` {}
 }
 
-extension RFC_5322.Message.`Edge Case` {
+extension `RFC_5322.Message Tests`.`Edge Case` {
 
     @Test
     func `subject containing a bare CRLF is rejected`() throws {

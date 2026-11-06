@@ -1,11 +1,11 @@
 import RFC_5322
 import Testing
 
-extension RFC_5322.Mailbox {
+extension `RFC_5322.Mailbox Tests` {
     @Suite struct `Edge Case` {}
 }
 
-extension RFC_5322.Mailbox.`Edge Case` {
+extension `RFC_5322.Mailbox Tests`.`Edge Case` {
     @Test
     func `display name containing a bare CRLF is rejected`() {
         #expect(throws: RFC_5322.Mailbox.Error.self) {
