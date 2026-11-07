@@ -10,11 +10,6 @@ extension RFC_5322.Mailbox {
 }
 
 extension RFC_5322.Mailbox.LocalPart {
-
-    package enum Storage: Hashable {
-        case dotAtom([Byte])
-        case quoted([Byte])
-    }
 }
 
 extension RFC_5322.Mailbox.LocalPart {
