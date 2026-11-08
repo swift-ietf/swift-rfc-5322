@@ -7,17 +7,19 @@
     import Serializer
     import Testing
 
-    @Suite
-    struct `RFC 5322 Coder Tests` {
-    }
+extension `RFC 5322 Coder Tests`.`RFC 5322 Coder Tests` {
+        @Suite
+        struct `RFC 5322 Coder Tests` {
+        }
+}
 
-    extension `RFC 5322 Coder Tests` {
+    extension `RFC 5322 Coder Tests`.`RFC 5322 Coder Tests` {
         @Suite struct `DateTime Tests` {}
 
         @Suite struct `Message ID Tests` {}
     }
 
-    extension `RFC 5322 Coder Tests`.`DateTime Tests` {
+    extension `RFC 5322 Coder Tests`.`RFC 5322 Coder Tests`.`DateTime Tests` {
 
         @Test
         func `parses a full date-time and stops after the zone`() throws {
@@ -66,7 +68,7 @@
         }
     }
 
-    extension `RFC 5322 Coder Tests`.`Message ID Tests` {
+    extension `RFC 5322 Coder Tests`.`RFC 5322 Coder Tests`.`Message ID Tests` {
 
         @Test
         func `parses an angle-addressed identifier`() throws {
