@@ -5,9 +5,9 @@
     import RFC_5322
     import Testing
 
-enum `Serialization Equivalence Tests` {}
+    enum `Serialization Equivalence Tests` {}
 
-extension `Serialization Equivalence Tests` {
+    extension `Serialization Equivalence Tests` {
         @Suite
         struct `Serialization Equivalence` {
 
@@ -94,5 +94,5 @@ extension `Serialization Equivalence Tests` {
                 #expect([Byte](message) == [Byte](utf8: headers + "Test"))
             }
         }
-}
+    }
 #endif

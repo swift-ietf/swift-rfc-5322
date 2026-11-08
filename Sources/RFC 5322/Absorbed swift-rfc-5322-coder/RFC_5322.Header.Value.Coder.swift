@@ -13,7 +13,7 @@
         public static var coder: Coder<ArraySlice<Byte>, [Byte]> { .init() }
     }
 
-extension RFC_5322.Header.Value.Coder {
+    extension RFC_5322.Header.Value.Coder {
         public typealias Output = RFC_5322.Header.Value
 
         public typealias Failure = RFC_5322.Header.Value.Error
@@ -58,5 +58,5 @@ extension RFC_5322.Header.Value.Coder {
         public borrowing func serialize(_ output: Output, into buffer: inout Buffer) throws(Failure) {
             Scan.append(output.rawValue, into: &buffer)
         }
-}
+    }
 #endif

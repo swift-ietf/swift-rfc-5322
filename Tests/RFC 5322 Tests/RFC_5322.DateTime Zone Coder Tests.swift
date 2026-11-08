@@ -3,9 +3,9 @@
     import RFC_5322
     import Testing
 
-enum `RFC_5322.DateTime Zone Coder Tests` {}
+    enum `RFC_5322.DateTime Zone Coder Tests` {}
 
-extension `RFC_5322.DateTime Zone Coder Tests` {
+    extension `RFC_5322.DateTime Zone Coder Tests` {
         @Suite
         struct `Date-time coder zone digits` {
             @Test(arguments: ["+-100", "+01-5", "+0+00", "-+100"])
@@ -22,5 +22,5 @@ extension `RFC_5322.DateTime Zone Coder Tests` {
                 #expect(try RFC_5322.DateTime.coder.parse(&input).timezoneOffsetSeconds == -5400)
             }
         }
-}
+    }
 #endif

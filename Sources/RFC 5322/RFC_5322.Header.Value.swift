@@ -123,11 +123,12 @@ extension RFC_5322.Header.Value {
             guard valid else {
                 let string = String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
                 let reason: String
-                reason = if code.isControl {
-                    "Control characters not allowed (except HTAB)"
-                } else {
-                    "Must be printable ASCII or HTAB"
-                }
+                reason =
+                    if code.isControl {
+                        "Control characters not allowed (except HTAB)"
+                    } else {
+                        "Must be printable ASCII or HTAB"
+                    }
                 throw Error.invalidCharacter(string, code: code, reason: reason)
             }
         }

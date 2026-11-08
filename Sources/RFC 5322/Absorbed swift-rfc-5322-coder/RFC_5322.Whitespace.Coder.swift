@@ -19,7 +19,7 @@
         }
     }
 
-extension RFC_5322.Whitespace.Coder {
+    extension RFC_5322.Whitespace.Coder {
         public typealias Output = Void
 
         public typealias Failure = Never
@@ -42,5 +42,5 @@ extension RFC_5322.Whitespace.Coder {
             let code = byte.bitPattern
             return code == 0x20 || code == 0x09 || code == 0x0D || code == 0x0A
         }
-}
+    }
 #endif

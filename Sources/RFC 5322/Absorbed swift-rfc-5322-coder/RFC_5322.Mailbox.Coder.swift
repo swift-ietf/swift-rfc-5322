@@ -13,7 +13,7 @@
         public static var coder: Coder<ArraySlice<Byte>, [Byte]> { .init() }
     }
 
-extension RFC_5322.Mailbox.Coder {
+    extension RFC_5322.Mailbox.Coder {
         public typealias Output = RFC_5322.Mailbox
 
         public typealias Failure = RFC_5322.Mailbox.Error
@@ -74,5 +74,5 @@ extension RFC_5322.Mailbox.Coder {
         public borrowing func serialize(_ output: Output, into buffer: inout Buffer) throws(Failure) {
             Scan.append(output.description, into: &buffer)
         }
-}
+    }
 #endif
