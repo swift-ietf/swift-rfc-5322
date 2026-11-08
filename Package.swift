@@ -155,7 +155,7 @@ let package = Package(
             name: "RFC 5322 Tests",
             dependencies: [
                 .target(name: "RFC 5322"),
-                .product(name: "ASCII", package: "swift-ascii"),
+                .product(name: "ASCII", package: "swift-ascii", condition: .when(traits: ["Coder"])),
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Time", package: "swift-time"),
                 .product(name: "Coder", package: "swift-coder", condition: .when(traits: ["Coder"])),
