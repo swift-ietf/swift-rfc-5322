@@ -59,7 +59,7 @@ extension RFC_5322.Header {
 extension RFC_5322.Header: CustomStringConvertible {
 
     public var description: String {
-        "\(name.rawValue): \(value.rawValue)"
+        "\(name.description): \(value.description)"
     }
 }
 

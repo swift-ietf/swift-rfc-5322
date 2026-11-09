@@ -45,7 +45,7 @@
             Self.line(named: "MIME-Version", value.mimeVersion, into: &buffer)
 
             for header in value.additionalHeaders {
-                Self.line(named: header.name.rawValue, header.value.rawValue, into: &buffer)
+                Self.line(named: header.name.description, header.value.description, into: &buffer)
             }
 
             Scan.append("\r\n", into: &buffer)
