@@ -261,7 +261,7 @@ extension RFC_5322.DateTime {
         )
 
         self.init(
-            secondsSinceEpoch: local.secondsSinceEpoch - timezoneOffsetSeconds,
+            secondsSinceEpoch: Int(local.secondsSinceEpoch - Int128(timezoneOffsetSeconds)),
             timezoneOffsetSeconds: timezoneOffsetSeconds
         )
     }
@@ -270,7 +270,7 @@ extension RFC_5322.DateTime {
 extension RFC_5322.DateTime {
 
     public var secondsSinceEpoch: Int {
-        time.secondsSinceEpoch
+        Int(time.secondsSinceEpoch)
     }
 
     public var timezoneOffsetSeconds: Int {
@@ -282,18 +282,18 @@ extension RFC_5322.DateTime {
 
 extension RFC_5322.DateTime {
     public static func < (lhs: Self, rhs: Self) -> Bool {
-        lhs.secondsSinceEpoch < rhs.secondsSinceEpoch
+        lhs.time.secondsSinceEpoch < rhs.time.secondsSinceEpoch
     }
 }
 
 extension RFC_5322.DateTime {
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.secondsSinceEpoch == rhs.secondsSinceEpoch
+        lhs.time.secondsSinceEpoch == rhs.time.secondsSinceEpoch
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(secondsSinceEpoch)
+        hasher.combine(time.secondsSinceEpoch)
     }
 }
 
