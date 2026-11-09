@@ -105,7 +105,7 @@ struct `RFC_5322.Message Tests` {
         #expect(message.additionalHeaders[0].name == .xPriority)
         #expect(message.additionalHeaders[0].value == 1)
         #expect(message.additionalHeaders[1].name == .inReplyTo)
-        #expect(message.additionalHeaders[.inReplyTo] == "<previous@example.com>")
+        #expect(message.additionalHeaders[.inReplyTo]?.rawValue == "<previous@example.com>")
     }
 
     @Test

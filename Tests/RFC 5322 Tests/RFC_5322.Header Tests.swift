@@ -87,14 +87,14 @@ struct `RFC_5322.Header Tests` {
     @Test
     func `a header list looks up a value by name`() throws {
         let headers: [RFC_5322.Header] = try [.subject: .init("text/plain")]
-        #expect(headers[.subject] == "text/plain")
+        #expect(headers[.subject]?.rawValue == "text/plain")
         #expect(headers[.from] == nil)
     }
 
     @Test
-    func `a header list sets a value by name`() {
+    func `a header list sets a value by name`() throws {
         var headers = [RFC_5322.Header]()
-        headers[.subject] = "text/html"
+        headers[.subject] = try .init("text/html")
         #expect(headers.count == 1)
         #expect(headers[0].name == .subject)
         #expect(headers[0].value == "text/html")
@@ -106,7 +106,7 @@ struct `RFC_5322.Header Tests` {
             .received: .init("server1"),
             .received: .init("server2"),
         ]
-        headers[.received] = "server3"
+        headers[.received] = try .init("server3")
         #expect(headers.count == 1)
         #expect(headers[0].value == "server3")
     }
@@ -152,9 +152,9 @@ struct `RFC_5322.Header Tests` {
             .subject: .init("Test"),
         ]
         #expect(headers.count == 3)
-        #expect(headers[.from] == "sender@example.com")
-        #expect(headers[.to] == "recipient@example.com")
-        #expect(headers[.subject] == "Test")
+        #expect(headers[.from]?.rawValue == "sender@example.com")
+        #expect(headers[.to]?.rawValue == "recipient@example.com")
+        #expect(headers[.subject]?.rawValue == "Test")
     }
 
     @Test

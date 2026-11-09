@@ -65,23 +65,14 @@ extension RFC_5322.Header: CustomStringConvertible {
 
 extension Array where Element == RFC_5322.Header {
 
-    public subscript(name: RFC_5322.Header.Name) -> String? {
+    public subscript(name: RFC_5322.Header.Name) -> RFC_5322.Header.Value? {
         get {
-            first(where: { $0.name == name })?.value.rawValue
+            first(where: { $0.name == name })?.value
         }
         set {
             removeAll(where: { $0.name == name })
             if let newValue {
-                do throws(RFC_5322.Header.Value.Error) {
-                    let value = try RFC_5322.Header.Value(newValue)
-                    append(
-                        RFC_5322.Header(
-                            name: name,
-                            value: value
-                        )
-                    )
-                } catch {
-                }
+                append(RFC_5322.Header(name: name, value: newValue))
             }
         }
     }
