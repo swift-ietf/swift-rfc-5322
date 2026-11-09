@@ -127,5 +127,27 @@
 
             #expect(String(mailbox) == "\"Doe, John\" <john@example.com>")
         }
+
+        @Test
+        func `folds a long subject at whitespace within the line length`() throws {
+            let subject = Array(repeating: "word", count: 60).joined(separator: " ")
+            let message = try RFC_5322.Message(
+                from: RFC_5322.Mailbox("sender@example.com"),
+                to: [RFC_5322.Mailbox("recipient@example.com")],
+                date: RFC_5322.DateTime(secondsSinceEpoch: 1_609_459_200),
+                subject: subject,
+                messageId: RFC_5322.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "")
+            )
+
+            let lines = message.description
+                .split(separator: "\r\n", omittingEmptySubsequences: false)
+                .map(String.init)
+            #expect(lines.allSatisfy { $0.utf8.count <= 78 })
+            let start = try #require(lines.firstIndex(where: { $0.hasPrefix("Subject: ") }))
+            let end = try #require(lines[(start + 1)...].firstIndex(where: { !$0.hasPrefix(" ") }))
+            #expect(end - start > 1)
+            #expect(lines[start..<end].joined() == "Subject: " + subject)
+        }
     }
 #endif

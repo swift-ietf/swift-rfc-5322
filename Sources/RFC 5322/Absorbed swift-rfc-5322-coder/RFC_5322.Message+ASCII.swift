@@ -45,8 +45,7 @@
             Self.line(named: "MIME-Version", value.mimeVersion, into: &buffer)
 
             for header in value.additionalHeaders {
-                Scan.append(header.description, into: &buffer)
-                Scan.append("\r\n", into: &buffer)
+                Self.line(named: header.name.rawValue, header.value.rawValue, into: &buffer)
             }
 
             Scan.append("\r\n", into: &buffer)
@@ -59,8 +58,31 @@
         ) where Buffer.Element == Byte {
             Scan.append(name, into: &buffer)
             Scan.append(": ", into: &buffer)
-            Scan.append(body, into: &buffer)
+            buffer.append(contentsOf: Self.folded(body, column: name.utf8.count + 2))
             Scan.append("\r\n", into: &buffer)
+        }
+
+        private static let lineLength = 78
+
+        private static func folded(_ body: String, column: Int) -> [Byte] {
+            var result: [Byte] = []
+            var lineStart = -column
+            var breakIndex: Int?
+            for byte in body.utf8.lazy.map(Byte.init(bitPattern:)) {
+                if Scan.isWhitespace(byte),
+                    let last = result.last, !Scan.isWhitespace(last),
+                    result.count > lineStart
+                {
+                    breakIndex = result.count
+                }
+                result.append(byte)
+                if result.count - lineStart > Self.lineLength, let index = breakIndex {
+                    result.insert(contentsOf: [Byte(bitPattern: 0x0D), Byte(bitPattern: 0x0A)], at: index)
+                    lineStart = index + 2
+                    breakIndex = nil
+                }
+            }
+            return result
         }
 
         private static func list(_ mailboxes: [RFC_5322.Mailbox]) -> String {
