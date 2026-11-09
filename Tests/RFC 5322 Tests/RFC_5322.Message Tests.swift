@@ -138,7 +138,7 @@ struct `RFC_5322.Message Tests` {
     @Test
     func `a message ID builds from a unique part and the sender's domain`() throws {
         let sender = try RFC_5322.Mailbox("sender@example.com")
-        let messageId = RFC_5322.Message.ID(uniqueId: "test-123", domain: sender.domain)
+        let messageId = try RFC_5322.Message.ID(uniqueId: "test-123", domain: sender.domain)
         #expect(messageId.description == "<test-123@example.com>")
     }
 
@@ -152,6 +152,16 @@ struct `RFC_5322.Message Tests` {
     func `a message ID without an at sign is rejected`() {
         #expect(throws: RFC_5322.Message.ID.Error.self) {
             _ = try RFC_5322.Message.ID("<test-123>")
+        }
+    }
+
+    @Test
+    func `a message ID refuses a unique part with a space, angle bracket or at sign`() throws {
+        let domain = try RFC_5322.Mailbox("sender@example.com").domain
+        for uniqueId in ["a b", "a<b", "a>b", "a@b", ""] {
+            #expect(throws: RFC_5322.Message.ID.Error.self) {
+                _ = try RFC_5322.Message.ID(uniqueId: uniqueId, domain: domain)
+            }
         }
     }
 }

@@ -85,9 +85,33 @@ extension RFC_5322.Message.ID {
 
 extension RFC_5322.Message.ID {
 
-    public init(uniqueId: String, domain: RFC_1123.Domain) {
+    public init(uniqueId: String, domain: RFC_1123.Domain) throws(Error) {
         var result = [Byte]()
-        result.append(contentsOf: uniqueId.utf8.lazy.map(Byte.init(bitPattern:)))
+        for byte in uniqueId.utf8 {
+            let code: ASCII.Code
+            do throws(ASCII.Code.Error) {
+                code = try ASCII.Code(Byte(bitPattern: byte))
+            } catch {
+                throw Error.nonASCII(uniqueId)
+            }
+            guard
+                code.isVisible,
+                code != ASCII.Code.space,
+                code != ASCII.Code.at,
+                code != ASCII.Code.lt,
+                code != ASCII.Code.gt
+            else {
+                throw Error.invalidCharacter(
+                    uniqueId,
+                    code: code,
+                    reason: "Unique part must be printable ASCII without spaces, angle brackets or at sign"
+                )
+            }
+            result.append(code.byte)
+        }
+        guard !result.isEmpty else {
+            throw Error.emptyUniqueId
+        }
         result.append(ASCII.Code.at.byte)
         result.append(contentsOf: domain.name.utf8.lazy.map(Byte.init(bitPattern:)))
         self.value = result
@@ -98,26 +122,5 @@ extension RFC_5322.Message.ID: CustomStringConvertible {
 
     public var description: String {
         "<\(String(decoding: value, as: UTF8.self))>"
-    }
-}
-
-extension RFC_5322.Message.ID: ExpressibleByFloatLiteral {
-
-    public init(floatLiteral value: Double) {
-        do throws(Error) {
-            try self.init(String(value))
-        } catch {
-            preconditionFailure("Invalid ASCII Message-ID float literal: \(error)")
-        }
-    }
-}
-extension RFC_5322.Message.ID: ExpressibleByIntegerLiteral {
-
-    public init(integerLiteral value: Int) {
-        do throws(Error) {
-            try self.init(String(value))
-        } catch {
-            preconditionFailure("Invalid ASCII Message-ID integer literal: \(error)")
-        }
     }
 }

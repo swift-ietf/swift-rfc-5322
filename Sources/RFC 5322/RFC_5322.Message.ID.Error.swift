@@ -9,5 +9,7 @@ extension RFC_5322.Message.ID {
         case invalidCharacter(String, code: ASCII.Code, reason: String)
 
         case nonASCII(String)
+
+        case emptyUniqueId
     }
 }
