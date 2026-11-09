@@ -38,7 +38,7 @@ extension RFC_5322.Date {
                 throw Error.minuteOutOfRange(minute)
             }
 
-            guard (0...60).contains(second) else {
+            guard (0...59).contains(second) else {
                 throw Error.secondOutOfRange(second)
             }
 

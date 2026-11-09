@@ -125,7 +125,7 @@ extension RFC_5322.DateTime {
         let second: Int
         if timeParts.count == 3 {
             let secondString = String(decoding: timeParts[2].lazy.map(\.underlying), as: UTF8.self)
-            guard let sec = Self.decimal(secondString), sec >= 0, sec <= 60 else {
+            guard let sec = Self.decimal(secondString), sec >= 0, sec <= 59 else {
                 throw Error.invalidSecond(secondString)
             }
             second = sec

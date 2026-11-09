@@ -15,5 +15,6 @@ Use this package when you need to read or write the parts of an email message as
 - A message is written as From, To, Cc if any, Subject, Date, Message-ID, Reply-To if set, MIME-Version, then the additional headers in order, each line ending in CRLF, then an empty line and the body. Bcc is never written. Written into an ASCII buffer, a message gives only its header block and the empty line.
 - Two date-times are equal, hash alike and order by their instant alone. The timezone offset only changes how the date is written and what `RFC_5322.DateTime.components` returns.
 - A date-time is always written with its day name, a two-digit day, seconds and a numeric offset, as in `Fri, 01 Jan 2021 00:00:00 +0000`.
+- There are no leap seconds: days are a uniform 86 400 seconds, so a second of `60` is refused with `invalidSecond` rather than read as the next midnight.
 - `RFC_5322.DateTime.init(_:)` requires the day name and refuses one that doesn't match the date. `RFC_5322.DateTime.Coder` also accepts a date without a day name or seconds. Either way the offset must be a plus or minus sign followed by four digits.
 - With `RFC 5322 Foundation Integration`, every type encodes as its text form and decodes through the same validation.

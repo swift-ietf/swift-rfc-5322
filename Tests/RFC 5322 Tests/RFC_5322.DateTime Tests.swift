@@ -285,8 +285,11 @@ struct `RFC_5322.DateTime Tests` {
     }
 
     @Test
-    func `a leap second is accepted and second 61 is rejected`() {
+    func `second 59 is accepted and a leap second or second 61 is rejected`() {
         #expect(throws: Never.self) {
+            _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 59)
+        }
+        #expect(throws: Gregorian.DateTime.Error.secondOutOfRange(60)) {
             _ = try RFC_5322.DateTime(year: 2024, month: 1, day: 1, second: 60)
         }
         #expect(throws: Gregorian.DateTime.Error.self) {
@@ -312,5 +315,15 @@ struct `RFC_5322.DateTime Tests` {
         let last = try RFC_5322.DateTime(year: 2100, month: 12, day: 31)
         let next = try RFC_5322.DateTime(year: 2101, month: 1, day: 1)
         #expect(last.distance(to: next) == 86400)
+    }
+
+    @Test
+    func `a leap second is refused because days are uniform`() {
+        #expect(throws: RFC_5322.DateTime.Error.invalidSecond("60")) {
+            _ = try RFC_5322.DateTime("Mon, 31 Dec 1990 23:59:60 +0000")
+        }
+        #expect(throws: RFC_5322.Date.Components.Error.secondOutOfRange(60)) {
+            _ = try RFC_5322.Date.Components(year: 1990, month: 12, day: 31, hour: 23, minute: 59, second: 60, weekday: 1)
+        }
     }
 }
