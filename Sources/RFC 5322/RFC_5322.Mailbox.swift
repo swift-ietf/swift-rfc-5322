@@ -113,7 +113,7 @@ extension RFC_5322.Mailbox {
                 displayName = nil
             }
 
-            guard let atIdx = emailCodes.firstIndex(of: ASCII.Code.commercialAt) else {
+            guard let atIdx = emailCodes.lastIndex(of: ASCII.Code.commercialAt) else {
                 throw Error.missingAtSign
             }
 
@@ -126,7 +126,7 @@ extension RFC_5322.Mailbox {
             try self.init(displayName: displayName, localPart: localPartValue, domain: domainValue)
         } else {
 
-            guard let atIdx = codes.firstIndex(of: ASCII.Code.commercialAt) else {
+            guard let atIdx = codes.lastIndex(of: ASCII.Code.commercialAt) else {
                 throw Error.missingAtSign
             }
 

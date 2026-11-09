@@ -70,4 +70,11 @@ extension `RFC_5322.Mailbox Tests`.`Edge Case` {
             _ = try RFC_5322.Mailbox("Evil\r\nBcc: attacker@evil.com <john@example.com>")
         }
     }
+
+    @Test
+    func `a quoted local part containing an at sign splits at the last at sign`() throws {
+        let mailbox = try RFC_5322.Mailbox(#""a@b"@example.com"#)
+        #expect(mailbox.domain.name == "example.com")
+        #expect(mailbox.localPart.description == #""a@b""#)
+    }
 }
