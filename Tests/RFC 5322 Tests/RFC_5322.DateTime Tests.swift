@@ -134,6 +134,12 @@ struct `RFC_5322.DateTime Tests` {
     }
 
     @Test
+    func `a text form without a day name is accepted`() throws {
+        let dateTime = try RFC_5322.DateTime("15 Jan 2024 14:30:00 -0800")
+        #expect(dateTime == (try RFC_5322.DateTime("Mon, 15 Jan 2024 14:30:00 -0800")))
+    }
+
+    @Test
     func `February 29 exists in a leap year`() throws {
         let dateTime = try RFC_5322.DateTime(year: 2024, month: 2, day: 29)
         #expect(dateTime.components.month == 2)

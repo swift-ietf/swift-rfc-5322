@@ -62,34 +62,40 @@ extension RFC_5322.DateTime {
             parts.append(currentPart)
         }
 
-        guard parts.count >= 6 else {
-            throw Error.invalidFormat("Expected at least 6 components, got \(parts.count)")
+        let expectedWeekday: Int?
+        if let first = parts.first, first.contains(where: \.isLetter) {
+            let dayNameCodes = first.last == ASCII.Code.comma ? first.dropLast() : first[...]
+            let dayName = String(decoding: dayNameCodes.lazy.map(\.underlying), as: UTF8.self)
+            guard let weekday = RFC_5322.DateTime.dayNames.firstIndex(of: dayName) else {
+                throw Error.invalidDayName(dayName)
+            }
+            expectedWeekday = weekday
+            parts.removeFirst()
+        } else {
+            expectedWeekday = nil
         }
 
-        let dayNameCodes = parts[0].last == ASCII.Code.comma ? parts[0].dropLast() : parts[0][...]
-        let dayName = String(decoding: dayNameCodes.lazy.map(\.underlying), as: UTF8.self)
-
-        guard let expectedWeekday = RFC_5322.DateTime.dayNames.firstIndex(of: dayName) else {
-            throw Error.invalidDayName(dayName)
+        guard parts.count >= 5 else {
+            throw Error.invalidFormat("Expected at least 5 components after the day name, got \(parts.count)")
         }
 
-        let dayString = String(decoding: parts[1].lazy.map(\.underlying), as: UTF8.self)
+        let dayString = String(decoding: parts[0].lazy.map(\.underlying), as: UTF8.self)
         guard let day = Self.decimal(dayString), day >= 1, day <= 31 else {
             throw Error.invalidDay(dayString)
         }
 
-        let monthString = String(decoding: parts[2].lazy.map(\.underlying), as: UTF8.self)
+        let monthString = String(decoding: parts[1].lazy.map(\.underlying), as: UTF8.self)
         guard let monthIndex = RFC_5322.DateTime.monthNames.firstIndex(of: monthString) else {
             throw Error.invalidMonth(monthString)
         }
         let month = monthIndex + 1
 
-        let yearString = String(decoding: parts[3].lazy.map(\.underlying), as: UTF8.self)
+        let yearString = String(decoding: parts[2].lazy.map(\.underlying), as: UTF8.self)
         guard let year = Self.decimal(yearString), year >= 1900 else {
             throw Error.invalidYear(yearString)
         }
 
-        let timeCodes = parts[4]
+        let timeCodes = parts[3]
         var timeParts: [[ASCII.Code]] = []
         var currentTimePart: [ASCII.Code] = []
 
@@ -133,7 +139,7 @@ extension RFC_5322.DateTime {
             second = 0
         }
 
-        let timezoneCodes = parts[5]
+        let timezoneCodes = parts[4]
         guard timezoneCodes.count == 5 else {
             let timezoneString = String(decoding: timezoneCodes.lazy.map(\.underlying), as: UTF8.self)
             throw Error.invalidTimezone(timezoneString)
@@ -182,7 +188,7 @@ extension RFC_5322.DateTime {
         }
 
         let actualWeekday = localDateTime.components.weekday
-        guard actualWeekday == expectedWeekday else {
+        if let expectedWeekday, actualWeekday != expectedWeekday {
             throw Error.weekdayMismatch(
                 expected: RFC_5322.DateTime.dayNames[expectedWeekday],
                 actual: RFC_5322.DateTime.dayNames[actualWeekday]

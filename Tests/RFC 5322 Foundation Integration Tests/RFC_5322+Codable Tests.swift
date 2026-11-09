@@ -17,6 +17,15 @@ struct `RFC_5322+Codable Tests` {
     }
 
     @Test
+    func `a date time decodes from a text form without a day name`() async throws {
+        let decoded = try JSONDecoder().decode(
+            RFC_5322.DateTime.self,
+            from: Data(#""1 Jan 2024 09:30:00 +0100""#.utf8)
+        )
+        #expect(decoded == (try RFC_5322.DateTime("Mon, 1 Jan 2024 09:30:00 +0100")))
+    }
+
+    @Test
     func `a header codes as its text form`() async throws {
         let header = try RFC_5322.Header("Subject: Hello")
 
