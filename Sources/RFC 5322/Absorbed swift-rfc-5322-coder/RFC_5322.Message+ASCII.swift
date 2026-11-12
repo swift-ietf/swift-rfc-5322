@@ -86,7 +86,7 @@
         }
 
         private static func list(_ mailboxes: [RFC_5322.Mailbox]) -> String {
-            mailboxes.map(\.description).joined(separator: ", ")
+            mailboxes.map({ $0.description }).joined(separator: ", ")
         }
     }
 

@@ -121,7 +121,7 @@ extension RFC_5322.Header.Value {
             let valid = code.isPrintable || code == ASCII.Code.htab
 
             guard valid else {
-                let string = String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
+                let string = String(decoding: trimmed.lazy.map({ $0.underlying }), as: UTF8.self)
                 let reason: String
                 reason =
                     if code.isControl {
@@ -135,7 +135,7 @@ extension RFC_5322.Header.Value {
 
         self.init(
             __unchecked: (),
-            rawValue: String(decoding: trimmed.lazy.map(\.underlying), as: UTF8.self)
+            rawValue: String(decoding: trimmed.lazy.map({ $0.underlying }), as: UTF8.self)
         )
     }
 }

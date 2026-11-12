@@ -97,7 +97,7 @@ extension RFC_5322.Mailbox {
                 }
 
                 if !trimmedCodes.isEmpty {
-                    var nameString = String(decoding: trimmedCodes.lazy.map(\.underlying), as: UTF8.self)
+                    var nameString = String(decoding: trimmedCodes.lazy.map({ $0.underlying }), as: UTF8.self)
 
                     if nameString.hasPrefix("\"") && nameString.hasSuffix("\"") {
                         nameString = String(nameString.dropFirst().dropLast())
@@ -117,8 +117,8 @@ extension RFC_5322.Mailbox {
                 throw Error.missingAtSign
             }
 
-            let localBytes = emailCodes[..<atIdx].map(\.byte)
-            let domainBytes = emailCodes[(atIdx + 1)...].map(\.byte)
+            let localBytes = emailCodes[..<atIdx].map({ $0.byte })
+            let domainBytes = emailCodes[(atIdx + 1)...].map({ $0.byte })
 
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)
@@ -130,8 +130,8 @@ extension RFC_5322.Mailbox {
                 throw Error.missingAtSign
             }
 
-            let localBytes = codes[..<atIdx].map(\.byte)
-            let domainBytes = codes[(atIdx + 1)...].map(\.byte)
+            let localBytes = codes[..<atIdx].map({ $0.byte })
+            let domainBytes = codes[(atIdx + 1)...].map({ $0.byte })
 
             let localPartValue = try Self.parseLocalPart(localBytes)
             let domainValue = try Self.parseDomain(domainBytes)

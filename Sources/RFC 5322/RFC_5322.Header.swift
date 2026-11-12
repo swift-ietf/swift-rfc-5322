@@ -82,7 +82,7 @@ extension Array where Element == RFC_5322.Header {
     }
 
     public func values(for name: RFC_5322.Header.Name) -> [RFC_5322.Header.Value] {
-        filter { $0.name == name }.map(\.value)
+        filter { $0.name == name }.map({ $0.value })
     }
 }
 
