@@ -101,8 +101,7 @@ extension RFC_5322.Mailbox {
 
                     if nameString.hasPrefix("\"") && nameString.hasSuffix("\"") {
                         nameString = String(nameString.dropFirst().dropLast())
-                        nameString = nameString.replacing(#"\""#, with: "\"")
-                            .replacing(#"\\"#, with: "\\")
+                        nameString = Self.unescapedFromQuotedString(nameString)
                     }
 
                     displayName = nameString
@@ -181,9 +180,28 @@ extension RFC_5322.Mailbox: CustomStringConvertible {
     }
 
     private static func escapedForQuotedString(_ displayName: String) -> String {
-        displayName
-            .replacing("\\", with: "\\\\")
-            .replacing("\"", with: "\\\"")
+        var escaped = ""
+        for character in displayName {
+            if character == "\\" || character == "\"" {
+                escaped.append("\\")
+            }
+            escaped.append(character)
+        }
+        return escaped
+    }
+
+    private static func unescapedFromQuotedString(_ content: String) -> String {
+        var unescaped = ""
+        var pending = false
+        for character in content {
+            if !pending && character == "\\" {
+                pending = true
+                continue
+            }
+            unescaped.append(character)
+            pending = false
+        }
+        return unescaped
     }
 }
 
