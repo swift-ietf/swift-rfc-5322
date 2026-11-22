@@ -1,0 +1,107 @@
+import ASCII
+public import Byte
+import INCITS_4_1986
+
+extension IETF.RFC.`5322`.Mailbox {
+
+    public struct LocalPart: Hashable, Sendable {
+        package let storage: Storage
+    }
+}
+
+extension IETF.RFC.`5322`.Mailbox.LocalPart {
+}
+
+extension IETF.RFC.`5322`.Mailbox.LocalPart {
+
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
+    }
+
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
+    where Bytes.Element == Byte {
+
+        let codes: [ASCII.Code]
+        do throws(ASCII.Code.Error) {
+            var built: [ASCII.Code] = []
+            built.reserveCapacity(bytes.count)
+            for byte in bytes {
+                built.append(try ASCII.Code(byte))
+            }
+            codes = built
+        } catch {
+            throw Error.nonASCIICharacters
+        }
+        let count = codes.count
+
+        guard count <= IETF.RFC.`5322`.Mailbox.Limits.maxLength else {
+            throw Error.tooLong(count)
+        }
+
+        guard let first = codes.first, let last = codes.last else {
+            throw Error.invalidDotAtom
+        }
+
+        if first == ASCII.Code.quotationMark && last == ASCII.Code.quotationMark && count >= 2 {
+
+            var skipNext = false
+
+            for index in 1..<(count - 1) {
+                let code = codes[index]
+
+                if skipNext {
+                    skipNext = false
+                    continue
+                }
+
+                if code == ASCII.Code.backslash {
+
+                    skipNext = true
+                } else if code == ASCII.Code.quotationMark || code == ASCII.Code.cr
+                    || code == ASCII.Code.lf
+                {
+
+                    throw Error.invalidQuotedString
+                }
+            }
+
+            if skipNext {
+                throw Error.invalidQuotedString
+            }
+
+            self.storage = .quoted([Byte](bytes))
+        }
+
+        else {
+
+            guard first != ASCII.Code.period && last != ASCII.Code.period else {
+                throw Error.leadingOrTrailingDot
+            }
+
+            var previousCode: ASCII.Code?
+            for code in codes {
+
+                if code == ASCII.Code.period && previousCode == ASCII.Code.period {
+                    throw Error.consecutiveDots
+                }
+                previousCode = code
+
+                guard code == ASCII.Code.period || IETF.RFC.`5322`.isAtext(code) else {
+                    throw Error.invalidDotAtom
+                }
+            }
+
+            self.storage = .dotAtom([Byte](bytes))
+        }
+    }
+}
+
+extension IETF.RFC.`5322`.Mailbox.LocalPart: CustomStringConvertible {
+
+    public var description: String {
+        switch storage {
+        case .dotAtom(let bytes), .quoted(let bytes):
+            String(decoding: bytes, as: UTF8.self)
+        }
+    }
+}

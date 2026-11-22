@@ -25,6 +25,7 @@ let package = Package(
         .trait(name: "Coder", description: "Wire coders for RFC 5322 types")
     ],
     dependencies: [
+        .package(url: "https://github.com/swift-ietf/swift-rfc.git", branch: "main"),
         .package(
             url: "https://github.com/swift-ietf/swift-rfc-1123.git",
             branch: "main"
@@ -120,6 +121,7 @@ let package = Package(
         .target(
             name: "RFC 5322",
             dependencies: [
+                .product(name: "IETF RFC", package: "swift-rfc"),
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "Time", package: "swift-time"),
                 .product(name: "Calendar", package: "swift-calendar"),

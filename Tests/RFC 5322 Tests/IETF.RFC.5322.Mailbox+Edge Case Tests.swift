@@ -1,0 +1,80 @@
+import RFC_5322
+import Testing
+
+extension `IETF.RFC.5322.Mailbox Tests` {
+    @Suite struct `Edge Case` {}
+}
+
+extension `IETF.RFC.5322.Mailbox Tests`.`Edge Case` {
+    @Test
+    func `display name containing a bare CRLF is rejected`() {
+        #expect(throws: IETF.RFC.`5322`.Mailbox.Error.self) {
+            _ = try IETF.RFC.`5322`.Mailbox(
+                displayName: "Evil\r\nBcc: attacker@evil.com",
+                localPart: .init("john"),
+                domain: .init("example.com")
+            )
+        }
+    }
+
+    @Test
+    func `display name containing a bare LF is rejected`() {
+        #expect(throws: IETF.RFC.`5322`.Mailbox.Error.self) {
+            _ = try IETF.RFC.`5322`.Mailbox(
+                displayName: "Evil\nBcc: attacker@evil.com",
+                localPart: .init("john"),
+                domain: .init("example.com")
+            )
+        }
+    }
+
+    @Test
+    func `display name containing a non-ASCII byte is rejected`() {
+        #expect(throws: IETF.RFC.`5322`.Mailbox.Error.self) {
+            _ = try IETF.RFC.`5322`.Mailbox(
+                displayName: "Jos\u{00E9}",
+                localPart: .init("jose"),
+                domain: .init("example.com")
+            )
+        }
+    }
+
+    @Test
+    func `display name containing a quote is escaped in the text form`() throws {
+        let email = try IETF.RFC.`5322`.Mailbox(
+            displayName: "Say \"Hi\"",
+            localPart: .init("john"),
+            domain: .init("example.com")
+        )
+        let rendered = email.description
+        #expect(rendered == "\"Say \\\"Hi\\\"\" <john@example.com>")
+    }
+
+    @Test
+    func `display name containing a backslash is escaped in the text form`() throws {
+        let email = try IETF.RFC.`5322`.Mailbox(
+            displayName: #"C:\Users\John"#,
+            localPart: .init("john"),
+            domain: .init("example.com")
+        )
+        let rendered = email.description
+        #expect(rendered == #""C:\\Users\\John" <john@example.com>"#)
+    }
+
+    @Test
+    func
+        `parsing a string with an embedded CRLF in the display name is rejected rather than silently accepted`()
+    {
+
+        #expect(throws: IETF.RFC.`5322`.Mailbox.Error.self) {
+            _ = try IETF.RFC.`5322`.Mailbox("Evil\r\nBcc: attacker@evil.com <john@example.com>")
+        }
+    }
+
+    @Test
+    func `a quoted local part containing an at sign splits at the last at sign`() throws {
+        let mailbox = try IETF.RFC.`5322`.Mailbox(#""a@b"@example.com"#)
+        #expect(mailbox.domain.name == "example.com")
+        #expect(mailbox.localPart.description == #""a@b""#)
+    }
+}

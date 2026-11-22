@@ -1,0 +1,153 @@
+#if Coder
+    import Binary
+    import Byte
+    import RFC_5322
+    import Testing
+
+    @Suite
+    struct `IETF.RFC.5322.Message Rendering Tests` {
+
+        @Test
+        func `renders every required header`() throws {
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox("sender@example.com"),
+                to: [IETF.RFC.`5322`.Mailbox("recipient@example.com")],
+                date: IETF.RFC.`5322`.DateTime(secondsSinceEpoch: 1_609_459_200),
+                subject: "Test Message",
+                messageId: IETF.RFC.`5322`.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "Hello, World!")
+            )
+
+            #expect(
+                message.description == """
+                    From: sender@example.com\r
+                    To: recipient@example.com\r
+                    Subject: Test Message\r
+                    Date: Fri, 01 Jan 2021 00:00:00 +0000\r
+                    Message-ID: <test@example.com>\r
+                    MIME-Version: 1.0\r
+                    \r
+                    Hello, World!
+                    """
+            )
+        }
+
+        @Test
+        func `renders display names`() throws {
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox(
+                    displayName: "John Doe",
+                    localPart: .init("john"),
+                    domain: .init("example.com")
+                ),
+                to: [IETF.RFC.`5322`.Mailbox("Jane Smith <jane@example.com>")],
+                date: .init(secondsSinceEpoch: 0),
+                subject: "Test",
+                messageId: IETF.RFC.`5322`.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "Test")
+            )
+
+            let rendered = message.description
+
+            #expect(rendered.contains("From: John Doe <john@example.com>\r\n"))
+            #expect(rendered.contains("To: Jane Smith <jane@example.com>\r\n"))
+        }
+
+        @Test
+        func `omits Bcc`() throws {
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox("sender@example.com"),
+                to: [IETF.RFC.`5322`.Mailbox("recipient@example.com")],
+                bcc: [IETF.RFC.`5322`.Mailbox("bcc@example.com")],
+                date: .init(secondsSinceEpoch: 0),
+                subject: "Test BCC",
+                messageId: IETF.RFC.`5322`.Message.ID("<bcc-test@example.com>"),
+                body: [Byte](utf8: "Test")
+            )
+
+            let rendered = message.description
+
+            #expect(!rendered.contains("Bcc:"))
+            #expect(!rendered.contains("bcc@example.com"))
+        }
+
+        @Test
+        func `renders Cc, Reply-To and additional headers`() throws {
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox("sender@example.com"),
+                to: [IETF.RFC.`5322`.Mailbox("alice@example.com"), IETF.RFC.`5322`.Mailbox("bob@example.com")],
+                cc: [IETF.RFC.`5322`.Mailbox("cc@example.com")],
+                replyTo: IETF.RFC.`5322`.Mailbox("replyto@example.com"),
+                date: .init(secondsSinceEpoch: 0),
+                subject: "Test",
+                messageId: IETF.RFC.`5322`.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "Test"),
+                additionalHeaders: [
+                    IETF.RFC.`5322`.Header(name: .xPriority, value: 1)
+                ]
+            )
+
+            let rendered = message.description
+
+            #expect(rendered.contains("To: alice@example.com, bob@example.com\r\n"))
+            #expect(rendered.contains("Cc: cc@example.com\r\n"))
+            #expect(rendered.contains("Reply-To: replyto@example.com\r\n"))
+            #expect(rendered.contains("X-Priority: 1\r\n"))
+        }
+
+        @Test
+        func `the description and the serialized bytes agree`() throws {
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox("sender@example.com"),
+                to: [IETF.RFC.`5322`.Mailbox("recipient@example.com")],
+                date: .init(secondsSinceEpoch: 0),
+                subject: "Test",
+                messageId: IETF.RFC.`5322`.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "Test")
+            )
+
+            #expect(String(message) == message.description)
+            #expect([Byte](message) == [Byte](utf8: message.description))
+        }
+
+        @Test
+        func `DateTime renders the RFC 5322 date form`() {
+            let dateTime = IETF.RFC.`5322`.DateTime(secondsSinceEpoch: 1_609_459_200)
+
+            #expect(dateTime.description == "Fri, 01 Jan 2021 00:00:00 +0000")
+        }
+
+        @Test
+        func `Mailbox quotes a display name that contains specials`() throws {
+            let mailbox = try IETF.RFC.`5322`.Mailbox(
+                displayName: "Doe, John",
+                localPart: .init("john"),
+                domain: .init("example.com")
+            )
+
+            #expect(String(mailbox) == "\"Doe, John\" <john@example.com>")
+        }
+
+        @Test
+        func `folds a long subject at whitespace within the line length`() throws {
+            let subject = Array(repeating: "word", count: 60).joined(separator: " ")
+            let message = try IETF.RFC.`5322`.Message(
+                from: IETF.RFC.`5322`.Mailbox("sender@example.com"),
+                to: [IETF.RFC.`5322`.Mailbox("recipient@example.com")],
+                date: IETF.RFC.`5322`.DateTime(secondsSinceEpoch: 1_609_459_200),
+                subject: subject,
+                messageId: IETF.RFC.`5322`.Message.ID("<test@example.com>"),
+                body: [Byte](utf8: "")
+            )
+
+            let lines = message.description
+                .split(separator: "\r\n", omittingEmptySubsequences: false)
+                .map(String.init)
+            #expect(lines.allSatisfy { $0.utf8.count <= 78 })
+            let start = try #require(lines.firstIndex(where: { $0.hasPrefix("Subject: ") }))
+            let end = try #require(lines[(start + 1)...].firstIndex(where: { !$0.hasPrefix(" ") }))
+            #expect(end - start > 1)
+            #expect(lines[start..<end].joined() == "Subject: " + subject)
+        }
+    }
+#endif
