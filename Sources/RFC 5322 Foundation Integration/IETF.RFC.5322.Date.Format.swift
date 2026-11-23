@@ -5,7 +5,7 @@
 
     extension IETF.RFC.`5322`.Date {
 
-        public struct FormatStyle: Sendable {
+        public struct Format: Sendable {
 
             public let timezoneOffsetSeconds: Int
 
@@ -15,7 +15,7 @@
         }
     }
 
-    extension IETF.RFC.`5322`.Date.FormatStyle {
+    extension IETF.RFC.`5322`.Date.Format {
 
         public func format(_ date: Foundation.Date) -> String {
             let dateTime = IETF.RFC.`5322`.DateTime(
@@ -37,23 +37,23 @@
 
     extension Foundation.Date {
 
-        public func formatted(_ style: IETF.RFC.`5322`.Date.FormatStyle) -> String {
+        public func formatted(_ style: IETF.RFC.`5322`.Date.Format) -> String {
             style.format(self)
         }
 
         public init(
             _ value: some StringProtocol,
-            strategy: IETF.RFC.`5322`.Date.FormatStyle
+            strategy: IETF.RFC.`5322`.Date.Format
         ) throws(IETF.RFC.`5322`.DateTime.Error) {
             let foundationDate = try strategy.parse(value)
             self = foundationDate
         }
     }
 
-    extension IETF.RFC.`5322`.Date.FormatStyle {
+    extension IETF.RFC.`5322`.Date.Format {
 
-        public static var rfc5322: IETF.RFC.`5322`.Date.FormatStyle {
-            IETF.RFC.`5322`.Date.FormatStyle(timezoneOffsetSeconds: 0)
+        public static var rfc5322: IETF.RFC.`5322`.Date.Format {
+            IETF.RFC.`5322`.Date.Format(timezoneOffsetSeconds: 0)
         }
 
         public static func rfc5322(timezoneOffsetSeconds: Int) -> Self {

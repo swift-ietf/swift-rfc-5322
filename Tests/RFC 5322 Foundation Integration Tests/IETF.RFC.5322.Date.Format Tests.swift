@@ -3,9 +3,9 @@ import RFC_5322
 import RFC_5322_Foundation_Integration
 import Testing
 
-enum `IETF.RFC.5322.Date.FormatStyle Tests` {}
+enum `IETF.RFC.5322.Date.Format Tests` {}
 
-extension `IETF.RFC.5322.Date.FormatStyle Tests` {
+extension `IETF.RFC.5322.Date.Format Tests` {
     @Suite
     struct `Foundation Date Formatting` {
 
@@ -46,7 +46,7 @@ extension `IETF.RFC.5322.Date.FormatStyle Tests` {
     }
 }
 
-extension `IETF.RFC.5322.Date.FormatStyle Tests` {
+extension `IETF.RFC.5322.Date.Format Tests` {
     @Suite
     struct `RFC 5322 DateTime with Foundation Formatting` {
 
